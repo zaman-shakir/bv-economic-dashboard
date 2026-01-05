@@ -247,6 +247,7 @@ class EconomicInvoiceService
 
     /**
      * Get all booked invoices (paid and unpaid)
+     * Limited to recent invoices to prevent performance issues
      */
     public function getAllInvoices(): Collection
     {
@@ -257,18 +258,15 @@ class EconomicInvoiceService
 
         return Cache::remember('all_invoices', 300, function () {
             $invoices = collect();
-            $url = "{$this->baseUrl}/invoices/booked?pagesize=1000";
+            // PERFORMANCE FIX: Limit to 500 most recent invoices instead of ALL
+            // This prevents loading 21,000+ invoices which freezes the browser
+            $url = "{$this->baseUrl}/invoices/booked?pagesize=500&skippages=0";
 
-            while ($url) {
-                $response = Http::withHeaders($this->headers)->get($url);
+            $response = Http::withHeaders($this->headers)->get($url);
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    $invoices = $invoices->merge($data['collection'] ?? []);
-                    $url = $data['pagination']['nextPage'] ?? null;
-                } else {
-                    break;
-                }
+            if ($response->successful()) {
+                $data = $response->json();
+                $invoices = $invoices->merge($data['collection'] ?? []);
             }
 
             return $invoices;

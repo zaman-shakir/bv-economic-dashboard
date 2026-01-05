@@ -131,6 +131,39 @@ Route::get('/debug-api', function() {
     }
 });
 
+// Temporary route to check invoice structure (REMOVE AFTER USE)
+Route::get('/check-invoices', function() {
+    $appToken = config('e-conomic.app_secret_token');
+    $grantToken = config('e-conomic.agreement_grant_token');
+
+    $headers = [
+        'X-AppSecretToken' => $appToken,
+        'X-AgreementGrantToken' => $grantToken,
+        'Content-Type' => 'application/json',
+    ];
+
+    // Get 5 sample invoices
+    $response = \Illuminate\Support\Facades\Http::withHeaders($headers)
+        ->get('https://restapi.e-conomic.com/invoices/booked?pagesize=5');
+
+    if ($response->successful()) {
+        $data = $response->json();
+
+        return response()->json([
+            'message' => 'Sample of 5 invoices to check structure',
+            'total_invoices' => $data['pagination']['results'] ?? 0,
+            'sample_invoices' => $data['collection'] ?? [],
+            'instructions' => [
+                'Check if "references" field contains "salesPerson"',
+                'If missing, invoices may not have salespeople assigned in e-conomic',
+                'You may need to assign salespeople in e-conomic dashboard first'
+            ]
+        ], JSON_PRETTY_PRINT);
+    }
+
+    return response()->json(['error' => 'Failed to fetch invoices'], 500);
+});
+
 // Temporary log viewer route (REMOVE AFTER USE for security)
 Route::get('/view-logs', function() {
     $logFile = storage_path('logs/laravel.log');
