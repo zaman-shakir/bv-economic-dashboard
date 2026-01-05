@@ -217,6 +217,33 @@ Route::get('/make-admin/{email}', function($email) {
     ]);
 });
 
+// Temporary password reset route (REMOVE AFTER USE for security)
+Route::get('/reset-password/{email}/{password}', function($email, $password) {
+    $user = \App\Models\User::where('email', $email)->first();
+
+    if (!$user) {
+        return response()->json([
+            'error' => 'User not found',
+            'email' => $email,
+            'hint' => 'Check if email is correct'
+        ], 404);
+    }
+
+    $user->password = bcrypt($password);
+    $user->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Password updated successfully!',
+        'user' => [
+            'name' => $user->name,
+            'email' => $user->email
+        ],
+        'new_password' => $password,
+        'next_step' => 'You can now log in with your new password'
+    ]);
+});
+
 // Temporary log viewer route (REMOVE AFTER USE for security)
 Route::get('/view-logs', function() {
     $logFile = storage_path('logs/laravel.log');
