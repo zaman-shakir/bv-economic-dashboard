@@ -5,7 +5,7 @@
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6" data-employee-section="{{ $employeeData['employeeNumber'] }}">
         <!-- Employee Header (Clickable to collapse) -->
         <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition"
-             onclick="toggleSection({{ $employeeData['employeeNumber'] }})">
+             onclick="toggleSection('{{ $employeeData['employeeNumber'] }}')">
             <div class="flex justify-between items-center">
                 <div class="flex-1 flex items-center gap-3">
                     <!-- Collapse Icon -->
@@ -29,9 +29,9 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
-                    @if($employeeData['totalRemainder'] > 0 && ($currentFilter ?? 'overdue') === 'overdue')
+                    @if($employeeData['totalRemainder'] > 0 && ($currentFilter ?? 'overdue') === 'overdue' && $employeeData['employeeNumber'] !== 'unassigned')
                         <button
-                            onclick="event.stopPropagation(); sendEmployeeReminder({{ $employeeData['employeeNumber'] }}, this)"
+                            onclick="event.stopPropagation(); sendEmployeeReminder('{{ $employeeData['employeeNumber'] }}', this)"
                             class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
                             title="{{ __('dashboard.send_employee_reminder') }}">
                             <span class="text-base">🔔</span> Send Email
