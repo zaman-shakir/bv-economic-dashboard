@@ -131,39 +131,64 @@ Route::get('/debug-api', function() {
     }
 });
 
+// Test env reading
+Route::get('/test-env', function() {
+    return response()->json([
+        'env_direct' => env('ECONOMIC_APP_SECRET_TOKEN'),
+        'config' => config('e-conomic.app_secret_token'),
+        'all_economic_env' => [
+            'ECONOMIC_APP_SECRET_TOKEN' => env('ECONOMIC_APP_SECRET_TOKEN'),
+            'ECONOMIC_AGREEMENT_GRANT_TOKEN' => env('ECONOMIC_AGREEMENT_GRANT_TOKEN'),
+        ]
+    ]);
+});
+
 // Temporary route to check invoice structure (REMOVE AFTER USE)
 Route::get('/check-invoices', function() {
-    $appToken = config('e-conomic.app_secret_token');
-    $grantToken = config('e-conomic.agreement_grant_token');
+    try {
+        $appToken = config('e-conomic.app_secret_token');
+        $grantToken = config('e-conomic.agreement_grant_token');
 
-    $headers = [
-        'X-AppSecretToken' => $appToken,
-        'X-AgreementGrantToken' => $grantToken,
-        'Content-Type' => 'application/json',
-    ];
+        $headers = [
+            'X-AppSecretToken' => $appToken,
+            'X-AgreementGrantToken' => $grantToken,
+            'Content-Type' => 'application/json',
+        ];
 
-    // Get 5 most recent invoices (last 6 months)
-    $sixMonthsAgo = now()->subMonths(6)->format('Y-m-d');
-    $response = \Illuminate\Support\Facades\Http::withHeaders($headers)
-        ->get("https://restapi.e-conomic.com/invoices/booked?pagesize=5&filter=date\$gte:{$sixMonthsAgo}");
+        // Get 5 most recent invoices WITHOUT date filter first (to test)
+        $response = \Illuminate\Support\Facades\Http::withHeaders($headers)
+            ->timeout(30)
+            ->get("https://restapi.e-conomic.com/invoices/booked?pagesize=5");
 
-    if ($response->successful()) {
-        $data = $response->json();
+        if ($response->successful()) {
+            $data = $response->json();
+
+            return response()->json([
+                'message' => 'Sample of 5 most recent invoices',
+                'total_invoices' => $data['pagination']['results'] ?? 0,
+                'sample_invoices' => $data['collection'] ?? [],
+                'instructions' => [
+                    'Check if "references" field contains "salesPerson"',
+                    'If missing, invoices may not have salespeople assigned in e-conomic',
+                    'You may need to assign salespeople in e-conomic dashboard first'
+                ]
+            ], JSON_PRETTY_PRINT);
+        }
 
         return response()->json([
-            'message' => 'Sample of 5 most recent invoices (last 6 months)',
-            'date_filter' => "Invoices from {$sixMonthsAgo} onwards",
-            'total_invoices_in_period' => $data['pagination']['results'] ?? 0,
-            'sample_invoices' => $data['collection'] ?? [],
-            'instructions' => [
-                'Check if "references" field contains "salesPerson"',
-                'If missing, invoices may not have salespeople assigned in e-conomic',
-                'You may need to assign salespeople in e-conomic dashboard first'
-            ]
-        ], JSON_PRETTY_PRINT);
-    }
+            'error' => 'API request failed',
+            'status_code' => $response->status(),
+            'response_body' => $response->body()
+        ], $response->status());
 
-    return response()->json(['error' => 'Failed to fetch invoices'], 500);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Exception occurred',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
+    }
 });
 
 // Temporary log viewer route (REMOVE AFTER USE for security)

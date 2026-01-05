@@ -27,10 +27,12 @@ class DashboardController extends Controller
 
         $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
         $totals = $this->invoiceService->getInvoiceTotals();
+        $dataQuality = $this->invoiceService->getDataQualityStats($invoicesByEmployee);
 
         return view('dashboard.index', [
             'invoicesByEmployee' => $invoicesByEmployee,
             'totals' => $totals,
+            'dataQuality' => $dataQuality,
             'lastUpdated' => now()->format('d-m-Y H:i'),
             'currentFilter' => $filter,
         ]);

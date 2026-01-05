@@ -286,6 +286,23 @@ class EconomicInvoiceService
             default => $this->getOverdueInvoices(),
         };
 
+        // Track invoices without salesPerson for logging
+        $totalInvoices = $invoices->count();
+        $unassignedCount = $invoices->filter(function ($invoice) {
+            return !isset($invoice['references']['salesPerson']);
+        })->count();
+
+        // Log warning if most invoices are unassigned
+        if ($unassignedCount > 0) {
+            $percentage = round(($unassignedCount / $totalInvoices) * 100);
+            \Log::warning("E-conomic Data Quality: {$unassignedCount} out of {$totalInvoices} invoices ({$percentage}%) have no salesperson assigned.", [
+                'filter' => $filter,
+                'total_invoices' => $totalInvoices,
+                'unassigned_count' => $unassignedCount,
+                'suggestion' => 'Assign salespeople to invoices in e-conomic dashboard for better tracking'
+            ]);
+        }
+
         return $invoices->groupBy(function ($invoice) {
             return $invoice['references']['salesPerson']['employeeNumber'] ?? 'unassigned';
         })->map(function ($group, $employeeNumber) {
@@ -385,6 +402,37 @@ class EconomicInvoiceService
 
             return $response->successful() ? $response->json() : [];
         });
+    }
+
+    /**
+     * Get data quality statistics
+     * Returns information about missing salesPerson assignments
+     */
+    public function getDataQualityStats(Collection $invoicesByEmployee): array
+    {
+        $unassignedGroup = $invoicesByEmployee->get('unassigned');
+
+        if (!$unassignedGroup) {
+            return [
+                'has_unassigned' => false,
+                'unassigned_count' => 0,
+                'total_count' => $invoicesByEmployee->sum('invoiceCount'),
+                'percentage' => 0,
+            ];
+        }
+
+        $unassignedCount = $unassignedGroup['invoiceCount'] ?? 0;
+        $totalCount = $invoicesByEmployee->sum('invoiceCount');
+        $percentage = $totalCount > 0 ? round(($unassignedCount / $totalCount) * 100) : 0;
+
+        return [
+            'has_unassigned' => true,
+            'unassigned_count' => $unassignedCount,
+            'total_count' => $totalCount,
+            'percentage' => $percentage,
+            'message' => "{$unassignedCount} out of {$totalCount} invoices ({$percentage}%) have no salesperson assigned.",
+            'suggestion' => 'Assign salespeople to invoices in your e-conomic dashboard for better tracking.',
+        ];
     }
 
     /**
