@@ -2,30 +2,30 @@
 
 return [
     // Page titles
-    'invoice_overview' => 'Faktura Overblik',
+    'invoice_overview' => 'Faktura overblik',
     'user_management' => 'Brugerstyring',
-    'create_new_user' => 'Opret Ny Bruger',
+    'create_new_user' => 'Opret ny bruger',
 
     // Navigation
     'dashboard' => 'Dashboard',
     'users' => 'Brugere',
     'profile' => 'Profil',
-    'log_out' => 'Log Ud',
+    'log_out' => 'Log ud',
 
     // Filters
-    'filter_all' => 'Alle Fakturaer',
-    'filter_overdue' => 'Kun Forfaldne',
-    'filter_unpaid' => 'Kun Ubetalte',
-    'all_employees' => 'Alle Medarbejdere',
+    'filter_all' => 'Alle fakturaer',
+    'filter_overdue' => 'Kun forfaldne',
+    'filter_unpaid' => 'Kun ubetalte',
+    'all_employees' => 'Alle medarbejdere',
 
     // Summary cards
-    'total_invoices' => 'Total Fakturaer',
-    'overdue_invoices' => 'Forfaldne Fakturaer',
-    'unpaid_invoices' => 'Ubetalte Fakturaer',
-    'total_outstanding' => 'Total Udestående',
-    'employees_with_overdue' => 'Medarbejdere med Forfaldne',
+    'total_invoices' => 'Total fakturaer',
+    'overdue_invoices' => 'Forfaldne fakturaer',
+    'unpaid_invoices' => 'Ubetalte fakturaer',
+    'total_outstanding' => 'Total udestående',
+    'employees_with_overdue' => 'Medarbejdere med forfaldne',
     'employees_count' => 'Medarbejdere',
-    'refresh_data' => 'Opdater Data',
+    'refresh_data' => 'Opdater data',
     'loading_data' => 'Henter data...',
     'last_updated' => 'Sidst opdateret',
 
@@ -64,7 +64,7 @@ return [
     'no_invoices_message' => 'Der er ingen fakturaer, der matcher dit filter.',
 
     // User management
-    'add_new_user' => '+ Tilføj Ny Bruger',
+    'add_new_user' => '+ Tilføj ny bruger',
     'name' => 'Navn',
     'email' => 'Email',
     'admin' => 'Admin',
@@ -76,11 +76,11 @@ return [
 
     // Create user form
     'password' => 'Adgangskode',
-    'confirm_password' => 'Bekræft Adgangskode',
-    'grant_admin_privileges' => 'Giv Admin Rettigheder',
+    'confirm_password' => 'Bekræft adgangskode',
+    'grant_admin_privileges' => 'Giv admin rettigheder',
     'admin_privileges_help' => 'Admin brugere kan oprette og administrere andre brugere.',
     'cancel' => 'Annuller',
-    'create_user' => 'Opret Bruger',
+    'create_user' => 'Opret bruger',
 
     // Messages
     'user_created' => 'Bruger oprettet med succes.',
@@ -89,7 +89,7 @@ return [
     'confirm_delete_user' => 'Er du sikker på, at du vil slette denne bruger?',
 
     // Reminder messages
-    'send_reminder' => 'Send Påmindelse',
+    'send_reminder' => 'Send påmindelse',
     'reminder_sent_successfully' => 'Påmindelses email sendt!',
     'reminder_send_failed' => 'Kunne ikke sende påmindelse',
     'reminder_sent_recently' => 'En påmindelse blev allerede sendt for :days dage siden. Vent venligst før du sender en anden.',
@@ -99,18 +99,18 @@ return [
     'sending_reminder' => 'Sender...',
 
     // Employee reminder messages
-    'send_employee_reminder' => 'Underret Medarbejder',
+    'send_employee_reminder' => 'Underret medarbejder',
     'employee_reminder_sent' => 'Medarbejder notifikation sendt!',
     'employee_email_not_found' => 'Medarbejder email adresse ikke fundet.',
     'no_overdue_for_employee' => 'Ingen forfaldne fakturaer fundet for denne medarbejder.',
     'confirm_send_employee_reminder' => 'Send påmindelses email til medarbejder om deres forfaldne fakturaer?',
 
     // Sidebar Stats
-    'quick_stats' => 'Hurtige Statistikker',
-    'critical_invoices' => 'Kritiske Fakturaer',
-    'over_30_days' => 'Over 30 Dage',
-    'critical_amount' => 'Kritisk Beløb',
-    'top_employees' => 'Top Medarbejdere efter Udestående',
+    'quick_stats' => 'Hurtige statistikker',
+    'critical_invoices' => 'Kritiske fakturaer',
+    'over_30_days' => 'Over 30 dage',
+    'critical_amount' => 'Kritisk beløb',
+    'top_employees' => 'Top medarbejdere efter udestående',
     'critical' => 'Kritisk',
 
     // Search and Sort
@@ -125,9 +125,9 @@ return [
     // Bulk Actions
     'bulk_actions' => 'Massehandlinger',
     'selected' => 'valgt',
-    'send_bulk_reminders' => 'Send Massepåmindelser',
-    'select_all' => 'Vælg Alle',
-    'deselect_all' => 'Fravælg Alle',
+    'send_bulk_reminders' => 'Send massepåmindelser',
+    'select_all' => 'Vælg alle',
+    'deselect_all' => 'Fravælg alle',
     'bulk_reminder_sent' => 'Massepåmindelser sendt med succes!',
     'no_invoices_selected' => 'Vælg venligst mindst én faktura.',
 ];
