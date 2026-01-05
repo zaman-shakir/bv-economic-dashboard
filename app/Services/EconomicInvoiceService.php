@@ -187,7 +187,9 @@ class EconomicInvoiceService
 
     /**
      * Get all overdue invoices
-     * Limited to last 6 months for performance
+     * Limited to configured months for performance
+     * Note: e-conomic API doesn't support date filters on /overdue endpoint,
+     * so we fetch all invoices and filter client-side
      */
     public function getOverdueInvoices(): Collection
     {
@@ -196,27 +198,26 @@ class EconomicInvoiceService
             return $this->getMockInvoices();
         }
 
-        return Cache::remember('overdue_invoices', 300, function () {
-            $invoices = collect();
+        $cacheDuration = config('e-conomic.cache_duration', 30) * 60; // Convert minutes to seconds
 
-            // Get invoices from last 6 months
-            $sixMonthsAgo = now()->subMonths(6)->format('Y-m-d');
-            $url = "{$this->baseUrl}/invoices/booked/overdue?pagesize=1000&filter=date\$gte:{$sixMonthsAgo}";
+        return Cache::remember('overdue_invoices', $cacheDuration, function () {
+            // Get all invoices with date filter, then filter to overdue only
+            $allInvoices = $this->getAllInvoices();
 
-            $response = Http::withHeaders($this->headers)->get($url);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                $invoices = $invoices->merge($data['collection'] ?? []);
-            }
-
-            return $invoices;
+            // Filter to only overdue invoices (remainder > 0 and past due date)
+            return $allInvoices->filter(function ($invoice) {
+                $isDue = isset($invoice['dueDate']) && $invoice['dueDate'] < now()->format('Y-m-d');
+                $hasRemainder = isset($invoice['remainder']) && $invoice['remainder'] > 0;
+                return $isDue && $hasRemainder;
+            });
         });
     }
 
     /**
      * Get all unpaid invoices (includes not-yet-overdue)
-     * Limited to last 6 months for performance
+     * Limited to configured months for performance
+     * Note: e-conomic API doesn't support date filters on /unpaid endpoint,
+     * so we fetch all invoices and filter client-side
      */
     public function getUnpaidInvoices(): Collection
     {
@@ -225,27 +226,22 @@ class EconomicInvoiceService
             return $this->getMockInvoices()->filter(fn($inv) => $inv['remainder'] > 0);
         }
 
-        return Cache::remember('unpaid_invoices', 300, function () {
-            $invoices = collect();
+        $cacheDuration = config('e-conomic.cache_duration', 30) * 60; // Convert minutes to seconds
 
-            // Get invoices from last 6 months
-            $sixMonthsAgo = now()->subMonths(6)->format('Y-m-d');
-            $url = "{$this->baseUrl}/invoices/booked/unpaid?pagesize=1000&filter=date\$gte:{$sixMonthsAgo}";
+        return Cache::remember('unpaid_invoices', $cacheDuration, function () {
+            // Get all invoices with date filter, then filter to unpaid only
+            $allInvoices = $this->getAllInvoices();
 
-            $response = Http::withHeaders($this->headers)->get($url);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                $invoices = $invoices->merge($data['collection'] ?? []);
-            }
-
-            return $invoices;
+            // Filter to only unpaid invoices (remainder > 0)
+            return $allInvoices->filter(function ($invoice) {
+                return isset($invoice['remainder']) && $invoice['remainder'] > 0;
+            });
         });
     }
 
     /**
      * Get all booked invoices (paid and unpaid)
-     * Limited to last 6 months for performance
+     * Limited to configured months for performance
      */
     public function getAllInvoices(): Collection
     {
@@ -254,13 +250,16 @@ class EconomicInvoiceService
             return $this->getMockInvoices();
         }
 
-        return Cache::remember('all_invoices', 300, function () {
+        $cacheDuration = config('e-conomic.cache_duration', 30) * 60; // Convert minutes to seconds
+
+        return Cache::remember('all_invoices', $cacheDuration, function () {
             $invoices = collect();
 
-            // PERFORMANCE FIX: Only fetch invoices from last 6 months
+            // PERFORMANCE FIX: Only fetch invoices from configured months
             // This prevents loading 21,000+ invoices which freezes the browser
-            $sixMonthsAgo = now()->subMonths(6)->format('Y-m-d');
-            $url = "{$this->baseUrl}/invoices/booked?pagesize=1000&filter=date\$gte:{$sixMonthsAgo}";
+            $months = config('e-conomic.sync_months', 6);
+            $dateFrom = now()->subMonths($months)->format('Y-m-d');
+            $url = "{$this->baseUrl}/invoices/booked?pagesize=1000&filter=date\$gte:{$dateFrom}";
 
             $response = Http::withHeaders($this->headers)->get($url);
 

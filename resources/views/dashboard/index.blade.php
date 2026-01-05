@@ -124,47 +124,27 @@
                 </div>
             </div>
 
-            <!-- Data Info Banner -->
-            <div class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 border border-blue-200 dark:border-gray-600 rounded-xl p-4 shadow-sm">
-                <div class="flex items-start gap-3">
-                    <div class="flex-shrink-0">
-                        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                            📊 Current Data View
-                        </h3>
-                        <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                            <p>
-                                <span class="font-medium">Date Range:</span>
-                                <span class="text-blue-700 dark:text-blue-400">Last 6 months</span>
-                                ({{ now()->subMonths(6)->format('M d, Y') }} - {{ now()->format('M d, Y') }})
-                            </p>
-                            <p>
-                                <span class="font-medium">Filter:</span>
-                                <span class="text-blue-700 dark:text-blue-400">
-                                    @if($currentFilter === 'all')
-                                        All Invoices
-                                    @elseif($currentFilter === 'overdue')
-                                        Overdue Invoices Only
-                                    @elseif($currentFilter === 'unpaid')
-                                        Unpaid Invoices Only
-                                    @endif
-                                </span>
-                            </p>
-                            <p>
-                                <span class="font-medium">Total Invoices:</span>
-                                <span class="text-blue-700 dark:text-blue-400">{{ $invoicesByEmployee->sum('invoiceCount') }}</span>
-                            </p>
-                            @if(isset($dataQuality) && $dataQuality['has_unassigned'])
-                                <p class="pt-1 border-t border-blue-200 dark:border-gray-600 mt-2">
-                                    <span class="text-yellow-700 dark:text-yellow-400">⚠️ {{ $dataQuality['message'] }}</span>
-                                </p>
+            <!-- Data Info Banner (Compact) -->
+            <div class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 border border-blue-200 dark:border-gray-600 rounded-lg px-4 py-3 shadow-sm">
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <span class="font-semibold text-gray-900 dark:text-gray-100">📊 Current Data View:</span>
+                        <span>Last {{ config('e-conomic.sync_months', 6) }} months ({{ now()->subMonths(config('e-conomic.sync_months', 6))->format('M d, Y') }} - {{ now()->format('M d, Y') }})</span>
+                        <span>•</span>
+                        <span>Filter: <strong class="text-blue-700 dark:text-blue-400">
+                            @if($currentFilter === 'all')All Invoices
+                            @elseif($currentFilter === 'overdue')Overdue Only
+                            @elseif($currentFilter === 'unpaid')Unpaid Only
                             @endif
-                        </div>
+                        </strong></span>
+                        <span>•</span>
+                        <span>Total: <strong class="text-blue-700 dark:text-blue-400">{{ $invoicesByEmployee->sum('invoiceCount') }}</strong></span>
                     </div>
+                    @if(isset($dataQuality) && $dataQuality['has_unassigned'])
+                        <div class="mt-1 text-yellow-700 dark:text-yellow-400">
+                            ⚠️ {{ $dataQuality['message'] }}
+                        </div>
+                    @endif
                 </div>
             </div>
 
