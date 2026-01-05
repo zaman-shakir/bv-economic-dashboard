@@ -191,6 +191,32 @@ Route::get('/check-invoices', function() {
     }
 });
 
+// Temporary make user admin route (REMOVE AFTER USE for security)
+Route::get('/make-admin/{email}', function($email) {
+    $user = \App\Models\User::where('email', $email)->first();
+
+    if (!$user) {
+        return response()->json([
+            'error' => 'User not found',
+            'email' => $email
+        ], 404);
+    }
+
+    $user->is_admin = true;
+    $user->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'User is now an admin!',
+        'user' => [
+            'name' => $user->name,
+            'email' => $user->email,
+            'is_admin' => $user->is_admin
+        ],
+        'next_step' => 'Refresh your dashboard to see the Users menu'
+    ]);
+});
+
 // Temporary log viewer route (REMOVE AFTER USE for security)
 Route::get('/view-logs', function() {
     $logFile = storage_path('logs/laravel.log');
