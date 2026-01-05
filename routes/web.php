@@ -131,4 +131,57 @@ Route::get('/debug-api', function() {
     }
 });
 
+// Temporary log viewer route (REMOVE AFTER USE for security)
+Route::get('/view-logs', function() {
+    $logFile = storage_path('logs/laravel.log');
+
+    if (!file_exists($logFile)) {
+        return response()->json([
+            'error' => 'Log file not found',
+            'path' => $logFile
+        ], 404);
+    }
+
+    // Get last 200 lines of the log file
+    $lines = [];
+    $file = new \SplFileObject($logFile);
+    $file->seek(PHP_INT_MAX);
+    $lastLine = $file->key();
+    $startLine = max(0, $lastLine - 200);
+
+    $file->seek($startLine);
+    while (!$file->eof()) {
+        $lines[] = $file->current();
+        $file->next();
+    }
+
+    $logContent = implode('', $lines);
+
+    // Return formatted HTML for better readability
+    return response('<html>
+        <head>
+            <title>Laravel Logs - Last 200 Lines</title>
+            <style>
+                body { font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 20px; }
+                pre { white-space: pre-wrap; word-wrap: break-word; }
+                .error { color: #f44747; }
+                .warning { color: #ff8c00; }
+                .info { color: #4ec9b0; }
+                h1 { color: #4ec9b0; }
+                .controls { margin-bottom: 20px; }
+                .controls a { color: #4ec9b0; margin-right: 15px; }
+            </style>
+        </head>
+        <body>
+            <h1>Laravel Logs (Last 200 Lines)</h1>
+            <div class="controls">
+                <a href="/view-logs">Refresh Logs</a>
+                <a href="/clear-all-cache">Clear Cache</a>
+                <a href="/debug-api">Test API</a>
+            </div>
+            <pre>' . htmlspecialchars($logContent) . '</pre>
+        </body>
+    </html>');
+});
+
 require __DIR__.'/auth.php';
