@@ -48,21 +48,59 @@ Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('l
 
 // Temporary cache clearing route (REMOVE AFTER USE for security)
 Route::get('/clear-all-cache', function() {
+    $results = [];
+
+    // Clear Laravel caches
     \Illuminate\Support\Facades\Artisan::call('config:clear');
+    $results['config_cache'] = 'cleared';
+
     \Illuminate\Support\Facades\Artisan::call('cache:clear');
+    $results['application_cache'] = 'cleared';
+
     \Illuminate\Support\Facades\Artisan::call('view:clear');
+    $results['view_cache'] = 'cleared';
+
     \Illuminate\Support\Facades\Artisan::call('route:clear');
+    $results['route_cache'] = 'cleared';
+
+    // Clear OPcache if available (THIS IS OFTEN THE CULPRIT!)
+    if (function_exists('opcache_reset')) {
+        opcache_reset();
+        $results['opcache'] = 'CLEARED ✓';
+    } else {
+        $results['opcache'] = 'not available on this server';
+    }
+
+    // Delete bootstrap cache files manually
+    $bootstrapCache = base_path('bootstrap/cache/config.php');
+    if (file_exists($bootstrapCache)) {
+        unlink($bootstrapCache);
+        $results['bootstrap_config_file'] = 'DELETED ✓';
+    } else {
+        $results['bootstrap_config_file'] = 'not found (good)';
+    }
+
+    // Verify .env is readable
+    $envPath = base_path('.env');
+    $results['env_file_exists'] = file_exists($envPath) ? 'yes ✓' : 'NO - FILE NOT FOUND!';
+
+    // Show current MAIL_ENCRYPTION value from .env directly (bypassing config cache)
+    if (file_exists($envPath)) {
+        $envContent = file_get_contents($envPath);
+        preg_match('/MAIL_ENCRYPTION=(.*)/', $envContent, $matches);
+        $envValue = isset($matches[1]) ? trim($matches[1]) : 'NOT SET IN .ENV';
+        $results['env_mail_encryption_raw'] = $envValue;
+    }
+
+    // Show what config() returns AFTER clearing
+    $configValue = config('mail.mailers.smtp.encryption');
+    $results['config_mail_encryption_after_clear'] = $configValue ?? 'NULL';
 
     return response()->json([
         'success' => true,
         'message' => 'All caches cleared successfully!',
-        'cleared' => [
-            'config_cache' => 'cleared',
-            'application_cache' => 'cleared',
-            'view_cache' => 'cleared',
-            'route_cache' => 'cleared'
-        ],
-        'next_step' => 'Refresh your dashboard to see real data from e-conomic API'
+        'diagnostics' => $results,
+        'next_step' => 'Refresh the test-email page. If MAIL_ENCRYPTION is still null, OPcache might be disabled - contact hosting support.'
     ]);
 });
 
