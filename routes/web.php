@@ -66,4 +66,69 @@ Route::get('/clear-all-cache', function() {
     ]);
 });
 
+// Temporary debug route to test e-conomic API connection (REMOVE AFTER USE)
+Route::get('/debug-api', function() {
+    try {
+        $appToken = config('e-conomic.app_secret_token');
+        $grantToken = config('e-conomic.agreement_grant_token');
+
+        // Check if tokens are loaded
+        if (!$appToken || !$grantToken) {
+            return response()->json([
+                'error' => 'API tokens not found in configuration',
+                'app_token_exists' => !empty($appToken),
+                'grant_token_exists' => !empty($grantToken),
+                'app_token_value' => $appToken ? substr($appToken, 0, 10) . '...' : 'null',
+            ], 500);
+        }
+
+        // Check if still in demo mode
+        if ($appToken === 'demo') {
+            return response()->json([
+                'warning' => 'Still in demo mode',
+                'message' => 'Tokens are set to "demo". Config cache may not be cleared.',
+                'solution' => 'Visit /clear-all-cache first'
+            ]);
+        }
+
+        // Try a simple API call
+        $headers = [
+            'X-AppSecretToken' => $appToken,
+            'X-AgreementGrantToken' => $grantToken,
+            'Content-Type' => 'application/json',
+        ];
+
+        $response = \Illuminate\Support\Facades\Http::withHeaders($headers)
+            ->get('https://restapi.e-conomic.com/invoices/booked?pagesize=1');
+
+        if ($response->successful()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'API connection successful!',
+                'status_code' => $response->status(),
+                'data_preview' => $response->json(),
+            ]);
+        } else {
+            return response()->json([
+                'error' => 'API request failed',
+                'status_code' => $response->status(),
+                'response_body' => $response->body(),
+                'headers_sent' => [
+                    'X-AppSecretToken' => substr($appToken, 0, 10) . '...',
+                    'X-AgreementGrantToken' => substr($grantToken, 0, 10) . '...',
+                ]
+            ], $response->status());
+        }
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Exception occurred',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
 require __DIR__.'/auth.php';
