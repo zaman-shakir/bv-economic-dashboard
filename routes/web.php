@@ -368,17 +368,38 @@ Route::get('/test-email/{recipient?}', function($recipient = null) {
                 throw new \Exception("CRITICAL: Port {$port} requires MAIL_ENCRYPTION. Use 'ssl' for port 465 or 'tls' for port 587. Update .env and run 'php artisan config:clear'");
             }
 
-            \Illuminate\Support\Facades\Mail::raw('This is a test email from BilligVentilation Dashboard. Timestamp: ' . now(), function($message) use ($recipient) {
-                $message->to($recipient)
-                        ->subject('Test Email - BilligVentilation Dashboard - ' . now()->format('H:i:s'));
-            });
+            // Enable logging to capture actual SMTP errors
+            $sentSuccessfully = false;
+            $smtpError = null;
+
+            try {
+                \Illuminate\Support\Facades\Mail::raw(
+                    "This is a test email from BilligVentilation Dashboard.\n\nTimestamp: " . now()->toDateTimeString() . "\n\nIf you receive this, email delivery is working correctly!",
+                    function($message) use ($recipient) {
+                        $message->to($recipient)
+                                ->subject('Test Email - BilligVentilation Dashboard - ' . now()->format('H:i:s'));
+                    }
+                );
+                $sentSuccessfully = true;
+            } catch (\Symfony\Component\Mailer\Exception\TransportException $e) {
+                $smtpError = $e->getMessage();
+                throw $e;
+            }
 
             $results['email_test'] = [
                 'status' => 'SUCCESS',
                 'message' => "Test email sent successfully to {$recipient}",
                 'recipient' => $recipient,
                 'next_step' => 'Check your inbox (and spam folder)',
-                'note' => 'Email queued for delivery - may take 30-60 seconds to arrive',
+                'note' => 'Email sent immediately (not queued)',
+                'queue_driver' => config('queue.default'),
+                'troubleshooting' => [
+                    'If email not received, check:',
+                    '1. Spam/Junk folder',
+                    '2. SPF/DKIM records for billigventilation.dk',
+                    '3. Check /view-logs for SMTP errors',
+                    '4. Try sending to a different email provider'
+                ]
             ];
         } catch (\Exception $e) {
             $results['email_test'] = [
@@ -386,6 +407,7 @@ Route::get('/test-email/{recipient?}', function($recipient = null) {
                 'error' => $e->getMessage(),
                 'recipient' => $recipient,
                 'trace' => substr($e->getTraceAsString(), 0, 500),
+                'suggestion' => 'Check if your mail server requires authentication or has rate limiting'
             ];
         }
     } else {
