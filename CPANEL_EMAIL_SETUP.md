@@ -28,36 +28,41 @@ SSH into your server or use cPanel File Manager to edit `.env` file:
 
 ```env
 MAIL_MAILER=smtp
-MAIL_HOST=localhost
-MAIL_PORT=587
+MAIL_HOST=mail.billigventilation.dk
+MAIL_PORT=465
 MAIL_USERNAME=dashboard@billigventilation.dk
 MAIL_PASSWORD=the_password_you_created_in_step1
-MAIL_ENCRYPTION=tls
+MAIL_ENCRYPTION=ssl
 MAIL_FROM_ADDRESS="dashboard@billigventilation.dk"
 MAIL_FROM_NAME="${APP_NAME}"
 ```
 
 **Important:** Replace `the_password_you_created_in_step1` with the actual password from Step 1.
 
+**Note:** These settings are based on your cPanel's SMTP configuration (mail.billigventilation.dk, port 465 with SSL).
+
 ### Alternative SMTP Settings
 
-If port 587 doesn't work, try these alternatives:
+The recommended settings above (port 465 with SSL) should work. If you experience issues, try these alternatives:
 
-**Option 1: SSL on port 465**
+**Option 1: TLS on port 587** (if your server supports STARTTLS)
 ```env
+MAIL_PORT=587
+MAIL_ENCRYPTION=tls
+```
+
+**Option 2: Use localhost instead of domain**
+```env
+MAIL_HOST=localhost
 MAIL_PORT=465
 MAIL_ENCRYPTION=ssl
 ```
 
-**Option 2: No encryption on port 25**
-```env
-MAIL_PORT=25
-MAIL_ENCRYPTION=null
-```
-
-**Option 3: Use mail server hostname**
+**Option 3: Non-SSL (not recommended, only as last resort)**
 ```env
 MAIL_HOST=mail.billigventilation.dk
+MAIL_PORT=25
+MAIL_ENCRYPTION=null
 ```
 
 ## Step 3: Clear Cache
