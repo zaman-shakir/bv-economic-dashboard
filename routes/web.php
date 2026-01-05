@@ -313,10 +313,17 @@ Route::get('/test-email/{recipient?}', function($recipient = null) {
         $originalTimeout = ini_get('default_socket_timeout');
         ini_set('default_socket_timeout', 5);
 
+        $encryption = config('mail.mailers.smtp.encryption');
+
+        // For EsmtpTransport constructor:
+        // - Port 587 with 'tls' → use false (STARTTLS)
+        // - Port 465 with 'ssl' → use true (direct SSL)
+        $useTls = ($encryption === 'ssl');
+
         $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport(
             config('mail.mailers.smtp.host'),
             config('mail.mailers.smtp.port'),
-            config('mail.mailers.smtp.encryption') === 'tls'
+            $useTls
         );
 
         if (config('mail.mailers.smtp.username')) {
@@ -330,6 +337,7 @@ Route::get('/test-email/{recipient?}', function($recipient = null) {
             'status' => 'SUCCESS',
             'message' => 'SMTP connection successful!',
             'server' => config('mail.mailers.smtp.host') . ':' . config('mail.mailers.smtp.port'),
+            'encryption_used' => $encryption,
         ];
 
         $transport->stop();
@@ -364,13 +372,6 @@ Route::get('/test-email/{recipient?}', function($recipient = null) {
                 $message->to($recipient)
                         ->subject('Test Email - BilligVentilation Dashboard - ' . now()->format('H:i:s'));
             });
-
-            // Check for failures (Laravel Mail doesn't throw exceptions by default)
-            $failures = \Illuminate\Support\Facades\Mail::failures();
-
-            if (!empty($failures)) {
-                throw new \Exception("Email failed to send to: " . implode(', ', $failures));
-            }
 
             $results['email_test'] = [
                 'status' => 'SUCCESS',
