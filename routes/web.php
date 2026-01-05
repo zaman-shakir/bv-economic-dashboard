@@ -142,16 +142,18 @@ Route::get('/check-invoices', function() {
         'Content-Type' => 'application/json',
     ];
 
-    // Get 5 sample invoices
+    // Get 5 most recent invoices (last 6 months)
+    $sixMonthsAgo = now()->subMonths(6)->format('Y-m-d');
     $response = \Illuminate\Support\Facades\Http::withHeaders($headers)
-        ->get('https://restapi.e-conomic.com/invoices/booked?pagesize=5');
+        ->get("https://restapi.e-conomic.com/invoices/booked?pagesize=5&filter=date\$gte:{$sixMonthsAgo}");
 
     if ($response->successful()) {
         $data = $response->json();
 
         return response()->json([
-            'message' => 'Sample of 5 invoices to check structure',
-            'total_invoices' => $data['pagination']['results'] ?? 0,
+            'message' => 'Sample of 5 most recent invoices (last 6 months)',
+            'date_filter' => "Invoices from {$sixMonthsAgo} onwards",
+            'total_invoices_in_period' => $data['pagination']['results'] ?? 0,
             'sample_invoices' => $data['collection'] ?? [],
             'instructions' => [
                 'Check if "references" field contains "salesPerson"',

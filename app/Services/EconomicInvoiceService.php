@@ -187,6 +187,7 @@ class EconomicInvoiceService
 
     /**
      * Get all overdue invoices
+     * Limited to last 6 months for performance
      */
     public function getOverdueInvoices(): Collection
     {
@@ -197,18 +198,16 @@ class EconomicInvoiceService
 
         return Cache::remember('overdue_invoices', 300, function () {
             $invoices = collect();
-            $url = "{$this->baseUrl}/invoices/booked/overdue?pagesize=1000";
 
-            while ($url) {
-                $response = Http::withHeaders($this->headers)->get($url);
+            // Get invoices from last 6 months
+            $sixMonthsAgo = now()->subMonths(6)->format('Y-m-d');
+            $url = "{$this->baseUrl}/invoices/booked/overdue?pagesize=1000&filter=date\$gte:{$sixMonthsAgo}";
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    $invoices = $invoices->merge($data['collection'] ?? []);
-                    $url = $data['pagination']['nextPage'] ?? null;
-                } else {
-                    break;
-                }
+            $response = Http::withHeaders($this->headers)->get($url);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $invoices = $invoices->merge($data['collection'] ?? []);
             }
 
             return $invoices;
@@ -217,6 +216,7 @@ class EconomicInvoiceService
 
     /**
      * Get all unpaid invoices (includes not-yet-overdue)
+     * Limited to last 6 months for performance
      */
     public function getUnpaidInvoices(): Collection
     {
@@ -227,18 +227,16 @@ class EconomicInvoiceService
 
         return Cache::remember('unpaid_invoices', 300, function () {
             $invoices = collect();
-            $url = "{$this->baseUrl}/invoices/booked/unpaid?pagesize=1000";
 
-            while ($url) {
-                $response = Http::withHeaders($this->headers)->get($url);
+            // Get invoices from last 6 months
+            $sixMonthsAgo = now()->subMonths(6)->format('Y-m-d');
+            $url = "{$this->baseUrl}/invoices/booked/unpaid?pagesize=1000&filter=date\$gte:{$sixMonthsAgo}";
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    $invoices = $invoices->merge($data['collection'] ?? []);
-                    $url = $data['pagination']['nextPage'] ?? null;
-                } else {
-                    break;
-                }
+            $response = Http::withHeaders($this->headers)->get($url);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $invoices = $invoices->merge($data['collection'] ?? []);
             }
 
             return $invoices;
@@ -247,7 +245,7 @@ class EconomicInvoiceService
 
     /**
      * Get all booked invoices (paid and unpaid)
-     * Limited to recent invoices to prevent performance issues
+     * Limited to last 6 months for performance
      */
     public function getAllInvoices(): Collection
     {
@@ -258,9 +256,11 @@ class EconomicInvoiceService
 
         return Cache::remember('all_invoices', 300, function () {
             $invoices = collect();
-            // PERFORMANCE FIX: Limit to 500 most recent invoices instead of ALL
+
+            // PERFORMANCE FIX: Only fetch invoices from last 6 months
             // This prevents loading 21,000+ invoices which freezes the browser
-            $url = "{$this->baseUrl}/invoices/booked?pagesize=500&skippages=0";
+            $sixMonthsAgo = now()->subMonths(6)->format('Y-m-d');
+            $url = "{$this->baseUrl}/invoices/booked?pagesize=1000&filter=date\$gte:{$sixMonthsAgo}";
 
             $response = Http::withHeaders($this->headers)->get($url);
 
