@@ -30,11 +30,14 @@ return [
     'last_updated' => 'Sidst opdateret',
 
     // Table headers
+    'invoice_number' => 'Faktura',
+    'date' => 'Dato',
     'customer_number' => 'Kundenr.',
     'customer_name' => 'Kundenavn',
     'subject' => 'Overskrift',
     'amount' => 'Beløb',
     'outstanding' => 'Udestående',
+    'currency' => 'Valuta',
     'status' => 'Status',
     'external_id' => 'Eksternt ID',
     'actions' => 'Handlinger',

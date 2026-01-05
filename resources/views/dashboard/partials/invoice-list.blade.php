@@ -32,9 +32,9 @@
                     @if($employeeData['totalRemainder'] > 0 && ($currentFilter ?? 'overdue') === 'overdue')
                         <button
                             onclick="event.stopPropagation(); sendEmployeeReminder({{ $employeeData['employeeNumber'] }}, this)"
-                            class="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
                             title="{{ __('dashboard.send_employee_reminder') }}">
-                            🔔 {{ __('dashboard.send_employee_reminder') }}
+                            <span class="text-base">🔔</span> Send Email
                         </button>
                     @endif
                     <div class="text-right">
@@ -58,14 +58,17 @@
                         <th class="px-3 py-3 text-center font-medium bulk-column" style="display:none;">
                             <input type="checkbox" class="select-all-checkbox rounded border-gray-300 dark:border-gray-600">
                         </th>
-                        <th class="px-6 py-3 text-left font-medium">{{ __('dashboard.customer_number') }}</th>
+                        <th class="px-4 py-3 text-left font-medium">{{ __('dashboard.invoice_number') }}</th>
+                        <th class="px-4 py-3 text-left font-medium">{{ __('dashboard.date') }}</th>
+                        <th class="px-4 py-3 text-left font-medium">{{ __('dashboard.customer_number') }}</th>
                         <th class="px-6 py-3 text-left font-medium">{{ __('dashboard.customer_name') }}</th>
                         <th class="px-6 py-3 text-left font-medium">{{ __('dashboard.subject') }}</th>
-                        <th class="px-6 py-3 text-right font-medium">{{ __('dashboard.amount') }}</th>
-                        <th class="px-6 py-3 text-right font-medium">{{ __('dashboard.outstanding') }}</th>
-                        <th class="px-6 py-3 text-center font-medium">{{ __('dashboard.status') }}</th>
-                        <th class="px-6 py-3 text-left font-medium">{{ __('dashboard.external_id') }}</th>
-                        <th class="px-6 py-3 text-center font-medium">{{ __('dashboard.actions') }}</th>
+                        <th class="px-4 py-3 text-right font-medium">{{ __('dashboard.amount') }}</th>
+                        <th class="px-4 py-3 text-right font-medium">{{ __('dashboard.outstanding') }}</th>
+                        <th class="px-4 py-3 text-center font-medium">{{ __('dashboard.currency') }}</th>
+                        <th class="px-4 py-3 text-center font-medium">{{ __('dashboard.status') }}</th>
+                        <th class="px-4 py-3 text-left font-medium">{{ __('dashboard.external_id') }}</th>
+                        <th class="px-4 py-3 text-center font-medium">{{ __('dashboard.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -82,7 +85,16 @@
                                        data-employee="{{ $employeeData['employeeNumber'] }}"
                                        onchange="updateSelectedCount()">
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                            <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-400">📄</span>
+                                    <span class="font-medium">{{ $invoice['invoiceNumber'] }}</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                {{ \Carbon\Carbon::parse($invoice['date'])->format('d.m.y') }}
+                            </td>
+                            <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
                                 {{ $invoice['kundenr'] }}
                             </td>
                             <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -91,11 +103,14 @@
                             <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                                 {{ Str::limit($invoice['overskrift'], 40) }}
                             </td>
-                            <td class="px-6 py-4 text-sm text-right text-gray-900 dark:text-gray-100">
+                            <td class="px-4 py-4 text-sm text-right text-gray-900 dark:text-gray-100">
                                 {{ number_format($invoice['beloeb'], 2, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4 text-sm text-right font-semibold {{ $invoice['remainder'] > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }}">
+                            <td class="px-4 py-4 text-sm text-right font-semibold {{ $invoice['remainder'] > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }}">
                                 {{ number_format($invoice['remainder'], 2, ',', '.') }}
+                            </td>
+                            <td class="px-4 py-4 text-sm text-center text-gray-600 dark:text-gray-400">
+                                <span class="font-medium">{{ $invoice['currency'] }}</span>
                             </td>
                             <td class="px-6 py-4 text-center">
                                 @if($invoice['status'] === 'paid')
@@ -125,9 +140,9 @@
                                 @if($invoice['status'] !== 'paid')
                                     <button
                                         onclick="sendReminder({{ $invoice['invoiceNumber'] }}, {{ $invoice['kundenr'] }}, this)"
-                                        class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                        class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="{{ __('dashboard.send_reminder') }}">
-                                        📧 {{ __('dashboard.send_reminder') }}
+                                        <span class="text-base">📧</span> Email
                                     </button>
                                 @else
                                     <span class="text-xs text-gray-400 dark:text-gray-600">-</span>

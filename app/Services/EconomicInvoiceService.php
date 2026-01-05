@@ -352,8 +352,8 @@ class EconomicInvoiceService
         $isOverdue = !$isPaid && $dueDate->isPast();
 
         // Calculate days (positive = overdue, negative = not yet due)
-        $daysOverdue = $isOverdue ? $dueDate->diffInDays($now) : 0;
-        $daysTillDue = !$isPaid && !$isOverdue ? $now->diffInDays($dueDate) : 0;
+        $daysOverdue = $isOverdue ? (int) $dueDate->diffInDays($now) : 0;
+        $daysTillDue = !$isPaid && !$isOverdue ? (int) $now->diffInDays($dueDate) : 0;
 
         // Determine status
         $status = $isPaid ? 'paid' : ($isOverdue ? 'overdue' : 'unpaid');
@@ -367,6 +367,7 @@ class EconomicInvoiceService
             'remainder' => $invoice['remainder'],
             'currency' => $invoice['currency'],
             'eksterntId' => $invoice['references']['other'] ?? null,
+            'date' => $invoice['date'],
             'dueDate' => $invoice['dueDate'],
             'daysOverdue' => $daysOverdue,
             'daysTillDue' => $daysTillDue,

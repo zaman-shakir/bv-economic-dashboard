@@ -1,3 +1,153 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        --color-primary: 59 130 246;
+        --color-secondary: 168 85 247;
+        --color-success: 16 185 129;
+        --color-warning: 245 158 11;
+        --color-danger: 239 68 68;
+    }
+
+    * {
+        @apply transition-colors duration-200;
+    }
+
+    body {
+        @apply antialiased;
+    }
+}
+
+@layer components {
+    /* Glassmorphism Effect */
+    .glass {
+        @apply bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-white/20 dark:border-gray-700/20;
+    }
+
+    .glass-strong {
+        @apply bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl border border-white/30 dark:border-gray-700/30;
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+        @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600;
+    }
+
+    /* Animated Gradient Background */
+    .animated-gradient {
+        background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
+        background-size: 400% 400%;
+        animation: gradient 15s ease infinite;
+    }
+
+    @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Button Hover Lift Effect */
+    .btn-lift {
+        @apply transition-all duration-300 ease-out;
+    }
+
+    .btn-lift:hover {
+        @apply -translate-y-0.5 shadow-elevation-3;
+    }
+
+    .btn-lift:active {
+        @apply translate-y-0 shadow-elevation-1;
+    }
+
+    /* Card Styles */
+    .card {
+        @apply bg-white dark:bg-gray-800 rounded-xl shadow-elevation-2 p-6 transition-all duration-300;
+    }
+
+    .card:hover {
+        @apply shadow-elevation-3;
+    }
+
+    .card-glass {
+        @apply glass rounded-xl shadow-elevation-2 p-6 transition-all duration-300;
+    }
+
+    /* Input Focus Ring with Gradient */
+    .input-gradient-ring:focus {
+        @apply ring-2 ring-offset-2 ring-blue-500/50 border-transparent;
+    }
+
+    /* Smooth Page Transitions */
+    .page-transition {
+        @apply animate-fade-in;
+    }
+
+    /* Loading Shimmer Effect */
+    .shimmer {
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        background-size: 200% 100%;
+        @apply animate-shimmer;
+    }
+
+    /* Status Badges */
+    .badge {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+    }
+
+    .badge-primary {
+        @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300;
+    }
+
+    .badge-success {
+        @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300;
+    }
+
+    .badge-warning {
+        @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300;
+    }
+
+    .badge-danger {
+        @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300;
+    }
+
+    /* Floating Animation */
+    .float {
+        @apply animate-float;
+    }
+
+    /* Gradient Border */
+    .gradient-border {
+        position: relative;
+        background: linear-gradient(white, white) padding-box,
+                    linear-gradient(135deg, #667eea 0%, #764ba2 100%) border-box;
+        border: 2px solid transparent;
+    }
+
+    .dark .gradient-border {
+        background: linear-gradient(rgb(31 41 55), rgb(31 41 55)) padding-box,
+                    linear-gradient(135deg, #667eea 0%, #764ba2 100%) border-box;
+    }
+}
+
+@layer utilities {
+    /* Text Shadows */
+    .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .text-shadow-lg {
+        text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Backdrop Filters */
+    .backdrop-blur-xs {
+        backdrop-filter: blur(2px);
+    }
+
+    /* Smooth Scroll */
+    .smooth-scroll {
+        scroll-behavior: smooth;
+    }
+}

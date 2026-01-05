@@ -30,11 +30,14 @@ return [
     'last_updated' => 'Last updated',
 
     // Table headers
+    'invoice_number' => 'Invoice #',
+    'date' => 'Date',
     'customer_number' => 'Customer #',
     'customer_name' => 'Customer Name',
     'subject' => 'Subject',
     'amount' => 'Amount',
     'outstanding' => 'Outstanding',
+    'currency' => 'Currency',
     'status' => 'Status',
     'external_id' => 'External ID',
     'actions' => 'Actions',

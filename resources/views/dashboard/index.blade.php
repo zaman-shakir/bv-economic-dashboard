@@ -6,19 +6,19 @@
     <div class="py-12">
         <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
             <!-- Top Toolbar: Filters + Employee Filter + Refresh -->
-            <div class="mb-4 flex flex-wrap items-center gap-3">
+            <div class="mb-6 flex flex-wrap items-center gap-3">
                 <!-- Filter Buttons -->
                 <div class="flex gap-2">
                     <a href="{{ route('dashboard', ['filter' => 'all']) }}"
-                       class="px-4 py-2 rounded-lg font-medium transition {{ $currentFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                       class="px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 {{ $currentFilter === 'all' ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-elevation-2 btn-lift' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md' }}">
                         {{ __('dashboard.filter_all') }}
                     </a>
                     <a href="{{ route('dashboard', ['filter' => 'overdue']) }}"
-                       class="px-4 py-2 rounded-lg font-medium transition {{ $currentFilter === 'overdue' ? 'bg-red-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                       class="px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 {{ $currentFilter === 'overdue' ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-elevation-2 btn-lift' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md' }}">
                         {{ __('dashboard.filter_overdue') }}
                     </a>
                     <a href="{{ route('dashboard', ['filter' => 'unpaid']) }}"
-                       class="px-4 py-2 rounded-lg font-medium transition {{ $currentFilter === 'unpaid' ? 'bg-yellow-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                       class="px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 {{ $currentFilter === 'unpaid' ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white shadow-elevation-2 btn-lift' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md' }}">
                         {{ __('dashboard.filter_unpaid') }}
                     </a>
                 </div>
@@ -26,7 +26,7 @@
                 <!-- Employee Filter -->
                 <div class="flex-1 min-w-[200px]">
                     <select id="employeeFilter" onchange="filterByEmployee(this.value)"
-                            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500">
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
                         <option value="">{{ __('dashboard.all_employees') }}</option>
                         @foreach($invoicesByEmployee as $emp)
                             <option value="{{ $emp['employeeNumber'] }}">
@@ -42,20 +42,20 @@
                     hx-target="#invoice-list"
                     hx-swap="innerHTML"
                     hx-indicator="#loading"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center gap-2"
+                    class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 shadow-elevation-2 btn-lift"
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                     {{ __('dashboard.refresh_data') }}
                 </button>
-                <div id="loading" class="htmx-indicator text-sm text-gray-500 dark:text-gray-400">
+                <div id="loading" class="htmx-indicator text-sm text-blue-600 dark:text-blue-400 font-medium">
                     {{ __('dashboard.loading_data') }}
                 </div>
             </div>
 
             <!-- Second Toolbar: Search, Sort, Export, Bulk Actions -->
-            <div class="mb-6 flex flex-wrap items-center gap-3 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+            <div class="mb-6 flex flex-wrap items-center gap-3 card-glass p-5">
                 <!-- Search -->
                 <div class="flex-1 min-w-[250px]">
                     <div class="relative">
@@ -281,12 +281,16 @@
             const allRows = document.querySelectorAll('tbody tr');
 
             allRows.forEach(row => {
-                const customerName = row.cells[2]?.textContent.toLowerCase() || '';
-                const customerNumber = row.cells[1]?.textContent.toLowerCase() || '';
-                const invoiceSubject = row.cells[3]?.textContent.toLowerCase() || '';
+                // Updated cell indices after adding new columns:
+                // 0: Bulk checkbox, 1: Invoice Number, 2: Date, 3: Customer Number, 4: Customer Name, 5: Subject
+                const invoiceNumber = row.cells[1]?.textContent.toLowerCase() || '';
+                const customerNumber = row.cells[3]?.textContent.toLowerCase() || '';
+                const customerName = row.cells[4]?.textContent.toLowerCase() || '';
+                const invoiceSubject = row.cells[5]?.textContent.toLowerCase() || '';
 
-                if (customerName.includes(searchTerm) ||
+                if (invoiceNumber.includes(searchTerm) ||
                     customerNumber.includes(searchTerm) ||
+                    customerName.includes(searchTerm) ||
                     invoiceSubject.includes(searchTerm)) {
                     row.style.display = '';
                 } else {
@@ -377,21 +381,21 @@
                             return aVal - bVal;
 
                         case 'amount_desc':
-                            // Highest amount first
-                            aVal = parseFloat(a.cells[5]?.textContent.replace(/[.,]/g, '')) || 0;
-                            bVal = parseFloat(b.cells[5]?.textContent.replace(/[.,]/g, '')) || 0;
+                            // Highest amount first (cell 6 after adding new columns)
+                            aVal = parseFloat(a.cells[6]?.textContent.replace(/[.,]/g, '')) || 0;
+                            bVal = parseFloat(b.cells[6]?.textContent.replace(/[.,]/g, '')) || 0;
                             return bVal - aVal;
 
                         case 'amount_asc':
-                            // Lowest amount first
-                            aVal = parseFloat(a.cells[5]?.textContent.replace(/[.,]/g, '')) || 0;
-                            bVal = parseFloat(b.cells[5]?.textContent.replace(/[.,]/g, '')) || 0;
+                            // Lowest amount first (cell 6 after adding new columns)
+                            aVal = parseFloat(a.cells[6]?.textContent.replace(/[.,]/g, '')) || 0;
+                            bVal = parseFloat(b.cells[6]?.textContent.replace(/[.,]/g, '')) || 0;
                             return aVal - bVal;
 
                         case 'customer':
-                            // Customer name A-Z
-                            aVal = a.cells[2]?.textContent.trim().toLowerCase() || '';
-                            bVal = b.cells[2]?.textContent.trim().toLowerCase() || '';
+                            // Customer name A-Z (cell 4 after adding new columns)
+                            aVal = a.cells[4]?.textContent.trim().toLowerCase() || '';
+                            bVal = b.cells[4]?.textContent.trim().toLowerCase() || '';
                             return aVal.localeCompare(bVal);
 
                         default:
