@@ -130,4 +130,21 @@ return [
     'deselect_all' => 'Fravælg alle',
     'bulk_reminder_sent' => 'Massepåmindelser sendt med succes!',
     'no_invoices_selected' => 'Vælg venligst mindst én faktura.',
+
+    // Reminders Page
+    'reminder_notification_center' => 'Påmindelses notifikationscenter',
+    'total_reminders' => 'Total påmindelser',
+    'successfully_sent' => 'Sendt med succes',
+    'failed' => 'Mislykkedes',
+    'today' => 'I dag',
+    'this_week' => 'Denne uge',
+    'all_sent_reminders' => 'Alle sendte påmindelser',
+    'date_time' => 'Dato & tid',
+    'customer' => 'Kunde',
+    'email' => 'Email',
+    'amount_due' => 'Forfaldent beløb',
+    'sent_by' => 'Sendt af',
+    'sent' => 'Sendt',
+    'system' => 'System',
+    'no_reminders_sent' => 'Ingen påmindelser er sendt endnu.',
 ];

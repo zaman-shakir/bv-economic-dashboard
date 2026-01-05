@@ -130,4 +130,21 @@ return [
     'deselect_all' => 'Deselect all',
     'bulk_reminder_sent' => 'Bulk reminders sent successfully!',
     'no_invoices_selected' => 'Please select at least one invoice.',
+
+    // Reminders Page
+    'reminder_notification_center' => 'Reminder notification center',
+    'total_reminders' => 'Total reminders',
+    'successfully_sent' => 'Successfully sent',
+    'failed' => 'Failed',
+    'today' => 'Today',
+    'this_week' => 'This week',
+    'all_sent_reminders' => 'All sent reminders',
+    'date_time' => 'Date & time',
+    'customer' => 'Customer',
+    'email' => 'Email',
+    'amount_due' => 'Amount due',
+    'sent_by' => 'Sent by',
+    'sent' => 'Sent',
+    'system' => 'System',
+    'no_reminders_sent' => 'No reminders have been sent yet.',
 ];
