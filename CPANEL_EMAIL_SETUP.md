@@ -8,10 +8,19 @@ This guide explains how to configure the dashboard to use your cPanel mail serve
 2. Go to **Email Accounts** section
 3. Click **Create** button
 4. Fill in the form:
-   - **Email**: `noreply@billigventilation.dk`
+   - **Email**: `dashboard@billigventilation.dk`
    - **Password**: Create a strong password (save this - you'll need it in .env)
    - **Storage Space**: 250 MB is enough for this purpose
 5. Click **Create**
+
+### Alternative Email Addresses
+If `dashboard@billigventilation.dk` is already in use, you can use:
+- `invoices@billigventilation.dk` - Invoice-specific
+- `reminders@billigventilation.dk` - Reminder-specific
+- `system@billigventilation.dk` - Generic system emails
+- `notifications@billigventilation.dk` - Notification emails
+
+Make sure to update the email address in `.env` file if you use a different one.
 
 ## Step 2: Update .env File on Server
 
@@ -21,10 +30,10 @@ SSH into your server or use cPanel File Manager to edit `.env` file:
 MAIL_MAILER=smtp
 MAIL_HOST=localhost
 MAIL_PORT=587
-MAIL_USERNAME=noreply@billigventilation.dk
+MAIL_USERNAME=dashboard@billigventilation.dk
 MAIL_PASSWORD=the_password_you_created_in_step1
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="noreply@billigventilation.dk"
+MAIL_FROM_ADDRESS="dashboard@billigventilation.dk"
 MAIL_FROM_NAME="${APP_NAME}"
 ```
 
@@ -122,13 +131,13 @@ For even better deliverability:
 ### Problem: Authentication failed
 **Solution:**
 - Verify the email password in cPanel
-- Make sure you're using the full email as username: `noreply@billigventilation.dk`
+- Make sure you're using the full email as username: `dashboard@billigventilation.dk`
 
 ### Problem: Emails go to spam
 **Solution:**
 - Configure SPF and DKIM (see steps above)
-- Use a proper "From" name instead of "noreply"
-- Consider using `support@billigventilation.dk` instead of `noreply@`
+- Make sure you're using a professional email address like `dashboard@billigventilation.dk`
+- Avoid generic names like "noreply" which are often flagged as spam
 
 ## Verification Checklist
 
@@ -146,7 +155,7 @@ If cPanel mail doesn't work well, you can switch back to Resend:
 
 ```env
 MAIL_MAILER=resend
-MAIL_FROM_ADDRESS="noreply@billigventilation.dk"
+MAIL_FROM_ADDRESS="dashboard@billigventilation.dk"
 MAIL_FROM_NAME="${APP_NAME}"
 RESEND_API_KEY=re_8yWgna36_EeMUbeNs56CKgT8K8JpLUKMy
 ```
