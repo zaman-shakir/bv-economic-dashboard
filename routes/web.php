@@ -269,8 +269,12 @@ Route::get('/test-email/{recipient?}', function($recipient = null) {
         $results['config']['error'] = $e->getMessage();
     }
 
-    // 2. Test SMTP connection
+    // 2. Test SMTP connection (with timeout)
     try {
+        // Set socket timeout to 5 seconds to prevent hanging
+        $originalTimeout = ini_get('default_socket_timeout');
+        ini_set('default_socket_timeout', 5);
+
         $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport(
             config('mail.mailers.smtp.host'),
             config('mail.mailers.smtp.port'),
@@ -291,34 +295,58 @@ Route::get('/test-email/{recipient?}', function($recipient = null) {
         ];
 
         $transport->stop();
+
+        // Restore original timeout
+        ini_set('default_socket_timeout', $originalTimeout);
     } catch (\Exception $e) {
+        // Restore original timeout
+        if (isset($originalTimeout)) {
+            ini_set('default_socket_timeout', $originalTimeout);
+        }
+
         $results['connection_test'] = [
             'status' => 'FAILED',
             'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
+            'trace' => substr($e->getTraceAsString(), 0, 500) . '...', // Truncate trace
         ];
     }
 
     // 3. Try to send a test email
     if ($recipient) {
         try {
-            \Illuminate\Support\Facades\Mail::raw('This is a test email from BilligVentilation Dashboard.', function($message) use ($recipient) {
+            // Check if encryption is missing for ports that require it
+            $port = config('mail.mailers.smtp.port');
+            $encryption = config('mail.mailers.smtp.encryption');
+
+            if (in_array($port, [465, 587]) && empty($encryption)) {
+                throw new \Exception("CRITICAL: Port {$port} requires MAIL_ENCRYPTION. Use 'ssl' for port 465 or 'tls' for port 587. Update .env and run 'php artisan config:clear'");
+            }
+
+            \Illuminate\Support\Facades\Mail::raw('This is a test email from BilligVentilation Dashboard. Timestamp: ' . now(), function($message) use ($recipient) {
                 $message->to($recipient)
-                        ->subject('Test Email - BilligVentilation Dashboard');
+                        ->subject('Test Email - BilligVentilation Dashboard - ' . now()->format('H:i:s'));
             });
+
+            // Check for failures (Laravel Mail doesn't throw exceptions by default)
+            $failures = \Illuminate\Support\Facades\Mail::failures();
+
+            if (!empty($failures)) {
+                throw new \Exception("Email failed to send to: " . implode(', ', $failures));
+            }
 
             $results['email_test'] = [
                 'status' => 'SUCCESS',
                 'message' => "Test email sent successfully to {$recipient}",
                 'recipient' => $recipient,
                 'next_step' => 'Check your inbox (and spam folder)',
+                'note' => 'Email queued for delivery - may take 30-60 seconds to arrive',
             ];
         } catch (\Exception $e) {
             $results['email_test'] = [
                 'status' => 'FAILED',
                 'error' => $e->getMessage(),
                 'recipient' => $recipient,
-                'trace' => $e->getTraceAsString(),
+                'trace' => substr($e->getTraceAsString(), 0, 500),
             ];
         }
     } else {
