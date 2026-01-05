@@ -244,6 +244,161 @@ Route::get('/reset-password/{email}/{password}', function($email, $password) {
     ]);
 });
 
+// Email Testing and Debugging Tool (REMOVE AFTER USE for security)
+Route::get('/test-email/{recipient?}', function($recipient = null) {
+    $results = [
+        'timestamp' => now()->format('Y-m-d H:i:s'),
+        'config' => [],
+        'connection_test' => [],
+        'email_test' => [],
+    ];
+
+    // 1. Show current mail configuration
+    try {
+        $results['config'] = [
+            'MAIL_MAILER' => config('mail.default'),
+            'MAIL_HOST' => config('mail.mailers.smtp.host'),
+            'MAIL_PORT' => config('mail.mailers.smtp.port'),
+            'MAIL_ENCRYPTION' => config('mail.mailers.smtp.encryption'),
+            'MAIL_USERNAME' => config('mail.mailers.smtp.username'),
+            'MAIL_PASSWORD' => config('mail.mailers.smtp.password') ? '***SET***' : 'NOT SET',
+            'MAIL_FROM_ADDRESS' => config('mail.from.address'),
+            'MAIL_FROM_NAME' => config('mail.from.name'),
+        ];
+    } catch (\Exception $e) {
+        $results['config']['error'] = $e->getMessage();
+    }
+
+    // 2. Test SMTP connection
+    try {
+        $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport(
+            config('mail.mailers.smtp.host'),
+            config('mail.mailers.smtp.port'),
+            config('mail.mailers.smtp.encryption') === 'tls'
+        );
+
+        if (config('mail.mailers.smtp.username')) {
+            $transport->setUsername(config('mail.mailers.smtp.username'));
+            $transport->setPassword(config('mail.mailers.smtp.password'));
+        }
+
+        $transport->start();
+
+        $results['connection_test'] = [
+            'status' => 'SUCCESS',
+            'message' => 'SMTP connection successful!',
+            'server' => config('mail.mailers.smtp.host') . ':' . config('mail.mailers.smtp.port'),
+        ];
+
+        $transport->stop();
+    } catch (\Exception $e) {
+        $results['connection_test'] = [
+            'status' => 'FAILED',
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ];
+    }
+
+    // 3. Try to send a test email
+    if ($recipient) {
+        try {
+            \Illuminate\Support\Facades\Mail::raw('This is a test email from BilligVentilation Dashboard.', function($message) use ($recipient) {
+                $message->to($recipient)
+                        ->subject('Test Email - BilligVentilation Dashboard');
+            });
+
+            $results['email_test'] = [
+                'status' => 'SUCCESS',
+                'message' => "Test email sent successfully to {$recipient}",
+                'recipient' => $recipient,
+                'next_step' => 'Check your inbox (and spam folder)',
+            ];
+        } catch (\Exception $e) {
+            $results['email_test'] = [
+                'status' => 'FAILED',
+                'error' => $e->getMessage(),
+                'recipient' => $recipient,
+                'trace' => $e->getTraceAsString(),
+            ];
+        }
+    } else {
+        $results['email_test'] = [
+            'status' => 'SKIPPED',
+            'message' => 'No recipient provided',
+            'usage' => 'Add email to URL: /test-email/your-email@example.com',
+        ];
+    }
+
+    // Return formatted HTML response
+    return response('<html>
+        <head>
+            <title>Email Testing & Debugging</title>
+            <style>
+                body { font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 20px; }
+                h1 { color: #4ec9b0; }
+                h2 { color: #569cd6; margin-top: 30px; }
+                .success { color: #4ec9b0; }
+                .error { color: #f44747; }
+                .warning { color: #ff8c00; }
+                pre { background: #2d2d2d; padding: 15px; border-radius: 5px; overflow-x: auto; }
+                .box { background: #2d2d2d; padding: 15px; margin: 10px 0; border-radius: 5px; }
+                .controls { margin-bottom: 20px; }
+                .controls a { color: #4ec9b0; margin-right: 15px; text-decoration: none; }
+                .controls a:hover { text-decoration: underline; }
+            </style>
+        </head>
+        <body>
+            <h1>📧 Email Testing & Debugging</h1>
+            <div class="controls">
+                <a href="/test-email">Refresh Test</a>
+                <a href="/test-email/your-email@example.com">Send Test Email</a>
+                <a href="/clear-all-cache">Clear Cache</a>
+                <a href="/view-logs">View Logs</a>
+            </div>
+
+            <h2>1. Mail Configuration</h2>
+            <div class="box">
+                <pre>' . json_encode($results['config'], JSON_PRETTY_PRINT) . '</pre>
+            </div>
+
+            <h2>2. SMTP Connection Test</h2>
+            <div class="box">
+                ' . ($results['connection_test']['status'] === 'SUCCESS'
+                    ? '<span class="success">✓ ' . $results['connection_test']['message'] . '</span>'
+                    : '<span class="error">✗ Connection Failed</span>') . '
+                <pre>' . json_encode($results['connection_test'], JSON_PRETTY_PRINT) . '</pre>
+            </div>
+
+            <h2>3. Send Test Email</h2>
+            <div class="box">
+                ' . ($results['email_test']['status'] === 'SUCCESS'
+                    ? '<span class="success">✓ ' . $results['email_test']['message'] . '</span>'
+                    : ($results['email_test']['status'] === 'FAILED'
+                        ? '<span class="error">✗ Email Send Failed</span>'
+                        : '<span class="warning">⚠ ' . $results['email_test']['message'] . '</span>')) . '
+                <pre>' . json_encode($results['email_test'], JSON_PRETTY_PRINT) . '</pre>
+            </div>
+
+            <h2>Quick Fixes</h2>
+            <div class="box">
+                <p><strong>If MAIL_PASSWORD shows "NOT SET":</strong></p>
+                <p>1. Edit .env file: MAIL_PASSWORD=your_actual_password</p>
+                <p>2. Clear cache: <a href="/clear-all-cache">/clear-all-cache</a></p>
+
+                <p style="margin-top: 15px;"><strong>If connection fails:</strong></p>
+                <p>1. Check MAIL_HOST: ' . config('mail.mailers.smtp.host') . '</p>
+                <p>2. Check MAIL_PORT: ' . config('mail.mailers.smtp.port') . '</p>
+                <p>3. Try alternative ports: 587 (TLS) or 465 (SSL)</p>
+
+                <p style="margin-top: 15px;"><strong>Common Issues:</strong></p>
+                <p>• "Authentication failed" → Wrong username/password</p>
+                <p>• "Connection refused" → Wrong host or port</p>
+                <p>• "Connection timeout" → Firewall blocking port</p>
+            </div>
+        </body>
+    </html>');
+});
+
 // Temporary log viewer route (REMOVE AFTER USE for security)
 Route::get('/view-logs', function() {
     $logFile = storage_path('logs/laravel.log');
