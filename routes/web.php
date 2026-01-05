@@ -46,4 +46,24 @@ Route::prefix('api')->group(function () {
 // Language switching
 Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
+// Temporary cache clearing route (REMOVE AFTER USE for security)
+Route::get('/clear-all-cache', function() {
+    \Illuminate\Support\Facades\Artisan::call('config:clear');
+    \Illuminate\Support\Facades\Artisan::call('cache:clear');
+    \Illuminate\Support\Facades\Artisan::call('view:clear');
+    \Illuminate\Support\Facades\Artisan::call('route:clear');
+
+    return response()->json([
+        'success' => true,
+        'message' => 'All caches cleared successfully!',
+        'cleared' => [
+            'config_cache' => 'cleared',
+            'application_cache' => 'cleared',
+            'view_cache' => 'cleared',
+            'route_cache' => 'cleared'
+        ],
+        'next_step' => 'Refresh your dashboard to see real data from e-conomic API'
+    ]);
+});
+
 require __DIR__.'/auth.php';
