@@ -444,4 +444,215 @@ class EconomicInvoiceService
         Cache::forget('all_invoices');
         Cache::forget('invoice_totals');
     }
+
+    /**
+     * Sync all invoices from E-conomic API to database
+     * Fetches in chunks to avoid timeouts
+     *
+     * @param int|null $testLimit Optional limit for testing (e.g., 100)
+     * @return array Sync statistics
+     */
+    public function syncAllInvoices(?int $testLimit = null): array
+    {
+        $stats = [
+            'total_fetched' => 0,
+            'total_created' => 0,
+            'total_updated' => 0,
+            'total_pages' => 0,
+            'errors' => [],
+            'started_at' => now()->toIso8601String(),
+        ];
+
+        $pageNumber = 0;
+        $pageSize = 1000;
+        $hasMore = true;
+
+        \Log::info("Starting invoice sync from E-conomic API", ['test_limit' => $testLimit]);
+
+        while ($hasMore) {
+            try {
+                // Build URL for this page
+                $url = "{$this->baseUrl}/invoices/booked";
+                $url .= "?pagesize={$pageSize}&skippages={$pageNumber}";
+
+                // Add test limit if provided
+                if ($testLimit && $stats['total_fetched'] >= $testLimit) {
+                    \Log::info("Test limit reached", ['limit' => $testLimit]);
+                    break;
+                }
+
+                \Log::info("Fetching page {$pageNumber} from E-conomic", ['url' => $url]);
+
+                // Fetch invoices with increased timeout
+                $response = Http::timeout(60)
+                               ->withHeaders($this->headers)
+                               ->get($url);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $invoices = $data['collection'] ?? [];
+
+                    \Log::info("Received " . count($invoices) . " invoices on page {$pageNumber}");
+
+                    // Save each invoice to database with transaction safety
+                    foreach ($invoices as $invoiceData) {
+                        if ($testLimit && $stats['total_fetched'] >= $testLimit) {
+                            break;
+                        }
+
+                        try {
+                            \DB::transaction(function () use ($invoiceData, &$stats) {
+                                $invoice = \App\Models\Invoice::createOrUpdateFromApi($invoiceData);
+
+                                if ($invoice->wasRecentlyCreated) {
+                                    $stats['total_created']++;
+                                } else {
+                                    $stats['total_updated']++;
+                                }
+
+                                $stats['total_fetched']++;
+                            });
+                        } catch (\Exception $e) {
+                            $stats['errors'][] = "Failed to save invoice {$invoiceData['bookedInvoiceNumber']}: " . $e->getMessage();
+                            \Log::error("Failed to save invoice", [
+                                'invoice_number' => $invoiceData['bookedInvoiceNumber'],
+                                'error' => $e->getMessage()
+                            ]);
+                        }
+                    }
+
+                    $stats['total_pages']++;
+
+                    // Check if there are more pages
+                    $hasMore = count($invoices) === $pageSize && (!$testLimit || $stats['total_fetched'] < $testLimit);
+
+                    if ($hasMore) {
+                        $pageNumber++;
+
+                        // Rate limiting: wait 100ms between requests
+                        usleep(100000); // 0.1 seconds
+                    }
+
+                } else {
+                    $errorMsg = "API request failed on page {$pageNumber}: HTTP " . $response->status();
+                    $stats['errors'][] = $errorMsg;
+                    \Log::error($errorMsg, ['response' => $response->body()]);
+                    $hasMore = false;
+                }
+
+            } catch (\Exception $e) {
+                $errorMsg = "Exception on page {$pageNumber}: " . $e->getMessage();
+                $stats['errors'][] = $errorMsg;
+                \Log::error($errorMsg, ['exception' => $e]);
+                $hasMore = false;
+            }
+        }
+
+        $stats['completed_at'] = now()->toIso8601String();
+        $stats['duration_seconds'] = now()->diffInSeconds(Carbon::parse($stats['started_at']));
+
+        \Log::info("Invoice sync completed", $stats);
+
+        return $stats;
+    }
+
+    /**
+     * Get invoices from database (replaces API calls)
+     * Uses cursor for memory efficiency with large datasets
+     *
+     * @param string $filter 'all', 'overdue', or 'unpaid'
+     * @return Collection
+     */
+    public function getInvoicesFromDatabase(string $filter = 'overdue'): Collection
+    {
+        $query = \App\Models\Invoice::query();
+
+        // Apply filter
+        switch ($filter) {
+            case 'overdue':
+                $query->overdue();
+                break;
+            case 'unpaid':
+                $query->unpaid();
+                break;
+            case 'all':
+                // No filter, get all
+                break;
+        }
+
+        // Use cursor for memory efficiency with large datasets
+        return $query->orderBy('due_date', 'asc')->cursor()->map(function ($invoice) {
+            return [
+                'invoiceNumber' => $invoice->invoice_number,
+                'kundenr' => $invoice->customer_number,
+                'kundenavn' => $invoice->customer_name,
+                'overskrift' => $invoice->subject,
+                'beloeb' => $invoice->gross_amount,
+                'remainder' => $invoice->remainder,
+                'currency' => $invoice->currency,
+                'eksterntId' => $invoice->external_reference,
+                'date' => $invoice->invoice_date->format('Y-m-d'),
+                'dueDate' => $invoice->due_date->format('Y-m-d'),
+                'daysOverdue' => $invoice->days_overdue,
+                'daysTillDue' => $invoice->days_till_due,
+                'status' => $invoice->status,
+                'pdfUrl' => $invoice->pdf_url,
+                'employeeNumber' => $invoice->employee_number,
+                'employeeName' => $invoice->employee_name,
+            ];
+        })->collect();
+    }
+
+    /**
+     * Get invoices grouped by employee from database
+     *
+     * @param string $filter 'all', 'overdue', or 'unpaid'
+     * @return Collection
+     */
+    public function getInvoicesByEmployeeFromDatabase(string $filter = 'overdue'): Collection
+    {
+        $invoices = $this->getInvoicesFromDatabase($filter);
+
+        // Group by employee
+        return $invoices->groupBy(function ($invoice) {
+            return $invoice['employeeNumber'] ?? 'unassigned';
+        })->map(function ($group, $employeeNumber) {
+            $firstInvoice = $group->first();
+
+            return [
+                'employeeNumber' => $employeeNumber,
+                'employeeName' => $employeeNumber === 'unassigned'
+                    ? 'Unassigned'
+                    : ($firstInvoice['employeeName'] ?? "Employee #{$employeeNumber}"),
+                'invoiceCount' => $group->count(),
+                'totalAmount' => $group->sum('beloeb'),
+                'totalRemainder' => $group->sum('remainder'),
+                'invoices' => $group->sortByDesc('daysOverdue')->values()->all(),
+            ];
+        });
+    }
+
+    /**
+     * Get last sync timestamp
+     */
+    public function getLastSyncTime(): ?Carbon
+    {
+        $lastSync = \App\Models\Invoice::max('last_synced_at');
+        return $lastSync ? Carbon::parse($lastSync) : null;
+    }
+
+    /**
+     * Get sync statistics
+     */
+    public function getSyncStats(): array
+    {
+        return [
+            'total_invoices' => \App\Models\Invoice::count(),
+            'overdue_count' => \App\Models\Invoice::overdue()->count(),
+            'unpaid_count' => \App\Models\Invoice::unpaid()->count(),
+            'paid_count' => \App\Models\Invoice::paid()->count(),
+            'unassigned_count' => \App\Models\Invoice::unassigned()->count(),
+            'last_synced_at' => $this->getLastSyncTime(),
+        ];
+    }
 }
