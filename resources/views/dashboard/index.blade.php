@@ -160,9 +160,13 @@
                 <!-- Date Range Filter -->
                 <div class="flex items-center gap-2">
                     <input type="date" id="dateFrom" value="{{ $dateFrom ?? '' }}"
+                           placeholder="dd-mm-yyyy"
+                           lang="en-GB"
                            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
                     <span class="text-gray-500 dark:text-gray-400">to</span>
                     <input type="date" id="dateTo" value="{{ $dateTo ?? '' }}"
+                           placeholder="dd-mm-yyyy"
+                           lang="en-GB"
                            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
                     <button onclick="filterByDateRange()"
                             class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-sm font-medium">
