@@ -83,31 +83,32 @@
             <div class="mb-3 grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <!-- Sync Status (Left) -->
                 <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700 border border-green-200 dark:border-green-800 rounded-lg p-3 shadow-sm">
-                    <div class="flex items-center gap-3 flex-wrap text-sm text-gray-600 dark:text-gray-400">
+                    <div class="flex items-center gap-2 flex-wrap text-sm text-gray-600 dark:text-gray-400">
                         @if($lastSyncedAt && $lastSyncedAt->diffInMinutes(now()) < 30)
-                            <span class="flex h-3 w-3">
-                                <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                            </span>
-                            <span class="font-medium text-green-700 dark:text-green-400">{{ __('dashboard.data_up_to_date') }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-3 w-3">
+                                    <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                </span>
+                                <span class="font-medium text-green-700 dark:text-green-400">{{ __('dashboard.data_up_to_date') }}</span>
+                            </div>
                         @else
-                            <span class="flex h-3 w-3 rounded-full bg-yellow-500"></span>
-                            <span class="font-medium text-yellow-700 dark:text-yellow-400">Sync recommended</span>
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-3 w-3 rounded-full bg-yellow-500"></span>
+                                <span class="font-medium text-yellow-700 dark:text-yellow-400">Sync recommended</span>
+                            </div>
                         @endif
-                        <span>•</span>
                         @if($lastSyncedAt)
-                            <span>Last: <strong>{{ $lastSyncedAt->diffForHumans() }}</strong> <span class="text-xs">({{ $lastSyncedAt->format('d M H:i') }})</span></span>
+                            <span>• Last: <strong>{{ $lastSyncedAt->diffForHumans() }}</strong> <span class="text-xs">({{ $lastSyncedAt->format('d M H:i') }})</span></span>
                         @else
-                            <span><strong>Never synced</strong></span>
+                            <span>• <strong>Never synced</strong></span>
                         @endif
-                        <span>•</span>
-                        <span>DB: <strong>{{ number_format($syncStats['total_invoices'] ?? 0) }}</strong></span>
+                        <span>• DB: <strong>{{ number_format($syncStats['total_invoices'] ?? 0) }}</strong></span>
                         @if($nextSyncAt)
-                        <span>•</span>
                         @if($nextSyncAt->isPast())
-                            <span>Next: <strong class="text-yellow-600 dark:text-yellow-400">Overdue</strong></span>
+                            <span>• Next: <strong class="text-yellow-600 dark:text-yellow-400">Overdue</strong></span>
                         @else
-                            <span>Next: <strong>{{ $nextSyncAt->diffForHumans() }}</strong> <span class="text-xs">({{ $nextSyncAt->format('H:i') }})</span></span>
+                            <span>• Next: <strong>{{ $nextSyncAt->diffForHumans() }}</strong> <span class="text-xs">({{ $nextSyncAt->format('H:i') }})</span></span>
                         @endif
                         @endif
                     </div>
@@ -117,19 +118,18 @@
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 border border-blue-200 dark:border-gray-600 rounded-lg p-3 shadow-sm">
                     <div class="flex flex-col gap-1 text-sm text-gray-700 dark:text-gray-300">
                         <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-semibold text-gray-900 dark:text-gray-100">📊</span>
-                            <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs font-medium">Database</span>
-                            <span>•</span>
-                            <span>All <strong class="text-blue-700 dark:text-blue-400">{{ number_format($syncStats['total_invoices'] ?? 0) }}</strong></span>
-                            <span>•</span>
-                            <span>Filter: <strong class="text-blue-700 dark:text-blue-400">
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold text-gray-900 dark:text-gray-100">📊</span>
+                                <span class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs font-medium">Database</span>
+                            </div>
+                            <span>• All <strong class="text-blue-700 dark:text-blue-400">{{ number_format($syncStats['total_invoices'] ?? 0) }}</strong></span>
+                            <span>• Filter: <strong class="text-blue-700 dark:text-blue-400">
                                 @if($currentFilter === 'all')All
                                 @elseif($currentFilter === 'overdue')Overdue
                                 @elseif($currentFilter === 'unpaid')Unpaid
                                 @endif
                             </strong></span>
-                            <span>•</span>
-                            <span>Showing: <strong class="text-blue-700 dark:text-blue-400">{{ $invoicesByEmployee->sum('invoiceCount') }}</strong></span>
+                            <span>• Showing: <strong class="text-blue-700 dark:text-blue-400">{{ $invoicesByEmployee->sum('invoiceCount') }}</strong></span>
                         </div>
 
                         @if(isset($dataQuality) && $dataQuality['has_unassigned'])
