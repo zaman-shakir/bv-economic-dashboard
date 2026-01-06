@@ -1,8 +1,8 @@
 <x-guest-layout>
     <!-- Welcome Message -->
     <div class="mb-8 text-center">
-        <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-2">Welcome Back</h2>
-        <p class="text-gray-600 dark:text-gray-400">Sign in to your account to continue</p>
+        <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-2">{{ __('Welcome Back') }}</h2>
+        <p class="text-gray-600 dark:text-gray-400">{{ __('Sign in to your account to continue') }}</p>
     </div>
 
     <!-- Session Status -->
