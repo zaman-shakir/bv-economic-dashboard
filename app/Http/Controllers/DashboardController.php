@@ -25,9 +25,23 @@ class DashboardController extends Controller
             session(['dashboard.filter' => $filter]);
         }
 
-        $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
+        // NEW: Check if we have database data, otherwise fall back to API
+        $invoiceCount = \App\Models\Invoice::count();
+
+        if ($invoiceCount > 0) {
+            // Use database method (fast!)
+            $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployeeFromDatabase($filter);
+        } else {
+            // Fallback to API method (for backward compatibility)
+            $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
+        }
+
         $totals = $this->invoiceService->getInvoiceTotals();
         $dataQuality = $this->invoiceService->getDataQualityStats($invoicesByEmployee);
+
+        // NEW: Add sync information
+        $syncStats = $this->invoiceService->getSyncStats();
+        $lastSyncedAt = $syncStats['last_synced_at'];
 
         return view('dashboard.index', [
             'invoicesByEmployee' => $invoicesByEmployee,
@@ -35,6 +49,9 @@ class DashboardController extends Controller
             'dataQuality' => $dataQuality,
             'lastUpdated' => now()->format('d-m-Y H:i'),
             'currentFilter' => $filter,
+            'lastSyncedAt' => $lastSyncedAt,      // NEW
+            'syncStats' => $syncStats,             // NEW
+            'usingDatabase' => $invoiceCount > 0,  // NEW
         ]);
     }
 
@@ -44,13 +61,50 @@ class DashboardController extends Controller
     public function refreshInvoices(Request $request): View
     {
         $filter = $request->get('filter', 'overdue');
-        $this->invoiceService->clearCache();
-        $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
+
+        // NEW: Use database if available, otherwise API
+        $invoiceCount = \App\Models\Invoice::count();
+
+        if ($invoiceCount > 0) {
+            // Database method (no cache to clear)
+            $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployeeFromDatabase($filter);
+        } else {
+            // API method (clear cache first)
+            $this->invoiceService->clearCache();
+            $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
+        }
 
         return view('dashboard.partials.invoice-list', [
             'invoicesByEmployee' => $invoicesByEmployee,
             'currentFilter' => $filter,
         ]);
+    }
+
+    /**
+     * NEW: Manual sync endpoint
+     */
+    public function syncInvoices(Request $request): \Illuminate\Http\JsonResponse
+    {
+        // Increase execution time for this endpoint
+        set_time_limit(300); // 5 minutes
+
+        try {
+            $testLimit = $request->get('test_limit'); // Optional test limit
+            $stats = $this->invoiceService->syncAllInvoices($testLimit ? (int)$testLimit : null);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sync completed successfully',
+                'stats' => $stats,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Manual sync failed', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync failed: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

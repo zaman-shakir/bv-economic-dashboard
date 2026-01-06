@@ -52,7 +52,57 @@
                 <div id="loading" class="htmx-indicator text-sm text-blue-600 dark:text-blue-400 font-medium">
                     {{ __('dashboard.loading_data') }}
                 </div>
+
+                <!-- NEW: Sync Now Button -->
+                @if($usingDatabase ?? false)
+                <button
+                    id="syncButton"
+                    onclick="syncNow()"
+                    class="px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 shadow-elevation-2 btn-lift disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <svg id="syncIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span id="syncButtonText">Sync Now</span>
+                </button>
+                @endif
             </div>
+
+            <!-- NEW: Sync Status Bar -->
+            @if($usingDatabase ?? false)
+            <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700 border border-green-200 dark:border-green-800 rounded-lg p-4 shadow-sm">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <!-- Sync Status -->
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            @if($lastSyncedAt && $lastSyncedAt->diffInMinutes(now()) < 30)
+                                <span class="flex h-3 w-3">
+                                    <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                </span>
+                                <span class="text-sm font-medium text-green-700 dark:text-green-400">Data is up-to-date</span>
+                            @else
+                                <span class="flex h-3 w-3 rounded-full bg-yellow-500"></span>
+                                <span class="text-sm font-medium text-yellow-700 dark:text-yellow-400">Sync recommended</span>
+                            @endif
+                        </div>
+
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                            @if($lastSyncedAt)
+                                Last synced: <strong>{{ $lastSyncedAt->diffForHumans() }}</strong>
+                                <span class="text-xs">({{ $lastSyncedAt->format('d M Y H:i') }})</span>
+                            @else
+                                <strong>Never synced</strong> - Click "Sync Now" to fetch all invoices
+                            @endif
+                        </div>
+
+                        <div class="text-sm text-gray-600 dark:text-gray-400 border-l pl-4">
+                            Database: <strong>{{ number_format($syncStats['total_invoices'] ?? 0) }}</strong> invoices
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             <!-- Second Toolbar: Search, Sort, Export, Bulk Actions -->
             <div class="mb-6 flex flex-wrap items-center gap-3 card-glass p-5">
@@ -597,6 +647,66 @@
         function clearPreferences() {
             localStorage.removeItem('dashboard_preferences');
             location.reload();
+        }
+
+        // NEW: Sync Now functionality
+        let isSyncing = false;
+
+        function syncNow() {
+            if (isSyncing) {
+                return;
+            }
+
+            if (!confirm('This will sync all invoices from E-conomic (may take 30-60 seconds). Continue?')) {
+                return;
+            }
+
+            isSyncing = true;
+            const button = document.getElementById('syncButton');
+            const buttonText = document.getElementById('syncButtonText');
+            const syncIcon = document.getElementById('syncIcon');
+
+            // Update button state
+            button.disabled = true;
+            buttonText.textContent = 'Syncing...';
+            syncIcon.classList.add('animate-spin');
+
+            // Make sync request
+            fetch('{{ route('dashboard.sync') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Sync completed successfully!\n\n` +
+                          `Fetched: ${data.stats.total_fetched.toLocaleString()} invoices\n` +
+                          `Created: ${data.stats.total_created.toLocaleString()} new\n` +
+                          `Updated: ${data.stats.total_updated.toLocaleString()} existing\n` +
+                          `Duration: ${data.stats.duration_seconds} seconds`);
+
+                    // Reload page to show updated data
+                    window.location.reload();
+                } else {
+                    alert('Sync failed: ' + data.message);
+                    resetButton();
+                }
+            })
+            .catch(error => {
+                console.error('Sync error:', error);
+                alert('Sync failed: ' + error.message);
+                resetButton();
+            });
+
+            function resetButton() {
+                isSyncing = false;
+                button.disabled = false;
+                buttonText.textContent = 'Sync Now';
+                syncIcon.classList.remove('animate-spin');
+            }
         }
     </script>
 </x-app-layout>
