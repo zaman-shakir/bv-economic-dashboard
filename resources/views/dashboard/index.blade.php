@@ -109,6 +109,17 @@
                         <div class="text-sm text-gray-600 dark:text-gray-400 border-l pl-4">
                             Database: <strong>{{ number_format($syncStats['total_invoices'] ?? 0) }}</strong> invoices
                         </div>
+
+                        @if($nextSyncAt)
+                        <div class="text-sm text-gray-600 dark:text-gray-400 border-l pl-4">
+                            @if($nextSyncAt->isPast())
+                                Next sync: <strong class="text-yellow-600 dark:text-yellow-400">Overdue (ready to run)</strong>
+                            @else
+                                Next auto-sync: <strong>{{ $nextSyncAt->diffForHumans() }}</strong>
+                                <span class="text-xs">({{ $nextSyncAt->format('H:i') }})</span>
+                            @endif
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

@@ -53,13 +53,20 @@ class DashboardController extends Controller
         $syncStats = $this->invoiceService->getSyncStats();
         $lastSyncedAt = $syncStats['last_synced_at'];
 
+        // Calculate next auto-sync time (every 6 hours from last sync)
+        $nextSyncAt = null;
+        if ($lastSyncedAt) {
+            $nextSyncAt = $lastSyncedAt->copy()->addHours(6);
+        }
+
         return view('dashboard.index', [
             'invoicesByEmployee' => $invoicesByEmployee,
             'totals' => $totals,
             'dataQuality' => $dataQuality,
             'lastUpdated' => now()->format('d-m-Y H:i'),
             'currentFilter' => $filter,
-            'lastSyncedAt' => $lastSyncedAt,      // NEW
+            'lastSyncedAt' => $lastSyncedAt,       // NEW
+            'nextSyncAt' => $nextSyncAt,           // NEW
             'syncStats' => $syncStats,             // NEW
             'usingDatabase' => $invoiceCount > 0,  // NEW
             'dateFrom' => $dateFrom,               // NEW
