@@ -131,7 +131,29 @@
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                 @if($invoice['eksterntId'])
-                                    <span class="font-mono text-xs">{{ $invoice['eksterntId'] }}</span>
+                                    @php
+                                        // Check if it's a WooCommerce order (BV-WO-xxxxx pattern)
+                                        $isWooOrder = preg_match('/BV-WO-(\d+)/', $invoice['eksterntId'], $matches);
+                                        $wooOrderId = $isWooOrder ? $matches[1] : null;
+                                    @endphp
+
+                                    <div class="flex flex-col gap-1.5">
+                                        <!-- Display the reference text -->
+                                        <span class="font-mono text-xs">{{ $invoice['eksterntId'] }}</span>
+
+                                        <!-- Show "View Order" button if it's a WooCommerce order -->
+                                        @if($wooOrderId)
+                                            <a href="https://billigventilation.dk/wp-admin/admin.php?page=wc-orders&action=edit&id={{ $wooOrderId }}"
+                                               target="_blank"
+                                               class="inline-flex items-center justify-center gap-1 px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors duration-200"
+                                               title="{{ __('dashboard.view_woo_order') }}">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                                {{ __('dashboard.view_order') }}
+                                            </a>
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="text-gray-400 dark:text-gray-600">-</span>
                                 @endif

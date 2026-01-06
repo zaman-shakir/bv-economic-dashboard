@@ -28,6 +28,37 @@
                 </a>
             </div>
 
+            <!-- Data Info Banner -->
+            <div class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 border border-blue-200 dark:border-gray-600 rounded-lg px-4 py-3 shadow-sm">
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <span class="font-semibold text-gray-900 dark:text-gray-100">📊 Data Source:</span>
+
+                        @if($usingDatabase ?? false)
+                            <!-- Database Mode -->
+                            <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md font-medium">Database (All Invoices)</span>
+                            <span>•</span>
+                            <span>Total: <strong class="text-blue-700 dark:text-blue-400">{{ number_format($syncStats['total_invoices'] ?? 0) }}</strong> invoices</span>
+                        @else
+                            <!-- API Mode (Fallback) -->
+                            <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-md font-medium">Live API (Limited)</span>
+                            <span>•</span>
+                            <span class="text-yellow-700 dark:text-yellow-400">⚠️ Showing only last {{ config('e-conomic.sync_months', 6) }} months</span>
+                        @endif
+
+                        <span>•</span>
+                        <span>Filter: <strong class="text-blue-700 dark:text-blue-400">
+                            @if($currentFilter === 'all')All Invoices
+                            @elseif($currentFilter === 'overdue')Overdue Only
+                            @elseif($currentFilter === 'unpaid')Unpaid Only
+                            @endif
+                        </strong></span>
+                        <span>•</span>
+                        <span>Showing: <strong class="text-blue-700 dark:text-blue-400">{{ $invoicesByEmployee->sum('invoiceCount') }}</strong></span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Quick Stats Card -->

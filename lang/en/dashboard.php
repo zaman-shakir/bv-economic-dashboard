@@ -150,4 +150,8 @@ return [
 
     // Sync Status
     'data_up_to_date' => 'Data is up to date with e-conomic',
+
+    // WooCommerce Order Link
+    'view_order' => 'View order',
+    'view_woo_order' => 'Open order in WooCommerce',
 ];

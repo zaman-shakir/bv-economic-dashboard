@@ -150,4 +150,8 @@ return [
 
     // Sync Status
     'data_up_to_date' => 'Data er opdateret med e-conomic',
+
+    // WooCommerce Order Link
+    'view_order' => 'Se ordren',
+    'view_woo_order' => 'Åbn ordre i WooCommerce',
 ];

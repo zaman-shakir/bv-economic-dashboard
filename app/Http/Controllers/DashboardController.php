@@ -164,14 +164,43 @@ class DashboardController extends Controller
     public function stats(Request $request): View
     {
         $filter = $request->get('filter', session('dashboard.filter', 'overdue'));
-        $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
+
+        // Get date range and search parameters
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
+        $search = $request->get('search');
+
+        // Check if we have database data, otherwise fall back to API
+        $invoiceCount = \App\Models\Invoice::count();
+
+        if ($invoiceCount > 0) {
+            // Use database method (fast and includes ALL invoices!)
+            $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployeeFromDatabase(
+                $filter,
+                $dateFrom,
+                $dateTo,
+                $search
+            );
+        } else {
+            // Fallback to API method (for backward compatibility)
+            $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
+        }
+
         $totals = $this->invoiceService->getInvoiceTotals();
+
+        // Add sync information
+        $syncStats = $this->invoiceService->getSyncStats();
 
         return view('dashboard.stats', [
             'invoicesByEmployee' => $invoicesByEmployee,
             'totals' => $totals,
             'lastUpdated' => now()->format('d-m-Y H:i'),
             'currentFilter' => $filter,
+            'usingDatabase' => $invoiceCount > 0,
+            'syncStats' => $syncStats,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'search' => $search,
         ]);
     }
 }

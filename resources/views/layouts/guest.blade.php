@@ -25,6 +25,51 @@
     </head>
     <body class="font-sans text-gray-900 dark:text-gray-100 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 animated-gradient dark:bg-gray-900 relative overflow-hidden">
+            <!-- Language Switcher (Top Left) -->
+            <div class="absolute top-4 left-4 z-50">
+                <div class="relative inline-block text-left">
+                    <button
+                        id="language-toggle-guest"
+                        type="button"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white dark:text-gray-200 hover:text-white dark:hover:text-white bg-white/10 dark:bg-gray-700/50 hover:bg-white/20 dark:hover:bg-gray-700 backdrop-blur-lg hover:shadow-lg focus:outline-none transition-all duration-200 border border-white/20 dark:border-gray-600"
+                        aria-label="Switch language"
+                    >
+                        <span class="text-lg">🌐</span>
+                        <span class="font-semibold text-sm uppercase">{{ app()->getLocale() }}</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div
+                        id="language-dropdown-guest"
+                        class="hidden absolute left-0 mt-2 w-48 rounded-lg bg-white dark:bg-gray-800/95 backdrop-blur-lg shadow-2xl border-2 border-gray-300 dark:border-gray-600 overflow-hidden"
+                    >
+                        <a href="{{ route('language.switch', 'en') }}"
+                           class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors {{ app()->getLocale() === 'en' ? 'bg-blue-50 dark:bg-blue-900/30 font-semibold' : '' }}">
+                            <span class="text-lg">🇬🇧</span>
+                            <span>English</span>
+                            @if(app()->getLocale() === 'en')
+                                <svg class="w-4 h-4 ml-auto text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                            @endif
+                        </a>
+                        <div class="border-t border-gray-200 dark:border-gray-700"></div>
+                        <a href="{{ route('language.switch', 'da') }}"
+                           class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors {{ app()->getLocale() === 'da' ? 'bg-blue-50 dark:bg-blue-900/30 font-semibold' : '' }}">
+                            <span class="text-lg">🇩🇰</span>
+                            <span>Dansk</span>
+                            @if(app()->getLocale() === 'da')
+                                <svg class="w-4 h-4 ml-auto text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                            @endif
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Theme Toggle Button (Top Right) -->
             <div class="absolute top-4 right-4 z-50">
                 <button
@@ -70,9 +115,10 @@
             </div>
         </div>
 
-        <!-- Theme Toggle Script -->
+        <!-- Theme Toggle & Language Switcher Scripts -->
         <script>
             document.addEventListener('DOMContentLoaded', function() {
+                // Theme Toggle
                 const themeToggleBtn = document.getElementById('theme-toggle-guest');
                 const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon-guest');
                 const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon-guest');
@@ -106,6 +152,30 @@
 
                     // Update icons
                     updateIcons();
+                });
+
+                // Language Switcher Dropdown
+                const languageToggleBtn = document.getElementById('language-toggle-guest');
+                const languageDropdown = document.getElementById('language-dropdown-guest');
+
+                // Toggle dropdown when button is clicked
+                languageToggleBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    languageDropdown.classList.toggle('hidden');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!languageToggleBtn.contains(e.target) && !languageDropdown.contains(e.target)) {
+                        languageDropdown.classList.add('hidden');
+                    }
+                });
+
+                // Close dropdown when pressing Escape
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        languageDropdown.classList.add('hidden');
+                    }
                 });
             });
         </script>
