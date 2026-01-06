@@ -103,7 +103,7 @@
                         @else
                             <span>• <strong>Never synced</strong></span>
                         @endif
-                        <span>• DB: <strong>{{ number_format($syncStats['total_invoices'] ?? 0) }}</strong></span>
+                        <span>• Total synced: <strong>{{ number_format($syncStats['total_invoices'] ?? 0) }}</strong></span>
                         @if($nextSyncAt)
                         @if($nextSyncAt->isPast())
                             <span>• Next: <strong class="text-yellow-600 dark:text-yellow-400">Overdue</strong></span>
