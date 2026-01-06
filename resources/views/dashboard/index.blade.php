@@ -5,6 +5,48 @@
 
     <div class="py-12">
         <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
+
+            <!-- DATA FLOW: Page Title & Overall Flow -->
+            <div class="mb-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg p-6 shadow-lg">
+                <h1 class="text-3xl font-bold mb-3">📊 Invoice Dashboard - Data Flow Learning Mode</h1>
+                <div class="bg-white/10 rounded p-4 text-sm">
+                    <div class="font-bold mb-2">🔄 HOW THIS PAGE WORKS:</div>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                        <div class="bg-white/10 rounded p-2">
+                            <div class="font-bold">1️⃣ Fetch All</div>
+                            <div class="text-xs">Get ALL invoices from E-conomic API</div>
+                        </div>
+                        <div class="bg-white/10 rounded p-2">
+                            <div class="font-bold">2️⃣ Filter</div>
+                            <div class="text-xs">Filter by: {{ $currentFilter }}</div>
+                        </div>
+                        <div class="bg-white/10 rounded p-2">
+                            <div class="font-bold">3️⃣ Group</div>
+                            <div class="text-xs">Group by salesperson</div>
+                        </div>
+                        <div class="bg-white/10 rounded p-2">
+                            <div class="font-bold">4️⃣ Calculate</div>
+                            <div class="text-xs">Days overdue, totals</div>
+                        </div>
+                        <div class="bg-white/10 rounded p-2">
+                            <div class="font-bold">5️⃣ Display</div>
+                            <div class="text-xs">Show in tables below</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATA FLOW: Filter Buttons Explanation -->
+            <div class="mb-4 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded">
+                <div class="font-bold text-blue-900 dark:text-blue-300 mb-2">📌 FILTER BUTTONS - How they work:</div>
+                <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                    <div>• Clicking a filter reloads this page with <code class="bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">?filter={{ $currentFilter }}</code> parameter</div>
+                    <div>• Current filter: <strong class="text-blue-600">{{ $currentFilter }}</strong></div>
+                    <div>• Service method: <code class="bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">getInvoicesByEmployee('{{ $currentFilter }}')</code></div>
+                    <div>• Filter logic applied in: <code class="bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">app/Services/EconomicInvoiceService.php:282-286</code></div>
+                </div>
+            </div>
+
             <!-- Top Toolbar: Filters + Employee Filter + Refresh -->
             <div class="mb-6 flex flex-wrap items-center gap-3">
                 <!-- Filter Buttons -->
@@ -23,8 +65,17 @@
                     </a>
                 </div>
 
-                <!-- Employee Filter -->
-                <div class="flex-1 min-w-[200px]">
+                <!-- DATA FLOW TOOLTIP: Employee Dropdown -->
+                <div class="flex-1 min-w-[200px] relative group">
+                    <div class="absolute -top-12 left-0 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded p-2 text-xs hidden group-hover:block z-10 w-96 shadow-lg">
+                        <div class="font-bold text-green-900 dark:text-green-300">🔍 EMPLOYEE DROPDOWN</div>
+                        <div class="text-gray-700 dark:text-gray-300 mt-1">
+                            • Populated by: <code class="bg-green-100 dark:bg-green-800 px-1 rounded">$invoicesByEmployee</code><br/>
+                            • Each option = 1 employee group<br/>
+                            • Shows: employeeName + invoiceCount<br/>
+                            • Client-side filter (no server call)
+                        </div>
+                    </div>
                     <select id="employeeFilter" onchange="filterByEmployee(this.value)"
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
                         <option value="">{{ __('dashboard.all_employees') }}</option>
@@ -145,6 +196,721 @@
                             ⚠️ {{ $dataQuality['message'] }}
                         </div>
                     @endif
+                </div>
+            </div>
+
+            <!-- DATA FLOW: Complete API to View Mapping -->
+            <div class="mb-6 bg-gradient-to-r from-orange-50 to-red-50 dark:from-gray-800 dark:to-gray-900 border-2 border-orange-300 dark:border-orange-700 rounded-lg p-6">
+                <h2 class="text-2xl font-bold text-orange-900 dark:text-orange-300 mb-4">🔄 COMPLETE DATA FLOW - API to View</h2>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- LEFT: API Call -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 border-orange-200 dark:border-orange-800">
+                        <div class="font-bold text-lg mb-3 text-orange-900 dark:text-orange-300">1️⃣ E-CONOMIC API CALL</div>
+                        <div class="space-y-2 text-sm">
+                            <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded">
+                                <div class="font-mono text-xs">
+                                    <div class="font-bold mb-1">GET https://restapi.e-conomic.com/invoices/booked</div>
+                                    <div class="text-gray-600 dark:text-gray-400">?pagesize=1000&filter=date$gte:{{ now()->subMonths(config('e-conomic.sync_months', 6))->format('Y-m-d') }}</div>
+                                </div>
+                            </div>
+                            <div class="font-bold mt-3">Response Example (1 invoice):</div>
+                            <div class="bg-gray-50 dark:bg-gray-900 p-3 rounded font-mono text-xs overflow-x-auto">
+<pre>{
+  "bookedInvoiceNumber": 10001,
+  "date": "2025-11-15",
+  "dueDate": "2025-12-01",
+  "grossAmount": 25000.00,
+  "remainder": 25000.00,
+  "currency": "DKK",
+  "customer": {
+    "customerNumber": 1001
+  },
+  "recipient": {
+    "name": "Restaurant Nordic A/S"
+  },
+  "references": {
+    "salesPerson": {
+      "employeeNumber": 3,
+      "name": "Jesper Nielsen"
+    },
+    "other": "WC-2547"
+  }
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Data Transformation -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 border-green-200 dark:border-green-800">
+                        <div class="font-bold text-lg mb-3 text-green-900 dark:text-green-300">2️⃣ DATA TRANSFORMATION</div>
+                        <div class="space-y-2 text-sm">
+                            <div class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded">
+                                <div class="font-bold">Step 1: Filter</div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                    @if($currentFilter === 'overdue')
+                                        Keep only if: <code class="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">remainder > 0 AND dueDate < today</code>
+                                    @elseif($currentFilter === 'unpaid')
+                                        Keep only if: <code class="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">remainder > 0</code>
+                                    @else
+                                        Keep all invoices
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded">
+                                <div class="font-bold">Step 2: Group by Employee</div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                    Group by: <code class="bg-purple-100 dark:bg-purple-800 px-1 rounded">references.salesPerson.employeeNumber</code><br/>
+                                    Result: {{ $invoicesByEmployee->count() }} groups
+                                </div>
+                            </div>
+
+                            <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded">
+                                <div class="font-bold">Step 3: Calculate Fields</div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1 space-y-1">
+                                    <div>• <strong>daysOverdue</strong> = today - dueDate</div>
+                                    <div>• <strong>status</strong> = remainder == 0 ? 'paid' : (overdue ? 'overdue' : 'unpaid')</div>
+                                    <div>• <strong>totalRemainder</strong> = sum of all remainder values</div>
+                                </div>
+                            </div>
+
+                            <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded">
+                                <div class="font-bold">Step 4: Format & Sort</div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                    • Format numbers to Danish format<br/>
+                                    • Sort by daysOverdue DESC (most critical first)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FIELD MAPPINGS TABLE -->
+                <div class="mt-6 bg-white dark:bg-gray-800 rounded-lg p-4 border-2 border-indigo-200 dark:border-indigo-800">
+                    <div class="font-bold text-lg mb-3 text-indigo-900 dark:text-indigo-300">3️⃣ FIELD MAPPINGS - API → Table Columns</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-indigo-100 dark:bg-indigo-900/30">
+                                <tr>
+                                    <th class="px-3 py-2 text-left">Table Column</th>
+                                    <th class="px-3 py-2 text-left">API Field</th>
+                                    <th class="px-3 py-2 text-left">Transformation</th>
+                                    <th class="px-3 py-2 text-left">Example</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <tr>
+                                    <td class="px-3 py-2 font-mono">invoiceNumber</td>
+                                    <td class="px-3 py-2 font-mono text-blue-600">bookedInvoiceNumber</td>
+                                    <td class="px-3 py-2">Direct mapping</td>
+                                    <td class="px-3 py-2">10001</td>
+                                </tr>
+                                <tr class="bg-gray-50 dark:bg-gray-900/30">
+                                    <td class="px-3 py-2 font-mono">date</td>
+                                    <td class="px-3 py-2 font-mono text-blue-600">date</td>
+                                    <td class="px-3 py-2">Format to d.m.y</td>
+                                    <td class="px-3 py-2">15.11.25</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-3 py-2 font-mono">kundenr</td>
+                                    <td class="px-3 py-2 font-mono text-blue-600">customer.customerNumber</td>
+                                    <td class="px-3 py-2">Direct mapping</td>
+                                    <td class="px-3 py-2">1001</td>
+                                </tr>
+                                <tr class="bg-gray-50 dark:bg-gray-900/30">
+                                    <td class="px-3 py-2 font-mono">kundenavn</td>
+                                    <td class="px-3 py-2 font-mono text-blue-600">recipient.name</td>
+                                    <td class="px-3 py-2">Direct mapping</td>
+                                    <td class="px-3 py-2">Restaurant Nordic A/S</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-3 py-2 font-mono">overskrift</td>
+                                    <td class="px-3 py-2 font-mono text-blue-600">notes.heading</td>
+                                    <td class="px-3 py-2">Limit to 40 chars</td>
+                                    <td class="px-3 py-2">Order 2547 - Industrial...</td>
+                                </tr>
+                                <tr class="bg-gray-50 dark:bg-gray-900/30">
+                                    <td class="px-3 py-2 font-mono">beloeb</td>
+                                    <td class="px-3 py-2 font-mono text-blue-600">grossAmount</td>
+                                    <td class="px-3 py-2">Format: 25.000,00</td>
+                                    <td class="px-3 py-2">25.000,00</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-3 py-2 font-mono">remainder</td>
+                                    <td class="px-3 py-2 font-mono text-blue-600">remainder</td>
+                                    <td class="px-3 py-2">Format: 25.000,00</td>
+                                    <td class="px-3 py-2">25.000,00</td>
+                                </tr>
+                                <tr class="bg-gray-50 dark:bg-gray-900/30">
+                                    <td class="px-3 py-2 font-mono">eksterntId</td>
+                                    <td class="px-3 py-2 font-mono text-blue-600">references.other</td>
+                                    <td class="px-3 py-2">Direct mapping</td>
+                                    <td class="px-3 py-2">WC-2547</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-3 py-2 font-mono">daysOverdue</td>
+                                    <td class="px-3 py-2 font-mono text-green-600">CALCULATED</td>
+                                    <td class="px-3 py-2">today - dueDate</td>
+                                    <td class="px-3 py-2">36 days</td>
+                                </tr>
+                                <tr class="bg-gray-50 dark:bg-gray-900/30">
+                                    <td class="px-3 py-2 font-mono">status</td>
+                                    <td class="px-3 py-2 font-mono text-green-600">CALCULATED</td>
+                                    <td class="px-3 py-2">Based on remainder & dueDate</td>
+                                    <td class="px-3 py-2">overdue</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- LIVE DATA EXAMPLE -->
+                @if($invoicesByEmployee->count() > 0)
+                @php $firstEmployee = $invoicesByEmployee->first(); @endphp
+                @if(isset($firstEmployee['invoices']) && count($firstEmployee['invoices']) > 0)
+                @php $firstInvoice = $firstEmployee['invoices'][0]; @endphp
+                <div class="mt-6 bg-white dark:bg-gray-800 rounded-lg p-4 border-2 border-pink-200 dark:border-pink-800">
+                    <div class="font-bold text-lg mb-3 text-pink-900 dark:text-pink-300">4️⃣ LIVE EXAMPLE - First Invoice Data</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <div class="font-bold mb-2">Employee Info:</div>
+                            <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded space-y-1">
+                                <div>👤 <strong>Name:</strong> {{ $firstEmployee['employeeName'] }}</div>
+                                <div>🔢 <strong>Employee #:</strong> {{ $firstEmployee['employeeNumber'] }}</div>
+                                <div>📊 <strong>Invoice Count:</strong> {{ $firstEmployee['invoiceCount'] }}</div>
+                                <div>💰 <strong>Total Outstanding:</strong> {{ number_format($firstEmployee['totalRemainder'], 2, ',', '.') }} DKK</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="font-bold mb-2">First Invoice Details:</div>
+                            <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded space-y-1 font-mono text-xs">
+                                <div>📄 <strong>Invoice:</strong> #{{ $firstInvoice['invoiceNumber'] }}</div>
+                                <div>🏢 <strong>Customer:</strong> {{ $firstInvoice['kundenavn'] }}</div>
+                                <div>💵 <strong>Amount:</strong> {{ number_format($firstInvoice['beloeb'], 2, ',', '.') }} {{ $firstInvoice['currency'] }}</div>
+                                <div>⏰ <strong>Days Overdue:</strong> {{ $firstInvoice['daysOverdue'] }}</div>
+                                <div>🎯 <strong>Status:</strong> <span class="px-2 py-1 rounded {{ $firstInvoice['status'] === 'overdue' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">{{ $firstInvoice['status'] }}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-xs text-gray-600 dark:text-gray-400">
+                        ℹ️ This is REAL DATA from your database, displayed exactly as it appears in the table below.
+                    </div>
+                </div>
+                @endif
+                @endif
+
+                <div class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                    ⬇️ <strong>Below you'll see the actual invoice table populated with this data</strong> ⬇️
+                </div>
+            </div>
+
+            <!-- DATA FLOW: Caching Strategy -->
+            <div class="mb-6 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 border-2 border-cyan-300 dark:border-cyan-700 rounded-lg p-6">
+                <h2 class="text-2xl font-bold text-cyan-900 dark:text-cyan-300 mb-4">💾 CACHING STRATEGY - How We Use Cache</h2>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4 border-l-4 border-cyan-500">
+                    <div class="font-bold text-lg mb-2">🎯 Why Cache?</div>
+                    <div class="text-sm text-gray-700 dark:text-gray-300">
+                        E-conomic API calls are slow (500ms-2s each). Without caching, each page load would take 5-10 seconds. With caching, subsequent loads are instant!
+                    </div>
+                </div>
+
+                <!-- Cache Flow Diagram -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6 border-2 border-blue-200 dark:border-blue-800">
+                    <div class="font-bold text-lg mb-3 text-blue-900 dark:text-blue-300">🔄 HOW CACHE WORKS</div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- First Request -->
+                        <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded border-2 border-red-300 dark:border-red-700">
+                            <div class="font-bold text-red-900 dark:text-red-300 mb-2">1️⃣ FIRST REQUEST (Cache MISS)</div>
+                            <div class="text-xs space-y-2">
+                                <div class="flex items-start gap-2">
+                                    <span>❌</span>
+                                    <div>Check cache for key: <code class="bg-red-100 dark:bg-red-800 px-1 rounded">overdue_invoices</code></div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>🌐</span>
+                                    <div>Cache not found → Make API call to E-conomic</div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>⏱️</span>
+                                    <div><strong>Takes: 500-2000ms</strong></div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>💾</span>
+                                    <div>Store result in cache for 30 minutes</div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>📄</span>
+                                    <div>Return data to view</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subsequent Requests -->
+                        <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded border-2 border-green-300 dark:border-green-700">
+                            <div class="font-bold text-green-900 dark:text-green-300 mb-2">2️⃣ NEXT 30 MINUTES (Cache HIT)</div>
+                            <div class="text-xs space-y-2">
+                                <div class="flex items-start gap-2">
+                                    <span>✅</span>
+                                    <div>Check cache for key: <code class="bg-green-100 dark:bg-green-800 px-1 rounded">overdue_invoices</code></div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>🎉</span>
+                                    <div><strong>Cache found! Use cached data</strong></div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>⚡</span>
+                                    <div><strong>Takes: 1-5ms (1000x faster!)</strong></div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>🚫</span>
+                                    <div>No API call needed</div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>📄</span>
+                                    <div>Return cached data to view</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- After Expiry -->
+                        <div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded border-2 border-yellow-300 dark:border-yellow-700">
+                            <div class="font-bold text-yellow-900 dark:text-yellow-300 mb-2">3️⃣ AFTER 30 MIN (Refresh)</div>
+                            <div class="text-xs space-y-2">
+                                <div class="flex items-start gap-2">
+                                    <span>⏰</span>
+                                    <div>Cache expired (30 min passed)</div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>🔄</span>
+                                    <div>Cache MISS again</div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>🌐</span>
+                                    <div>Make fresh API call</div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>💾</span>
+                                    <div>Store new result for another 30 min</div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>♻️</span>
+                                    <div>Cycle repeats</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cache Keys Table -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6 border-2 border-indigo-200 dark:border-indigo-800">
+                    <div class="font-bold text-lg mb-3 text-indigo-900 dark:text-indigo-300">🔑 CACHE KEYS & DURATIONS</div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-indigo-100 dark:bg-indigo-900/30">
+                                <tr>
+                                    <th class="px-3 py-2 text-left">Cache Key</th>
+                                    <th class="px-3 py-2 text-left">Data Stored</th>
+                                    <th class="px-3 py-2 text-left">Duration</th>
+                                    <th class="px-3 py-2 text-left">Status</th>
+                                    <th class="px-3 py-2 text-left">Code Location</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <td class="px-3 py-2 font-mono text-xs">overdue_invoices</td>
+                                    <td class="px-3 py-2">All overdue invoices (remainder > 0 & past due)</td>
+                                    <td class="px-3 py-2">{{ config('e-conomic.cache_duration', 30) }} min</td>
+                                    <td class="px-3 py-2">
+                                        @if(Cache::has('overdue_invoices'))
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 rounded text-xs">✅ HIT</span>
+                                        @else
+                                            <span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400 rounded text-xs">❌ MISS</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 font-mono text-xs">EconomicInvoiceService.php:203</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <td class="px-3 py-2 font-mono text-xs">unpaid_invoices</td>
+                                    <td class="px-3 py-2">All unpaid invoices (remainder > 0)</td>
+                                    <td class="px-3 py-2">{{ config('e-conomic.cache_duration', 30) }} min</td>
+                                    <td class="px-3 py-2">
+                                        @if(Cache::has('unpaid_invoices'))
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 rounded text-xs">✅ HIT</span>
+                                        @else
+                                            <span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400 rounded text-xs">❌ MISS</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 font-mono text-xs">EconomicInvoiceService.php:231</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <td class="px-3 py-2 font-mono text-xs">all_invoices</td>
+                                    <td class="px-3 py-2">All invoices (last {{ config('e-conomic.sync_months', 6) }} months)</td>
+                                    <td class="px-3 py-2">{{ config('e-conomic.cache_duration', 30) }} min</td>
+                                    <td class="px-3 py-2">
+                                        @if(Cache::has('all_invoices'))
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 rounded text-xs">✅ HIT</span>
+                                        @else
+                                            <span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400 rounded text-xs">❌ MISS</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 font-mono text-xs">EconomicInvoiceService.php:255</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <td class="px-3 py-2 font-mono text-xs">invoice_totals</td>
+                                    <td class="px-3 py-2">Overall statistics from E-conomic</td>
+                                    <td class="px-3 py-2">5 min</td>
+                                    <td class="px-3 py-2">
+                                        @if(Cache::has('invoice_totals'))
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 rounded text-xs">✅ HIT</span>
+                                        @else
+                                            <span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400 rounded text-xs">❌ MISS</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 font-mono text-xs">EconomicInvoiceService.php:398</td>
+                                </tr>
+                                @if($invoicesByEmployee->count() > 0)
+                                    @foreach($invoicesByEmployee->take(3) as $emp)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                        <td class="px-3 py-2 font-mono text-xs">employee_{{ $emp['employeeNumber'] }}</td>
+                                        <td class="px-3 py-2">Employee name: {{ $emp['employeeName'] }}</td>
+                                        <td class="px-3 py-2">60 min</td>
+                                        <td class="px-3 py-2">
+                                            @if(Cache::has('employee_' . $emp['employeeNumber']))
+                                                <span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 rounded text-xs">✅ HIT</span>
+                                            @else
+                                                <span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400 rounded text-xs">❌ MISS</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-3 py-2 font-mono text-xs">EconomicInvoiceService.php:346</td>
+                                    </tr>
+                                    @endforeach
+                                    @if($invoicesByEmployee->count() > 3)
+                                    <tr>
+                                        <td colspan="5" class="px-3 py-2 text-center text-xs text-gray-500 dark:text-gray-400">
+                                            ... and {{ $invoicesByEmployee->count() - 3 }} more employee cache keys
+                                        </td>
+                                    </tr>
+                                    @endif
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Current Page Cache Status -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6 border-2 border-purple-200 dark:border-purple-800">
+                    <div class="font-bold text-lg mb-3 text-purple-900 dark:text-purple-300">📊 CURRENT PAGE CACHE STATUS</div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <div class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded">
+                                <div class="font-bold mb-2">Cache Status for: <code class="bg-purple-100 dark:bg-purple-800 px-2 py-1 rounded">{{ $currentFilter }}_invoices</code></div>
+                                <div class="text-sm space-y-2">
+                                    @if(Cache::has($currentFilter . '_invoices'))
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-2xl">✅</span>
+                                            <div>
+                                                <div class="font-bold text-green-600 dark:text-green-400">CACHE HIT</div>
+                                                <div class="text-xs text-gray-600 dark:text-gray-400">Data loaded from cache (fast!)</div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-2xl">❌</span>
+                                            <div>
+                                                <div class="font-bold text-red-600 dark:text-red-400">CACHE MISS</div>
+                                                <div class="text-xs text-gray-600 dark:text-gray-400">Data fetched from E-conomic API (slower)</div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded">
+                                <div class="font-bold mb-2">How to Clear Cache:</div>
+                                <div class="text-sm space-y-2">
+                                    <div>1. Click the <strong>"Refresh Data"</strong> button above</div>
+                                    <div>2. Or run: <code class="bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded text-xs">php artisan cache:clear</code></div>
+                                    <div>3. Or wait {{ config('e-conomic.cache_duration', 30) }} minutes for auto-expiry</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Example -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 border-gray-200 dark:border-gray-700">
+                    <div class="font-bold text-lg mb-3 text-gray-900 dark:text-gray-300">💻 CODE EXAMPLE - How Cache is Used</div>
+
+                    <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded font-mono text-xs overflow-x-auto">
+<pre class="text-gray-800 dark:text-gray-200">// File: app/Services/EconomicInvoiceService.php
+
+public function getOverdueInvoices(): Collection
+{
+    $cacheDuration = config('e-conomic.cache_duration', 30) * 60; // 30 min → 1800 sec
+
+    return Cache::remember('overdue_invoices', $cacheDuration, function () {
+        // This code only runs on CACHE MISS
+        $allInvoices = $this->getAllInvoices();
+
+        // Filter to only overdue
+        return $allInvoices->filter(function ($invoice) {
+            $isDue = $invoice['dueDate'] < now()->format('Y-m-d');
+            $hasRemainder = $invoice['remainder'] > 0;
+            return $isDue && $hasRemainder;
+        });
+    });
+}</pre>
+                    </div>
+
+                    <div class="mt-3 text-xs text-gray-600 dark:text-gray-400">
+                        <strong>How Cache::remember() works:</strong><br/>
+                        1. Check if cache key exists<br/>
+                        2. If YES (HIT) → Return cached value immediately<br/>
+                        3. If NO (MISS) → Execute the function, store result, then return it
+                    </div>
+                </div>
+
+                <!-- Cache Configuration -->
+                <div class="mt-6 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-gray-900 dark:to-gray-800 rounded-lg p-4 border-2 border-orange-300 dark:border-orange-700">
+                    <div class="font-bold text-lg mb-3 text-orange-900 dark:text-orange-300">⚙️ CACHE CONFIGURATION</div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <div class="font-bold mb-2">Environment Variables (.env):</div>
+                            <div class="bg-white dark:bg-gray-800 p-3 rounded font-mono text-xs space-y-1">
+                                <div>ECONOMIC_CACHE_DURATION={{ config('e-conomic.cache_duration', 30) }}</div>
+                                <div>CACHE_DRIVER={{ config('cache.default', 'file') }}</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="font-bold mb-2">Where Cache is Stored:</div>
+                            <div class="bg-white dark:bg-gray-800 p-3 rounded text-xs space-y-1">
+                                <div><strong>Driver:</strong> {{ config('cache.default', 'file') }}</div>
+                                @if(config('cache.default') === 'file')
+                                    <div><strong>Location:</strong> <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">storage/framework/cache/data/</code></div>
+                                @elseif(config('cache.default') === 'redis')
+                                    <div><strong>Location:</strong> Redis server</div>
+                                @else
+                                    <div><strong>Location:</strong> {{ config('cache.default') }} store</div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATA FLOW: On-Demand API Calls -->
+            <div class="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-900 border-2 border-purple-300 dark:border-purple-700 rounded-lg p-6">
+                <h2 class="text-2xl font-bold text-purple-900 dark:text-purple-300 mb-4">📞 ON-DEMAND API CALLS - Customer & Employee Details</h2>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4 border-l-4 border-purple-500">
+                    <div class="font-bold text-lg mb-2">⚡ Important: These APIs are NOT called during page load!</div>
+                    <div class="text-sm text-gray-700 dark:text-gray-300">
+                        The initial invoice data does NOT include customer/employee emails. We only fetch emails when you click the "Send Email" buttons.
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Customer Email API -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 border-blue-200 dark:border-blue-800">
+                        <div class="font-bold text-lg mb-3 text-blue-900 dark:text-blue-300">1️⃣ GET CUSTOMER EMAIL</div>
+
+                        <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded mb-3">
+                            <div class="font-bold text-sm mb-2">🔘 TRIGGER:</div>
+                            <div class="text-xs">When you click <button class="inline-flex items-center px-2 py-1 text-xs bg-blue-600 text-white rounded">📧 Email</button> on an invoice row</div>
+                        </div>
+
+                        <div class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded mb-3">
+                            <div class="font-bold text-sm mb-2">📡 API CALL:</div>
+                            <div class="font-mono text-xs space-y-1">
+                                <div class="font-bold">GET https://restapi.e-conomic.com/customers/{customerNumber}</div>
+                                <div class="text-gray-600 dark:text-gray-400">Example: GET /customers/1001</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded mb-3">
+                            <div class="font-bold text-sm mb-2">📦 RESPONSE:</div>
+                            <div class="font-mono text-xs bg-gray-50 dark:bg-gray-900 p-2 rounded overflow-x-auto">
+<pre>{
+  "customerNumber": 1001,
+  "email": "contact@restaurant-nordic.dk",
+  "name": "Restaurant Nordic A/S",
+  "address": "Vesterbrogade 123",
+  "city": "Copenhagen"
+}</pre>
+                            </div>
+                        </div>
+
+                        <div class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded">
+                            <div class="font-bold text-sm mb-2">🎯 WHAT WE USE:</div>
+                            <div class="text-xs">
+                                We extract: <code class="bg-purple-100 dark:bg-purple-800 px-2 py-1 rounded">email</code> field<br/>
+                                Then send reminder email to this address
+                            </div>
+                        </div>
+
+                        <div class="mt-3 text-xs text-gray-600 dark:text-gray-400 border-t pt-2">
+                            <strong>Code Location:</strong><br/>
+                            <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">app/Http/Controllers/ReminderController.php:139-162</code>
+                        </div>
+                    </div>
+
+                    <!-- Employee Email API -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 border-orange-200 dark:border-orange-800">
+                        <div class="font-bold text-lg mb-3 text-orange-900 dark:text-orange-300">2️⃣ GET EMPLOYEE EMAIL</div>
+
+                        <div class="bg-orange-50 dark:bg-orange-900/20 p-3 rounded mb-3">
+                            <div class="font-bold text-sm mb-2">🔘 TRIGGER:</div>
+                            <div class="text-xs">When you click <button class="inline-flex items-center px-2 py-1 text-xs bg-orange-600 text-white rounded">🔔 Send Email</button> in employee header</div>
+                        </div>
+
+                        <div class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded mb-3">
+                            <div class="font-bold text-sm mb-2">📡 API CALL:</div>
+                            <div class="font-mono text-xs space-y-1">
+                                <div class="font-bold">GET https://restapi.e-conomic.com/employees/{employeeNumber}</div>
+                                <div class="text-gray-600 dark:text-gray-400">Example: GET /employees/3</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded mb-3">
+                            <div class="font-bold text-sm mb-2">📦 RESPONSE:</div>
+                            <div class="font-mono text-xs bg-gray-50 dark:bg-gray-900 p-2 rounded overflow-x-auto">
+<pre>{
+  "employeeNumber": 3,
+  "name": "Jesper Nielsen",
+  "email": "jesper@billigventilation.dk",
+  "employeeGroup": {
+    "employeeGroupNumber": 1
+  }
+}</pre>
+                            </div>
+                        </div>
+
+                        <div class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded">
+                            <div class="font-bold text-sm mb-2">🎯 WHAT WE USE:</div>
+                            <div class="text-xs">
+                                We extract: <code class="bg-purple-100 dark:bg-purple-800 px-2 py-1 rounded">email</code> field<br/>
+                                Then send summary email with all overdue invoices
+                            </div>
+                        </div>
+
+                        <div class="mt-3 text-xs text-gray-600 dark:text-gray-400 border-t pt-2">
+                            <strong>Code Location:</strong><br/>
+                            <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">app/Http/Controllers/ReminderController.php:235-258</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employee Name Caching -->
+                <div class="mt-6 bg-white dark:bg-gray-800 rounded-lg p-4 border-2 border-green-200 dark:border-green-800">
+                    <div class="font-bold text-lg mb-3 text-green-900 dark:text-green-300">3️⃣ EMPLOYEE NAMES (Cached)</div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded">
+                                <div class="font-bold mb-2">🔘 WHEN CALLED:</div>
+                                <div class="text-xs">During page load, for EACH unique employee number</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded">
+                                <div class="font-bold mb-2">💾 CACHING:</div>
+                                <div class="text-xs">Cached for 60 minutes per employee<br/>
+                                Cache key: <code class="bg-blue-100 dark:bg-blue-800 px-1 rounded">employee_{employeeNumber}</code></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded">
+                        <div class="font-bold text-sm mb-2">📡 API CALL:</div>
+                        <div class="font-mono text-xs">
+                            GET https://restapi.e-conomic.com/employees/{employeeNumber}
+                        </div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                            We only use the <code class="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">name</code> field from this response
+                        </div>
+                    </div>
+
+                    <div class="mt-3 text-xs text-gray-600 dark:text-gray-400 border-t pt-2">
+                        <strong>Code Location:</strong> <code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">app/Services/EconomicInvoiceService.php:331-356</code>
+                    </div>
+                </div>
+
+                <!-- Complete API Summary -->
+                <div class="mt-6 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 rounded-lg p-4 border-2 border-indigo-300 dark:border-indigo-700">
+                    <div class="font-bold text-lg mb-3 text-indigo-900 dark:text-indigo-300">📋 COMPLETE API SUMMARY</div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="bg-white dark:bg-gray-800 rounded p-3">
+                            <div class="font-bold text-blue-600 mb-2">ON PAGE LOAD</div>
+                            <div class="space-y-2 text-xs">
+                                <div class="flex items-start gap-2">
+                                    <span>1️⃣</span>
+                                    <div>
+                                        <div class="font-mono">GET /invoices/booked</div>
+                                        <div class="text-gray-600 dark:text-gray-400">Fetches all invoices</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>2️⃣</span>
+                                    <div>
+                                        <div class="font-mono">GET /employees/{id}</div>
+                                        <div class="text-gray-600 dark:text-gray-400">For each unique employee (cached 60min)</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span>3️⃣</span>
+                                    <div>
+                                        <div class="font-mono">GET /invoices/totals</div>
+                                        <div class="text-gray-600 dark:text-gray-400">Overall statistics</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-800 rounded p-3">
+                            <div class="font-bold text-green-600 mb-2">ON CUSTOMER REMINDER</div>
+                            <div class="space-y-2 text-xs">
+                                <div class="flex items-start gap-2">
+                                    <span>📧</span>
+                                    <div>
+                                        <div class="font-mono">GET /customers/{id}</div>
+                                        <div class="text-gray-600 dark:text-gray-400">Fetch customer email</div>
+                                        <div class="text-gray-600 dark:text-gray-400 mt-1">Then send email via Mail facade</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-800 rounded p-3">
+                            <div class="font-bold text-orange-600 mb-2">ON EMPLOYEE REMINDER</div>
+                            <div class="space-y-2 text-xs">
+                                <div class="flex items-start gap-2">
+                                    <span>🔔</span>
+                                    <div>
+                                        <div class="font-mono">GET /employees/{id}</div>
+                                        <div class="text-gray-600 dark:text-gray-400">Fetch employee email</div>
+                                        <div class="text-gray-600 dark:text-gray-400 mt-1">Then send summary email</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-xs text-center text-gray-600 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 rounded p-2">
+                        💡 <strong>Total API Calls per Page Load:</strong>
+                        @if($invoicesByEmployee->count() > 0)
+                            1 (invoices) + {{ $invoicesByEmployee->count() }} (employee names) + 1 (totals) = {{ 2 + $invoicesByEmployee->count() }} calls
+                        @else
+                            Approximately 3-5 calls depending on number of unique employees
+                        @endif
+                    </div>
                 </div>
             </div>
 
