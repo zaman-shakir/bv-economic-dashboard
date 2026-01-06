@@ -78,12 +78,12 @@
                 @endif
             </div>
 
-            <!-- NEW: Sync Status Bar -->
+            <!-- Combined Info Banners (Side by Side) -->
             @if($usingDatabase ?? false)
-            <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700 border border-green-200 dark:border-green-800 rounded-lg p-4 shadow-sm">
-                <div class="flex items-center justify-between flex-wrap gap-4">
-                    <!-- Sync Status -->
-                    <div class="flex items-center gap-4">
+            <div class="mb-3 grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <!-- Sync Status (Left) -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700 border border-green-200 dark:border-green-800 rounded-lg p-3 shadow-sm">
+                    <div class="flex flex-col gap-1.5">
                         <div class="flex items-center gap-2">
                             @if($lastSyncedAt && $lastSyncedAt->diffInMinutes(now()) < 30)
                                 <span class="flex h-3 w-3">
@@ -102,18 +102,18 @@
                                 Last synced: <strong>{{ $lastSyncedAt->diffForHumans() }}</strong>
                                 <span class="text-xs">({{ $lastSyncedAt->format('d M Y H:i') }})</span>
                             @else
-                                <strong>Never synced</strong> - Click "Sync Now" to fetch all invoices
+                                <strong>Never synced</strong> - Click "Sync Now"
                             @endif
                         </div>
 
-                        <div class="text-sm text-gray-600 dark:text-gray-400 border-l pl-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
                             Database: <strong>{{ number_format($syncStats['total_invoices'] ?? 0) }}</strong> invoices
                         </div>
 
                         @if($nextSyncAt)
-                        <div class="text-sm text-gray-600 dark:text-gray-400 border-l pl-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
                             @if($nextSyncAt->isPast())
-                                Next sync: <strong class="text-yellow-600 dark:text-yellow-400">Overdue (ready to run)</strong>
+                                Next sync: <strong class="text-yellow-600 dark:text-yellow-400">Overdue</strong>
                             @else
                                 Next auto-sync: <strong>{{ $nextSyncAt->diffForHumans() }}</strong>
                                 <span class="text-xs">({{ $nextSyncAt->format('H:i') }})</span>
@@ -122,11 +122,42 @@
                         @endif
                     </div>
                 </div>
+
+                <!-- Data View Info (Right) -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 border border-blue-200 dark:border-gray-600 rounded-lg p-3 shadow-sm">
+                    <div class="flex flex-col gap-1.5 text-sm text-gray-700 dark:text-gray-300">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="font-semibold text-gray-900 dark:text-gray-100">📊 Current View:</span>
+                            <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md font-medium text-xs">Database (Full History)</span>
+                        </div>
+
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span>All <strong class="text-blue-700 dark:text-blue-400">{{ number_format($syncStats['total_invoices'] ?? 0) }}</strong> invoices</span>
+                            <span>•</span>
+                            <span>Filter: <strong class="text-blue-700 dark:text-blue-400">
+                                @if($currentFilter === 'all')All Invoices
+                                @elseif($currentFilter === 'overdue')Overdue Only
+                                @elseif($currentFilter === 'unpaid')Unpaid Only
+                                @endif
+                            </strong></span>
+                        </div>
+
+                        <div>
+                            <span>Showing: <strong class="text-blue-700 dark:text-blue-400">{{ $invoicesByEmployee->sum('invoiceCount') }}</strong> invoices</span>
+                        </div>
+
+                        @if(isset($dataQuality) && $dataQuality['has_unassigned'])
+                        <div class="text-yellow-700 dark:text-yellow-400 text-xs">
+                            ⚠️ {{ $dataQuality['message'] }}
+                        </div>
+                        @endif
+                    </div>
+                </div>
             </div>
             @endif
 
             <!-- Second Toolbar: Search, Sort, Export, Bulk Actions -->
-            <div class="mb-6 flex flex-wrap items-center gap-3 card-glass p-5">
+            <div class="mb-4 flex flex-wrap items-center gap-3 card-glass p-4">
                 <!-- Search -->
                 <div class="flex-1 min-w-[250px]">
                     <div class="relative">
@@ -193,42 +224,6 @@
                             {{ __('dashboard.deselect_all') }}
                         </button>
                     </div>
-                </div>
-            </div>
-
-            <!-- Data Info Banner (Compact) -->
-            <div class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 border border-blue-200 dark:border-gray-600 rounded-lg px-4 py-3 shadow-sm">
-                <div class="text-sm text-gray-700 dark:text-gray-300">
-                    <div class="flex items-center gap-4 flex-wrap">
-                        <span class="font-semibold text-gray-900 dark:text-gray-100">📊 Current Data View:</span>
-
-                        @if($usingDatabase ?? false)
-                            <!-- Database Mode -->
-                            <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md font-medium">Database (Full History)</span>
-                            <span>•</span>
-                            <span>All {{ number_format($syncStats['total_invoices'] ?? 0) }} invoices</span>
-                        @else
-                            <!-- API Mode (Fallback) -->
-                            <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md font-medium">Live API</span>
-                            <span>•</span>
-                            <span>Last {{ config('e-conomic.sync_months', 6) }} months ({{ now()->subMonths(config('e-conomic.sync_months', 6))->format('M d, Y') }} - {{ now()->format('M d, Y') }})</span>
-                        @endif
-
-                        <span>•</span>
-                        <span>Filter: <strong class="text-blue-700 dark:text-blue-400">
-                            @if($currentFilter === 'all')All Invoices
-                            @elseif($currentFilter === 'overdue')Overdue Only
-                            @elseif($currentFilter === 'unpaid')Unpaid Only
-                            @endif
-                        </strong></span>
-                        <span>•</span>
-                        <span>Showing: <strong class="text-blue-700 dark:text-blue-400">{{ $invoicesByEmployee->sum('invoiceCount') }}</strong></span>
-                    </div>
-                    @if(isset($dataQuality) && $dataQuality['has_unassigned'])
-                        <div class="mt-1 text-yellow-700 dark:text-yellow-400">
-                            ⚠️ {{ $dataQuality['message'] }}
-                        </div>
-                    @endif
                 </div>
             </div>
 
