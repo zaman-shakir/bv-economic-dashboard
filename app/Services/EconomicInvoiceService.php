@@ -621,29 +621,104 @@ class EconomicInvoiceService
 
     /**
      * Get invoices grouped by employee from database
+     * MEMORY OPTIMIZED: Uses database aggregation instead of loading all invoices
      *
      * @param string $filter 'all', 'overdue', or 'unpaid'
      * @return Collection
      */
     public function getInvoicesByEmployeeFromDatabase(string $filter = 'overdue'): Collection
     {
-        $invoices = $this->getInvoicesFromDatabase($filter);
+        // Build base query with filter
+        $baseQuery = \App\Models\Invoice::query();
 
-        // Group by employee
-        return $invoices->groupBy(function ($invoice) {
-            return $invoice['employeeNumber'] ?? 'unassigned';
-        })->map(function ($group, $employeeNumber) {
-            $firstInvoice = $group->first();
+        switch ($filter) {
+            case 'overdue':
+                $baseQuery->overdue();
+                break;
+            case 'unpaid':
+                $baseQuery->unpaid();
+                break;
+            case 'all':
+                // No filter
+                break;
+        }
+
+        // Get employee groupings with aggregations (MEMORY EFFICIENT!)
+        $employeeGroups = (clone $baseQuery)
+            ->select([
+                \DB::raw('COALESCE(employee_number, "unassigned") as employee_number'),
+                \DB::raw('MAX(employee_name) as employee_name'),
+                \DB::raw('COUNT(*) as invoice_count'),
+                \DB::raw('SUM(gross_amount) as total_amount'),
+                \DB::raw('SUM(remainder) as total_remainder'),
+            ])
+            ->groupBy(\DB::raw('COALESCE(employee_number, "unassigned")'))
+            ->get();
+
+        // Now fetch invoices for each employee group using chunking
+        return $employeeGroups->mapWithKeys(function ($group) use ($filter) {
+            $employeeNumber = $group->employee_number;
+
+            // Build query for this employee's invoices
+            $invoiceQuery = \App\Models\Invoice::query();
+
+            // Apply same filter
+            switch ($filter) {
+                case 'overdue':
+                    $invoiceQuery->overdue();
+                    break;
+                case 'unpaid':
+                    $invoiceQuery->unpaid();
+                    break;
+            }
+
+            // Filter by employee
+            if ($employeeNumber === 'unassigned') {
+                $invoiceQuery->whereNull('employee_number');
+            } else {
+                $invoiceQuery->where('employee_number', $employeeNumber);
+            }
+
+            // Fetch invoices for this employee (limited to prevent memory issues)
+            // Only load top 100 most critical invoices per employee for dashboard display
+            $invoices = $invoiceQuery
+                ->orderBy('due_date', 'asc')
+                ->limit(100) // Dashboard limit: show top 100 per employee
+                ->get()
+                ->map(function ($invoice) {
+                    return [
+                        'invoiceNumber' => $invoice->invoice_number,
+                        'kundenr' => $invoice->customer_number,
+                        'kundenavn' => $invoice->customer_name,
+                        'overskrift' => $invoice->subject,
+                        'beloeb' => $invoice->gross_amount,
+                        'remainder' => $invoice->remainder,
+                        'currency' => $invoice->currency,
+                        'eksterntId' => $invoice->external_reference,
+                        'date' => $invoice->invoice_date->format('Y-m-d'),
+                        'dueDate' => $invoice->due_date->format('Y-m-d'),
+                        'daysOverdue' => $invoice->days_overdue,
+                        'daysTillDue' => $invoice->days_till_due,
+                        'status' => $invoice->status,
+                        'pdfUrl' => $invoice->pdf_url,
+                        'employeeNumber' => $invoice->employee_number,
+                        'employeeName' => $invoice->employee_name,
+                    ];
+                })
+                ->sortByDesc('daysOverdue')
+                ->values();
 
             return [
-                'employeeNumber' => $employeeNumber,
-                'employeeName' => $employeeNumber === 'unassigned'
-                    ? 'Unassigned'
-                    : ($firstInvoice['employeeName'] ?? "Employee #{$employeeNumber}"),
-                'invoiceCount' => $group->count(),
-                'totalAmount' => $group->sum('beloeb'),
-                'totalRemainder' => $group->sum('remainder'),
-                'invoices' => $group->sortByDesc('daysOverdue')->values()->all(),
+                $employeeNumber => [
+                    'employeeNumber' => $employeeNumber,
+                    'employeeName' => $employeeNumber === 'unassigned'
+                        ? 'Unassigned'
+                        : ($group->employee_name ?? "Employee #{$employeeNumber}"),
+                    'invoiceCount' => (int) $group->invoice_count,
+                    'totalAmount' => (float) $group->total_amount,
+                    'totalRemainder' => (float) $group->total_remainder,
+                    'invoices' => $invoices->all(),
+                ]
             ];
         });
     }
