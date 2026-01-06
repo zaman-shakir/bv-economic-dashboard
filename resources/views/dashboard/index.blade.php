@@ -90,7 +90,7 @@
                                     <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
                                     <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                                 </span>
-                                <span class="text-sm font-medium text-green-700 dark:text-green-400">Data is up-to-date</span>
+                                <span class="text-sm font-medium text-green-700 dark:text-green-400">{{ __('dashboard.data_up_to_date') }}</span>
                             @else
                                 <span class="flex h-3 w-3 rounded-full bg-yellow-500"></span>
                                 <span class="text-sm font-medium text-yellow-700 dark:text-yellow-400">Sync recommended</span>

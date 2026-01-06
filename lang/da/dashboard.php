@@ -147,4 +147,7 @@ return [
     'sent' => 'Sendt',
     'system' => 'System',
     'no_reminders_sent' => 'Ingen påmindelser er sendt endnu.',
+
+    // Sync Status
+    'data_up_to_date' => 'Data er opdateret med e-conomic',
 ];
