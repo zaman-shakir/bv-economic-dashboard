@@ -189,7 +189,19 @@
                 <div class="text-sm text-gray-700 dark:text-gray-300">
                     <div class="flex items-center gap-4 flex-wrap">
                         <span class="font-semibold text-gray-900 dark:text-gray-100">📊 Current Data View:</span>
-                        <span>Last {{ config('e-conomic.sync_months', 6) }} months ({{ now()->subMonths(config('e-conomic.sync_months', 6))->format('M d, Y') }} - {{ now()->format('M d, Y') }})</span>
+
+                        @if($usingDatabase ?? false)
+                            <!-- Database Mode -->
+                            <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md font-medium">Database (Full History)</span>
+                            <span>•</span>
+                            <span>All {{ number_format($syncStats['total_invoices'] ?? 0) }} invoices</span>
+                        @else
+                            <!-- API Mode (Fallback) -->
+                            <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md font-medium">Live API</span>
+                            <span>•</span>
+                            <span>Last {{ config('e-conomic.sync_months', 6) }} months ({{ now()->subMonths(config('e-conomic.sync_months', 6))->format('M d, Y') }} - {{ now()->format('M d, Y') }})</span>
+                        @endif
+
                         <span>•</span>
                         <span>Filter: <strong class="text-blue-700 dark:text-blue-400">
                             @if($currentFilter === 'all')All Invoices
@@ -198,7 +210,7 @@
                             @endif
                         </strong></span>
                         <span>•</span>
-                        <span>Total: <strong class="text-blue-700 dark:text-blue-400">{{ $invoicesByEmployee->sum('invoiceCount') }}</strong></span>
+                        <span>Showing: <strong class="text-blue-700 dark:text-blue-400">{{ $invoicesByEmployee->sum('invoiceCount') }}</strong></span>
                     </div>
                     @if(isset($dataQuality) && $dataQuality['has_unassigned'])
                         <div class="mt-1 text-yellow-700 dark:text-yellow-400">
