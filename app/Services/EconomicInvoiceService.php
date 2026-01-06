@@ -564,6 +564,10 @@ class EconomicInvoiceService
         $stats['completed_at'] = now()->toIso8601String();
         $stats['duration_seconds'] = now()->diffInSeconds(Carbon::parse($stats['started_at']));
 
+        // NEW: Populate employee names for all invoices with employee numbers
+        $this->updateSyncProgress(100, $stats['total_fetched'], 'Populating employee names...', 'running');
+        $this->populateEmployeeNames();
+
         // NEW: Mark sync as completed
         $this->updateSyncProgress(100, $stats['total_fetched'], 'Sync completed!', 'completed');
 
@@ -780,5 +784,44 @@ class EconomicInvoiceService
     public function clearSyncProgress(): void
     {
         Cache::forget('invoice_sync_progress');
+    }
+
+    /**
+     * Populate employee names for all invoices that have employee numbers
+     * Fetches employee names from E-conomic API and updates database
+     */
+    public function populateEmployeeNames(): void
+    {
+        // Get unique employee numbers that need names
+        $employeeNumbers = \App\Models\Invoice::query()
+            ->whereNotNull('employee_number')
+            ->where(function($query) {
+                $query->whereNull('employee_name')
+                      ->orWhere('employee_name', '');
+            })
+            ->distinct()
+            ->pluck('employee_number');
+
+        if ($employeeNumbers->isEmpty()) {
+            \Log::info("No employee names to populate");
+            return;
+        }
+
+        \Log::info("Populating employee names for " . $employeeNumbers->count() . " employees");
+
+        foreach ($employeeNumbers as $employeeNumber) {
+            try {
+                // Fetch employee name from E-conomic API (uses cache)
+                $employeeName = $this->getEmployeeName($employeeNumber);
+
+                // Update all invoices with this employee number
+                \App\Models\Invoice::where('employee_number', $employeeNumber)
+                    ->update(['employee_name' => $employeeName]);
+
+                \Log::info("Updated employee #{$employeeNumber} name to: {$employeeName}");
+            } catch (\Exception $e) {
+                \Log::warning("Failed to fetch name for employee #{$employeeNumber}: " . $e->getMessage());
+            }
+        }
     }
 }
