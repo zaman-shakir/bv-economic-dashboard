@@ -309,4 +309,14 @@ Route::get('/test-email/{recipient?}', function($recipient = null) {
     </html>');
 });
 
+// Temporary route to list all users (REMOVE AFTER USE)
+Route::get('/list-users', function() {
+    $users = \App\Models\User::all(['id', 'name', 'email', 'is_admin', 'created_at']);
+
+    return response()->json([
+        'total_users' => $users->count(),
+        'users' => $users,
+    ], 200, [], JSON_PRETTY_PRINT);
+});
+
 require __DIR__.'/auth.php';
