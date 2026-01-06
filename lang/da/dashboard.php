@@ -39,7 +39,7 @@ return [
     'outstanding' => 'Udestående',
     'currency' => 'Valuta',
     'status' => 'Status',
-    'external_id' => 'Eksternt ID',
+    'external_id' => 'Anden ref',
     'actions' => 'Handlinger',
 
     // Status badges
