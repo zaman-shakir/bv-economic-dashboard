@@ -104,184 +104,6 @@ Route::get('/clear-all-cache', function() {
     ]);
 });
 
-// Temporary debug route to test e-conomic API connection (REMOVE AFTER USE)
-Route::get('/debug-api', function() {
-    try {
-        $appToken = config('e-conomic.app_secret_token');
-        $grantToken = config('e-conomic.agreement_grant_token');
-
-        // Check if tokens are loaded
-        if (!$appToken || !$grantToken) {
-            return response()->json([
-                'error' => 'API tokens not found in configuration',
-                'app_token_exists' => !empty($appToken),
-                'grant_token_exists' => !empty($grantToken),
-                'app_token_value' => $appToken ? substr($appToken, 0, 10) . '...' : 'null',
-            ], 500);
-        }
-
-        // Check if still in demo mode
-        if ($appToken === 'demo') {
-            return response()->json([
-                'warning' => 'Still in demo mode',
-                'message' => 'Tokens are set to "demo". Config cache may not be cleared.',
-                'solution' => 'Visit /clear-all-cache first'
-            ]);
-        }
-
-        // Try a simple API call
-        $headers = [
-            'X-AppSecretToken' => $appToken,
-            'X-AgreementGrantToken' => $grantToken,
-            'Content-Type' => 'application/json',
-        ];
-
-        $response = \Illuminate\Support\Facades\Http::withHeaders($headers)
-            ->get('https://restapi.e-conomic.com/invoices/booked?pagesize=1');
-
-        if ($response->successful()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'API connection successful!',
-                'status_code' => $response->status(),
-                'data_preview' => $response->json(),
-            ]);
-        } else {
-            return response()->json([
-                'error' => 'API request failed',
-                'status_code' => $response->status(),
-                'response_body' => $response->body(),
-                'headers_sent' => [
-                    'X-AppSecretToken' => substr($appToken, 0, 10) . '...',
-                    'X-AgreementGrantToken' => substr($grantToken, 0, 10) . '...',
-                ]
-            ], $response->status());
-        }
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => 'Exception occurred',
-            'message' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'trace' => $e->getTraceAsString()
-        ], 500);
-    }
-});
-
-// Test env reading
-Route::get('/test-env', function() {
-    return response()->json([
-        'env_direct' => env('ECONOMIC_APP_SECRET_TOKEN'),
-        'config' => config('e-conomic.app_secret_token'),
-        'all_economic_env' => [
-            'ECONOMIC_APP_SECRET_TOKEN' => env('ECONOMIC_APP_SECRET_TOKEN'),
-            'ECONOMIC_AGREEMENT_GRANT_TOKEN' => env('ECONOMIC_AGREEMENT_GRANT_TOKEN'),
-        ]
-    ]);
-});
-
-// Temporary route to check invoice structure (REMOVE AFTER USE)
-Route::get('/check-invoices', function() {
-    try {
-        $appToken = config('e-conomic.app_secret_token');
-        $grantToken = config('e-conomic.agreement_grant_token');
-
-        $headers = [
-            'X-AppSecretToken' => $appToken,
-            'X-AgreementGrantToken' => $grantToken,
-            'Content-Type' => 'application/json',
-        ];
-
-        // Get 5 most recent invoices WITHOUT date filter first (to test)
-        $response = \Illuminate\Support\Facades\Http::withHeaders($headers)
-            ->timeout(30)
-            ->get("https://restapi.e-conomic.com/invoices/booked?pagesize=5");
-
-        if ($response->successful()) {
-            $data = $response->json();
-
-            return response()->json([
-                'message' => 'Sample of 5 most recent invoices',
-                'total_invoices' => $data['pagination']['results'] ?? 0,
-                'sample_invoices' => $data['collection'] ?? [],
-                'instructions' => [
-                    'Check if "references" field contains "salesPerson"',
-                    'If missing, invoices may not have salespeople assigned in e-conomic',
-                    'You may need to assign salespeople in e-conomic dashboard first'
-                ]
-            ], JSON_PRETTY_PRINT);
-        }
-
-        return response()->json([
-            'error' => 'API request failed',
-            'status_code' => $response->status(),
-            'response_body' => $response->body()
-        ], $response->status());
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => 'Exception occurred',
-            'message' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine()
-        ], 500);
-    }
-});
-
-// Temporary make user admin route (REMOVE AFTER USE for security)
-Route::get('/make-admin/{email}', function($email) {
-    $user = \App\Models\User::where('email', $email)->first();
-
-    if (!$user) {
-        return response()->json([
-            'error' => 'User not found',
-            'email' => $email
-        ], 404);
-    }
-
-    $user->is_admin = true;
-    $user->save();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'User is now an admin!',
-        'user' => [
-            'name' => $user->name,
-            'email' => $user->email,
-            'is_admin' => $user->is_admin
-        ],
-        'next_step' => 'Refresh your dashboard to see the Users menu'
-    ]);
-});
-
-// Temporary password reset route (REMOVE AFTER USE for security)
-Route::get('/reset-password/{email}/{password}', function($email, $password) {
-    $user = \App\Models\User::where('email', $email)->first();
-
-    if (!$user) {
-        return response()->json([
-            'error' => 'User not found',
-            'email' => $email,
-            'hint' => 'Check if email is correct'
-        ], 404);
-    }
-
-    $user->password = bcrypt($password);
-    $user->save();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Password updated successfully!',
-        'user' => [
-            'name' => $user->name,
-            'email' => $user->email
-        ],
-        'new_password' => $password,
-        'next_step' => 'You can now log in with your new password'
-    ]);
-});
-
 // Email Testing and Debugging Tool (REMOVE AFTER USE for security)
 Route::get('/test-email/{recipient?}', function($recipient = null) {
     $results = [
@@ -397,8 +219,8 @@ Route::get('/test-email/{recipient?}', function($recipient = null) {
                     'If email not received, check:',
                     '1. Spam/Junk folder',
                     '2. SPF/DKIM records for billigventilation.dk',
-                    '3. Check /view-logs for SMTP errors',
-                    '4. Try sending to a different email provider'
+                    '3. Try sending to a different email provider',
+                    '4. Check Laravel logs in storage/logs/laravel.log'
                 ]
             ];
         } catch (\Exception $e) {
@@ -442,7 +264,6 @@ Route::get('/test-email/{recipient?}', function($recipient = null) {
                 <a href="/test-email">Refresh Test</a>
                 <a href="/test-email/your-email@example.com">Send Test Email</a>
                 <a href="/clear-all-cache">Clear Cache</a>
-                <a href="/view-logs">View Logs</a>
             </div>
 
             <h2>1. Mail Configuration</h2>
@@ -484,59 +305,6 @@ Route::get('/test-email/{recipient?}', function($recipient = null) {
                 <p>• "Connection refused" → Wrong host or port</p>
                 <p>• "Connection timeout" → Firewall blocking port</p>
             </div>
-        </body>
-    </html>');
-});
-
-// Temporary log viewer route (REMOVE AFTER USE for security)
-Route::get('/view-logs', function() {
-    $logFile = storage_path('logs/laravel.log');
-
-    if (!file_exists($logFile)) {
-        return response()->json([
-            'error' => 'Log file not found',
-            'path' => $logFile
-        ], 404);
-    }
-
-    // Get last 200 lines of the log file
-    $lines = [];
-    $file = new \SplFileObject($logFile);
-    $file->seek(PHP_INT_MAX);
-    $lastLine = $file->key();
-    $startLine = max(0, $lastLine - 200);
-
-    $file->seek($startLine);
-    while (!$file->eof()) {
-        $lines[] = $file->current();
-        $file->next();
-    }
-
-    $logContent = implode('', $lines);
-
-    // Return formatted HTML for better readability
-    return response('<html>
-        <head>
-            <title>Laravel Logs - Last 200 Lines</title>
-            <style>
-                body { font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 20px; }
-                pre { white-space: pre-wrap; word-wrap: break-word; }
-                .error { color: #f44747; }
-                .warning { color: #ff8c00; }
-                .info { color: #4ec9b0; }
-                h1 { color: #4ec9b0; }
-                .controls { margin-bottom: 20px; }
-                .controls a { color: #4ec9b0; margin-right: 15px; }
-            </style>
-        </head>
-        <body>
-            <h1>Laravel Logs (Last 200 Lines)</h1>
-            <div class="controls">
-                <a href="/view-logs">Refresh Logs</a>
-                <a href="/clear-all-cache">Clear Cache</a>
-                <a href="/debug-api">Test API</a>
-            </div>
-            <pre>' . htmlspecialchars($logContent) . '</pre>
         </body>
     </html>');
 });
