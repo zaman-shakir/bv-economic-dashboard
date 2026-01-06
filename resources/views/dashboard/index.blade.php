@@ -3,7 +3,7 @@
     <!-- HTMX Script -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
-    <div class="py-12">
+    <div class="pt-6 pb-12">
         <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
             <!-- Top Toolbar: Filters + Employee Filter + Refresh -->
             <div class="mb-6 flex flex-wrap items-center gap-3">
