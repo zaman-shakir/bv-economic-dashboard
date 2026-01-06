@@ -80,6 +80,39 @@ class Invoice extends Model
     }
 
     /**
+     * Scope: Filter by date range
+     */
+    public function scopeDateRange($query, $dateFrom = null, $dateTo = null)
+    {
+        if ($dateFrom) {
+            $query->where('invoice_date', '>=', Carbon::parse($dateFrom)->startOfDay());
+        }
+
+        if ($dateTo) {
+            $query->where('invoice_date', '<=', Carbon::parse($dateTo)->endOfDay());
+        }
+
+        return $query;
+    }
+
+    /**
+     * Scope: Search by text (customer name, invoice number, external reference)
+     */
+    public function scopeSearch($query, $searchTerm = null)
+    {
+        if (!$searchTerm) {
+            return $query;
+        }
+
+        return $query->where(function($q) use ($searchTerm) {
+            $q->where('customer_name', 'LIKE', "%{$searchTerm}%")
+              ->orWhere('invoice_number', 'LIKE', "%{$searchTerm}%")
+              ->orWhere('external_reference', 'LIKE', "%{$searchTerm}%")
+              ->orWhere('subject', 'LIKE', "%{$searchTerm}%");
+        });
+    }
+
+    /**
      * Accessor: Days overdue
      */
     protected function daysOverdue(): Attribute

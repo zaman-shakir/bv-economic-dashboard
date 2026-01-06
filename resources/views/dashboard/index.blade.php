@@ -122,18 +122,19 @@
                         <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        <input type="text" id="searchInput" onkeyup="searchInvoices()"
-                               placeholder="{{ __('dashboard.search_invoices') }}"
+                        <input type="text" id="searchInput" value="{{ $search ?? '' }}"
+                               placeholder="{{ __('dashboard.search_invoices') }} (Press Enter to search)"
+                               onkeypress="if(event.key === 'Enter') applySearch()"
                                class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
 
                 <!-- Date Range Filter -->
                 <div class="flex items-center gap-2">
-                    <input type="date" id="dateFrom"
+                    <input type="date" id="dateFrom" value="{{ $dateFrom ?? '' }}"
                            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
                     <span class="text-gray-500 dark:text-gray-400">to</span>
-                    <input type="date" id="dateTo"
+                    <input type="date" id="dateTo" value="{{ $dateTo ?? '' }}"
                            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
                     <button onclick="filterByDateRange()"
                             class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-sm font-medium">
@@ -371,31 +372,36 @@
             }
         }
 
-        // Search Invoices
-        function searchInvoices() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const allRows = document.querySelectorAll('tbody tr');
+        // Apply Search (SERVER-SIDE)
+        function applySearch() {
+            const searchTerm = document.getElementById('searchInput').value;
+            const currentFilter = '{{ $currentFilter }}';
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
 
-            allRows.forEach(row => {
-                // Updated cell indices after adding new columns:
-                // 0: Bulk checkbox, 1: Invoice Number, 2: Date, 3: Customer Number, 4: Customer Name, 5: Subject
-                const invoiceNumber = row.cells[1]?.textContent.toLowerCase() || '';
-                const customerNumber = row.cells[3]?.textContent.toLowerCase() || '';
-                const customerName = row.cells[4]?.textContent.toLowerCase() || '';
-                const invoiceSubject = row.cells[5]?.textContent.toLowerCase() || '';
+            let url = new URL(window.location.href);
+            url.searchParams.set('filter', currentFilter);
 
-                if (invoiceNumber.includes(searchTerm) ||
-                    customerNumber.includes(searchTerm) ||
-                    customerName.includes(searchTerm) ||
-                    invoiceSubject.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+            if (searchTerm) {
+                url.searchParams.set('search', searchTerm);
+            } else {
+                url.searchParams.delete('search');
+            }
+
+            if (dateFrom) url.searchParams.set('date_from', dateFrom);
+            if (dateTo) url.searchParams.set('date_to', dateTo);
+
+            // Reload page with new parameters
+            window.location.href = url.toString();
         }
 
-        // Date Range Filter
+        // Legacy function for compatibility (client-side filtering kept as fallback)
+        function searchInvoices() {
+            // This is kept for backward compatibility
+            // But users should press Enter to trigger server-side search
+        }
+
+        // Date Range Filter (SERVER-SIDE)
         function filterByDateRange() {
             const dateFrom = document.getElementById('dateFrom').value;
             const dateTo = document.getElementById('dateTo').value;
@@ -413,41 +419,42 @@
                 return;
             }
 
-            // Note: This is a client-side filter based on visual data
-            // For production, consider server-side filtering for accuracy
-            const allSections = document.querySelectorAll('[data-employee-section]');
+            // Build URL with current filter and date range
+            const currentFilter = '{{ $currentFilter }}';
+            const searchTerm = document.getElementById('searchInput').value;
 
-            allSections.forEach(section => {
-                const rows = section.querySelectorAll('tbody tr');
-                let visibleCount = 0;
+            let url = new URL(window.location.href);
+            url.searchParams.set('filter', currentFilter);
+            url.searchParams.set('date_from', dateFrom);
+            url.searchParams.set('date_to', dateTo);
 
-                rows.forEach(row => {
-                    // For now, we'll show all rows if dates are selected
-                    // In a real implementation, you'd need invoice dates in the data
-                    row.style.display = '';
-                    visibleCount++;
-                });
+            if (searchTerm) {
+                url.searchParams.set('search', searchTerm);
+            }
 
-                // Hide employee section if no invoices match
-                if (visibleCount === 0) {
-                    section.style.display = 'none';
-                } else {
-                    section.style.display = 'block';
-                }
-            });
+            // Reload page with new parameters
+            window.location.href = url.toString();
         }
 
-        // Clear Date Filter
+        // Clear Date Filter (SERVER-SIDE)
         function clearDateFilter() {
-            document.getElementById('dateFrom').value = '';
-            document.getElementById('dateTo').value = '';
+            // Build URL without date parameters
+            const currentFilter = '{{ $currentFilter }}';
+            const searchTerm = document.getElementById('searchInput').value;
 
-            // Show all rows and sections
-            const allRows = document.querySelectorAll('tbody tr');
-            const allSections = document.querySelectorAll('[data-employee-section]');
+            let url = new URL(window.location.href);
+            url.searchParams.set('filter', currentFilter);
+            url.searchParams.delete('date_from');
+            url.searchParams.delete('date_to');
 
-            allRows.forEach(row => row.style.display = '');
-            allSections.forEach(section => section.style.display = 'block');
+            if (searchTerm) {
+                url.searchParams.set('search', searchTerm);
+            } else {
+                url.searchParams.delete('search');
+            }
+
+            // Reload page
+            window.location.href = url.toString();
         }
 
         // Sort Invoices

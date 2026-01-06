@@ -25,12 +25,22 @@ class DashboardController extends Controller
             session(['dashboard.filter' => $filter]);
         }
 
+        // Get date range and search parameters
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
+        $search = $request->get('search');
+
         // NEW: Check if we have database data, otherwise fall back to API
         $invoiceCount = \App\Models\Invoice::count();
 
         if ($invoiceCount > 0) {
             // Use database method (fast!)
-            $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployeeFromDatabase($filter);
+            $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployeeFromDatabase(
+                $filter,
+                $dateFrom,
+                $dateTo,
+                $search
+            );
         } else {
             // Fallback to API method (for backward compatibility)
             $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
@@ -52,6 +62,9 @@ class DashboardController extends Controller
             'lastSyncedAt' => $lastSyncedAt,      // NEW
             'syncStats' => $syncStats,             // NEW
             'usingDatabase' => $invoiceCount > 0,  // NEW
+            'dateFrom' => $dateFrom,               // NEW
+            'dateTo' => $dateTo,                   // NEW
+            'search' => $search,                   // NEW
         ]);
     }
 

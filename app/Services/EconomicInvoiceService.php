@@ -628,9 +628,17 @@ class EconomicInvoiceService
      * MEMORY OPTIMIZED: Uses database aggregation instead of loading all invoices
      *
      * @param string $filter 'all', 'overdue', or 'unpaid'
+     * @param string|null $dateFrom Start date for filtering (Y-m-d format)
+     * @param string|null $dateTo End date for filtering (Y-m-d format)
+     * @param string|null $search Search term for customer name, invoice number, external reference
      * @return Collection
      */
-    public function getInvoicesByEmployeeFromDatabase(string $filter = 'overdue'): Collection
+    public function getInvoicesByEmployeeFromDatabase(
+        string $filter = 'overdue',
+        ?string $dateFrom = null,
+        ?string $dateTo = null,
+        ?string $search = null
+    ): Collection
     {
         // Build base query with filter
         $baseQuery = \App\Models\Invoice::query();
@@ -647,6 +655,12 @@ class EconomicInvoiceService
                 break;
         }
 
+        // Apply date range filter
+        $baseQuery->dateRange($dateFrom, $dateTo);
+
+        // Apply search filter
+        $baseQuery->search($search);
+
         // Get employee groupings with aggregations (MEMORY EFFICIENT!)
         $employeeGroups = (clone $baseQuery)
             ->select([
@@ -660,7 +674,7 @@ class EconomicInvoiceService
             ->get();
 
         // Now fetch invoices for each employee group using chunking
-        return $employeeGroups->mapWithKeys(function ($group) use ($filter) {
+        return $employeeGroups->mapWithKeys(function ($group) use ($filter, $dateFrom, $dateTo, $search) {
             $employeeNumber = $group->employee_number;
 
             // Build query for this employee's invoices
@@ -675,6 +689,12 @@ class EconomicInvoiceService
                     $invoiceQuery->unpaid();
                     break;
             }
+
+            // Apply date range filter
+            $invoiceQuery->dateRange($dateFrom, $dateTo);
+
+            // Apply search filter
+            $invoiceQuery->search($search);
 
             // Filter by employee
             if ($employeeNumber === 'unassigned') {
