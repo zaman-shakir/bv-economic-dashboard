@@ -18,6 +18,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/refresh', [DashboardController::class, 'refreshInvoices'])->name('dashboard.refresh');
     Route::get('/dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
     Route::post('/dashboard/sync', [DashboardController::class, 'syncInvoices'])->name('dashboard.sync'); // NEW
+    Route::get('/dashboard/sync-progress', [DashboardController::class, 'getSyncProgress'])->name('dashboard.sync-progress'); // NEW
 
     // Reminder routes
     Route::get('/reminders', [ReminderController::class, 'index'])->name('reminders.index');

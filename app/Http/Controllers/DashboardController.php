@@ -108,6 +108,24 @@ class DashboardController extends Controller
     }
 
     /**
+     * NEW: Get sync progress
+     */
+    public function getSyncProgress(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $progress = $this->invoiceService->getSyncProgress();
+
+        if (!$progress) {
+            return response()->json([
+                'status' => 'idle',
+                'percentage' => 0,
+                'message' => 'No sync in progress',
+            ]);
+        }
+
+        return response()->json($progress);
+    }
+
+    /**
      * API endpoint for future integrations
      */
     public function apiOverdue(): \Illuminate\Http\JsonResponse

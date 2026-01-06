@@ -467,6 +467,9 @@ class EconomicInvoiceService
         $pageSize = 1000;
         $hasMore = true;
 
+        // NEW: Initialize progress tracking
+        $this->updateSyncProgress(0, 0, 'Starting sync...', 'running');
+
         \Log::info("Starting invoice sync from E-conomic API", ['test_limit' => $testLimit]);
 
         while ($hasMore) {
@@ -523,6 +526,16 @@ class EconomicInvoiceService
 
                     $stats['total_pages']++;
 
+                    // NEW: Update progress after each page
+                    $estimatedTotal = $testLimit ?? 21500; // Estimate 21.5k total or use test limit
+                    $progress = min(100, ($stats['total_fetched'] / $estimatedTotal) * 100);
+                    $this->updateSyncProgress(
+                        $progress,
+                        $stats['total_fetched'],
+                        "Fetched {$stats['total_fetched']} invoices (Page {$stats['total_pages']})...",
+                        'running'
+                    );
+
                     // Check if there are more pages
                     $hasMore = count($invoices) === $pageSize && (!$testLimit || $stats['total_fetched'] < $testLimit);
 
@@ -550,6 +563,9 @@ class EconomicInvoiceService
 
         $stats['completed_at'] = now()->toIso8601String();
         $stats['duration_seconds'] = now()->diffInSeconds(Carbon::parse($stats['started_at']));
+
+        // NEW: Mark sync as completed
+        $this->updateSyncProgress(100, $stats['total_fetched'], 'Sync completed!', 'completed');
 
         \Log::info("Invoice sync completed", $stats);
 
@@ -654,5 +670,40 @@ class EconomicInvoiceService
             'unassigned_count' => \App\Models\Invoice::unassigned()->count(),
             'last_synced_at' => $this->getLastSyncTime(),
         ];
+    }
+
+    /**
+     * Update sync progress in cache
+     *
+     * @param float $percentage Progress percentage (0-100)
+     * @param int $current Current count of invoices processed
+     * @param string $message Status message
+     * @param string $status Status: running, completed, failed
+     */
+    protected function updateSyncProgress(float $percentage, int $current, string $message, string $status): void
+    {
+        Cache::put('invoice_sync_progress', [
+            'percentage' => round($percentage, 2),
+            'current' => $current,
+            'message' => $message,
+            'status' => $status,
+            'updated_at' => now()->toIso8601String(),
+        ], 300); // Cache for 5 minutes
+    }
+
+    /**
+     * Get current sync progress
+     */
+    public function getSyncProgress(): ?array
+    {
+        return Cache::get('invoice_sync_progress');
+    }
+
+    /**
+     * Clear sync progress
+     */
+    public function clearSyncProgress(): void
+    {
+        Cache::forget('invoice_sync_progress');
     }
 }

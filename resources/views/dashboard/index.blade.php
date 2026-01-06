@@ -55,16 +55,26 @@
 
                 <!-- NEW: Sync Now Button -->
                 @if($usingDatabase ?? false)
-                <button
-                    id="syncButton"
-                    onclick="syncNow()"
-                    class="px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 shadow-elevation-2 btn-lift disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <svg id="syncIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    <span id="syncButtonText">Sync Now</span>
-                </button>
+                <div class="flex flex-col gap-2">
+                    <button
+                        id="syncButton"
+                        onclick="syncNow()"
+                        class="px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 shadow-elevation-2 btn-lift disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <svg id="syncIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <span id="syncButtonText">Sync Now</span>
+                    </button>
+
+                    <!-- Progress Bar (hidden by default) -->
+                    <div id="syncProgress" class="hidden">
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                            <div id="progressBar" class="bg-gradient-to-r from-green-500 to-emerald-500 h-2.5 transition-all duration-300 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <div id="progressText" class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium"></div>
+                    </div>
+                </div>
                 @endif
             </div>
 
@@ -649,8 +659,9 @@
             location.reload();
         }
 
-        // NEW: Sync Now functionality
+        // NEW: Sync Now functionality with real-time progress
         let isSyncing = false;
+        let progressInterval = null;
 
         function syncNow() {
             if (isSyncing) {
@@ -665,11 +676,22 @@
             const button = document.getElementById('syncButton');
             const buttonText = document.getElementById('syncButtonText');
             const syncIcon = document.getElementById('syncIcon');
+            const progressDiv = document.getElementById('syncProgress');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
 
             // Update button state
             button.disabled = true;
-            buttonText.textContent = 'Syncing...';
+            buttonText.textContent = 'Initializing...';
             syncIcon.classList.add('animate-spin');
+
+            // Show progress bar
+            progressDiv.classList.remove('hidden');
+            progressBar.style.width = '0%';
+            progressText.textContent = 'Starting sync...';
+
+            // Start polling for progress
+            progressInterval = setInterval(pollProgress, 1000); // Poll every second
 
             // Make sync request
             fetch('{{ route('dashboard.sync') }}', {
@@ -681,31 +703,72 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    alert(`Sync completed successfully!\n\n` +
-                          `Fetched: ${data.stats.total_fetched.toLocaleString()} invoices\n` +
-                          `Created: ${data.stats.total_created.toLocaleString()} new\n` +
-                          `Updated: ${data.stats.total_updated.toLocaleString()} existing\n` +
-                          `Duration: ${data.stats.duration_seconds} seconds`);
+                clearInterval(progressInterval);
 
-                    // Reload page to show updated data
-                    window.location.reload();
+                if (data.success) {
+                    // Update to 100%
+                    progressBar.style.width = '100%';
+                    progressText.textContent = `Completed! Fetched ${data.stats.total_fetched.toLocaleString()} invoices`;
+
+                    setTimeout(() => {
+                        alert(`Sync completed successfully!\n\n` +
+                              `Fetched: ${data.stats.total_fetched.toLocaleString()} invoices\n` +
+                              `Created: ${data.stats.total_created.toLocaleString()} new\n` +
+                              `Updated: ${data.stats.total_updated.toLocaleString()} existing\n` +
+                              `Duration: ${data.stats.duration_seconds} seconds`);
+
+                        // Reload page to show updated data
+                        window.location.reload();
+                    }, 1000);
                 } else {
                     alert('Sync failed: ' + data.message);
                     resetButton();
                 }
             })
             .catch(error => {
+                clearInterval(progressInterval);
                 console.error('Sync error:', error);
                 alert('Sync failed: ' + error.message);
                 resetButton();
             });
+        }
 
-            function resetButton() {
-                isSyncing = false;
-                button.disabled = false;
-                buttonText.textContent = 'Sync Now';
-                syncIcon.classList.remove('animate-spin');
+        function pollProgress() {
+            fetch('{{ route('dashboard.sync-progress') }}')
+                .then(response => response.json())
+                .then(data => {
+                    const progressBar = document.getElementById('progressBar');
+                    const progressText = document.getElementById('progressText');
+                    const buttonText = document.getElementById('syncButtonText');
+
+                    if (data.status === 'running') {
+                        progressBar.style.width = data.percentage + '%';
+                        progressText.textContent = `${data.percentage}% - ${data.message}`;
+                        buttonText.textContent = `Syncing ${data.percentage.toFixed(0)}%`;
+                    } else if (data.status === 'completed') {
+                        progressBar.style.width = '100%';
+                        progressText.textContent = 'Completed!';
+                    }
+                })
+                .catch(error => {
+                    console.error('Progress poll error:', error);
+                });
+        }
+
+        function resetButton() {
+            isSyncing = false;
+            const button = document.getElementById('syncButton');
+            const buttonText = document.getElementById('syncButtonText');
+            const syncIcon = document.getElementById('syncIcon');
+            const progressDiv = document.getElementById('syncProgress');
+
+            button.disabled = false;
+            buttonText.textContent = 'Sync Now';
+            syncIcon.classList.remove('animate-spin');
+            progressDiv.classList.add('hidden');
+
+            if (progressInterval) {
+                clearInterval(progressInterval);
             }
         }
     </script>
