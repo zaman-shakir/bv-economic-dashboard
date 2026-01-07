@@ -882,6 +882,7 @@ class EconomicInvoiceService
             WHEN TRIM(external_reference) LIKE 'BV%' AND TRIM(external_reference) NOT LIKE 'BV-WO-%' THEN 'BV-Orders'
             WHEN TRIM(external_reference) LIKE 'BF%' AND TRIM(external_reference) NOT LIKE 'BF-WO-%' THEN 'BF-Orders'
             WHEN UPPER(TRIM(external_reference)) IN ('LH', 'AKS', 'MB', 'MW', 'EKL', 'BC', 'LNJ', 'DH', 'JEN') THEN UPPER(TRIM(external_reference))
+            WHEN TRIM(external_reference) REGEXP '^[0-9]+ - [0-9]+$' THEN CONCAT('Project-', SUBSTRING_INDEX(TRIM(external_reference), ' - ', 1))
             WHEN TRIM(external_reference) = '' OR external_reference IS NULL THEN 'unassigned'
             ELSE TRIM(external_reference)
         END";
@@ -939,6 +940,10 @@ class EconomicInvoiceService
                 $isPatternGroup = true;
             } elseif ($otherRef === 'BF-Orders') {
                 $displayName = '📦 BF Orders (Non-Web)';
+                $isPatternGroup = true;
+            } elseif (strpos($otherRef, 'Project-') === 0) {
+                $projectNum = str_replace('Project-', '', $otherRef);
+                $displayName = "🏗️ Project {$projectNum}";
                 $isPatternGroup = true;
             } elseif (isset($personCodeMapping[$upperRef])) {
                 $displayName = $personCodeMapping[$upperRef] . " ({$otherRef})";
