@@ -200,15 +200,18 @@
                             </td>
                         </tr>
 
-                        <!-- Comments Row (Hidden by default) -->
+                        <!-- Sticky Notes Row (Always visible if comments exist) -->
                         <tr id="comments-row-{{ $invoice['invoiceId'] ?? '' }}" class="comments-row hidden">
-                            <td colspan="12" class="px-0 py-0">
-                                <div class="comments-panel bg-gray-50 dark:bg-gray-900 border-t-2 border-blue-500">
-                                    <!-- Close Button Header -->
-                                    <div class="flex justify-between items-center px-6 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700">
-                                        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                            {{ __('dashboard.invoice_comments') }} - #{{ $invoice['invoiceNumber'] }}
-                                        </h3>
+                            <td colspan="12" class="px-0 py-0 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-gray-800 dark:to-gray-850">
+                                <div class="comments-panel">
+                                    <!-- Sticky Notes Header -->
+                                    <div class="flex justify-between items-center px-6 pt-3 pb-2">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xl">📌</span>
+                                            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                {{ __('dashboard.invoice_comments') }} - #{{ $invoice['invoiceNumber'] }}
+                                            </h3>
+                                        </div>
                                         <button
                                             onclick="toggleComments({{ $invoice['invoiceId'] ?? 'null' }})"
                                             class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition p-1"
@@ -218,42 +221,59 @@
                                             </svg>
                                         </button>
                                     </div>
-                                    <div class="p-6">
+
+                                    <div class="px-6 pb-4">
                                         <!-- Loading State -->
                                         <div id="loading-{{ $invoice['invoiceId'] ?? '' }}" class="text-center py-4 text-gray-600 dark:text-gray-400">
-                                            <svg class="animate-spin h-8 w-8 mx-auto text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <svg class="animate-spin h-6 w-6 mx-auto text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
-                                            <p class="mt-2">{{ __('dashboard.loading_comments') }}</p>
+                                            <p class="mt-2 text-xs">{{ __('dashboard.loading_comments') }}</p>
                                         </div>
 
-                                        <!-- Comments List (Hidden initially) -->
+                                        <!-- Sticky Notes Grid (Visible by default) -->
                                         <div id="comments-list-{{ $invoice['invoiceId'] ?? '' }}" class="hidden">
-                                            <!-- Comments will be inserted here via JavaScript -->
+                                            <!-- Sticky notes will be inserted here via JavaScript -->
                                         </div>
 
-                                        <!-- Add Comment Form -->
-                                        <div id="add-comment-{{ $invoice['invoiceId'] ?? '' }}" class="hidden mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                            <div class="relative">
+                                        <!-- Add New Sticky Note Button & Form -->
+                                        <div id="add-comment-section-{{ $invoice['invoiceId'] ?? '' }}" class="hidden mt-3">
+                                            <!-- Add button -->
+                                            <button
+                                                id="add-btn-{{ $invoice['invoiceId'] ?? '' }}"
+                                                onclick="showAddForm({{ $invoice['invoiceId'] ?? 'null' }})"
+                                                class="inline-flex items-center gap-2 px-3 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-sm font-medium rounded shadow-md transition transform hover:scale-105">
+                                                <span class="text-base">📝</span>
+                                                {{ __('dashboard.add_comment') }}
+                                            </button>
+
+                                            <!-- Add form (hidden initially) -->
+                                            <div id="add-form-{{ $invoice['invoiceId'] ?? '' }}" class="hidden mt-3 sticky-note bg-yellow-200 dark:bg-yellow-600 p-3 rounded shadow-lg max-w-xs">
                                                 <textarea
                                                     id="comment-input-{{ $invoice['invoiceId'] ?? '' }}"
-                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                                    class="w-full bg-transparent border-0 focus:ring-0 text-sm text-gray-800 dark:text-gray-900 placeholder-gray-600 dark:placeholder-gray-700 resize-none"
                                                     placeholder="{{ __('dashboard.add_note') }}"
                                                     maxlength="1000"
-                                                    rows="3"
+                                                    rows="4"
                                                     onkeyup="updateCharCount({{ $invoice['invoiceId'] ?? 'null' }})"
                                                 ></textarea>
-                                                <div class="flex justify-between items-center mt-2">
-                                                    <span id="char-count-{{ $invoice['invoiceId'] ?? '' }}" class="text-xs text-gray-500 dark:text-gray-400">
+                                                <div class="flex justify-between items-center mt-2 pt-2 border-t border-yellow-400 dark:border-yellow-700">
+                                                    <span id="char-count-{{ $invoice['invoiceId'] ?? '' }}" class="text-xs text-gray-600 dark:text-gray-800">
                                                         0/1000
                                                     </span>
-                                                    <button
-                                                        onclick="saveComment({{ $invoice['invoiceId'] ?? 'null' }})"
-                                                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    >
-                                                        {{ __('dashboard.save_note') }}
-                                                    </button>
+                                                    <div class="flex gap-2">
+                                                        <button
+                                                            onclick="cancelAddComment({{ $invoice['invoiceId'] ?? 'null' }})"
+                                                            class="px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition">
+                                                            {{ __('dashboard.cancel') }}
+                                                        </button>
+                                                        <button
+                                                            onclick="saveComment({{ $invoice['invoiceId'] ?? 'null' }})"
+                                                            class="px-3 py-1 bg-gray-800 hover:bg-gray-900 text-white text-xs font-medium rounded transition">
+                                                            {{ __('dashboard.save_note') }}
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

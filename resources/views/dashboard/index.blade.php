@@ -249,6 +249,30 @@
         .htmx-request .htmx-indicator {
             display: block;
         }
+
+        /* Sticky Note Styling */
+        .sticky-note {
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+        }
+
+        .sticky-note:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .sticky-note::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+        }
     </style>
 
     <script>
@@ -911,37 +935,76 @@
 
         function renderComments(invoiceId, comments) {
             const listDiv = document.getElementById(`comments-list-${invoiceId}`);
+            const addSection = document.getElementById(`add-comment-section-${invoiceId}`);
             if (!listDiv) return;
 
             if (comments.length === 0) {
-                listDiv.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm">{{ __('dashboard.no_comments_yet') }}</p>';
+                listDiv.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm italic">{{ __('dashboard.no_comments_yet') }}</p>';
             } else {
-                const commentsHtml = comments.map(comment => {
+                // Sticky note colors for variety
+                const stickyColors = [
+                    'bg-yellow-200 dark:bg-yellow-600',
+                    'bg-pink-200 dark:bg-pink-600',
+                    'bg-blue-200 dark:bg-blue-600',
+                    'bg-green-200 dark:bg-green-600',
+                    'bg-purple-200 dark:bg-purple-600'
+                ];
+
+                const commentsHtml = comments.map((comment, index) => {
                     const date = new Date(comment.created_at);
-                    const formattedDate = date.toLocaleDateString('en-GB') + ' ' +
+                    const formattedDate = date.toLocaleDateString('en-GB', {day: '2-digit', month: 'short'}) + ' ' +
                                         date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
+                    const colorClass = stickyColors[index % stickyColors.length];
+                    const rotation = (index % 3 === 0) ? '-rotate-1' : ((index % 3 === 1) ? 'rotate-1' : '');
+
                     return `
-                        <div class="bg-white dark:bg-gray-800 border-l-4 border-blue-500 rounded-lg shadow-sm mb-3 p-4">
-                            <div class="flex justify-between items-start mb-2">
-                                <div class="font-semibold text-gray-900 dark:text-gray-100">
+                        <div class="sticky-note ${colorClass} ${rotation} p-3 rounded shadow-md transform hover:scale-105 transition-transform duration-200">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="text-xs font-bold text-gray-800 dark:text-gray-900">
                                     ${escapeHtml(comment.user?.name || '{{ __('dashboard.unknown_user') }}')}
                                 </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                <div class="text-[10px] text-gray-600 dark:text-gray-800 opacity-75">
                                     ${formattedDate}
                                 </div>
                             </div>
-                            <div class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                            <div class="text-sm text-gray-800 dark:text-gray-900 whitespace-pre-wrap leading-snug">
                                 ${escapeHtml(comment.comment)}
                             </div>
                         </div>
                     `;
                 }).join('');
 
-                listDiv.innerHTML = commentsHtml;
+                listDiv.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">${commentsHtml}</div>`;
             }
 
             listDiv.classList.remove('hidden');
+            if (addSection) addSection.classList.remove('hidden');
+        }
+
+        function showAddForm(invoiceId) {
+            const addBtn = document.getElementById(`add-btn-${invoiceId}`);
+            const addForm = document.getElementById(`add-form-${invoiceId}`);
+
+            if (addBtn) addBtn.classList.add('hidden');
+            if (addForm) addForm.classList.remove('hidden');
+
+            // Focus textarea
+            const textarea = document.getElementById(`comment-input-${invoiceId}`);
+            if (textarea) textarea.focus();
+        }
+
+        function cancelAddComment(invoiceId) {
+            const addBtn = document.getElementById(`add-btn-${invoiceId}`);
+            const addForm = document.getElementById(`add-form-${invoiceId}`);
+            const textarea = document.getElementById(`comment-input-${invoiceId}`);
+
+            if (addForm) addForm.classList.add('hidden');
+            if (addBtn) addBtn.classList.remove('hidden');
+            if (textarea) {
+                textarea.value = '';
+                updateCharCount(invoiceId);
+            }
         }
 
         async function saveComment(invoiceId) {
@@ -985,9 +1048,8 @@
                 delete commentsCache[invoiceId];
                 await loadComments(invoiceId);
 
-                // Clear textarea
-                textarea.value = '';
-                updateCharCount(invoiceId);
+                // Hide add form and show add button again
+                cancelAddComment(invoiceId);
 
                 // Update comment count badge
                 updateCommentCountBadge(invoiceId);
