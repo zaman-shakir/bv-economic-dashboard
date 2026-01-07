@@ -13,16 +13,22 @@ class DashboardController extends Controller
     ) {}
 
     /**
-     * Main dashboard view - invoices grouped by employee
+     * Main dashboard view - invoices grouped by employee or person code
      */
     public function index(Request $request): View
     {
         // Get filter from request or use saved preference
         $filter = $request->get('filter', session('dashboard.filter', 'overdue')); // all, overdue, unpaid
 
-        // Save filter preference to session
+        // Get grouping preference (employee or person_code)
+        $grouping = $request->get('grouping', session('dashboard.grouping', 'employee')); // employee or person_code
+
+        // Save preferences to session
         if ($request->has('filter')) {
             session(['dashboard.filter' => $filter]);
+        }
+        if ($request->has('grouping')) {
+            session(['dashboard.grouping' => $grouping]);
         }
 
         // Get date range and search parameters
@@ -35,15 +41,28 @@ class DashboardController extends Controller
 
         if ($invoiceCount > 0) {
             // Use database method (fast!)
-            $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployeeFromDatabase(
-                $filter,
-                $dateFrom,
-                $dateTo,
-                $search
-            );
+            if ($grouping === 'person_code') {
+                $invoicesByEmployee = $this->invoiceService->getInvoicesByPersonCodeFromDatabase(
+                    $filter,
+                    $dateFrom,
+                    $dateTo,
+                    $search
+                );
+            } else {
+                $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployeeFromDatabase(
+                    $filter,
+                    $dateFrom,
+                    $dateTo,
+                    $search
+                );
+            }
         } else {
             // Fallback to API method (for backward compatibility)
-            $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
+            if ($grouping === 'person_code') {
+                $invoicesByEmployee = $this->invoiceService->getInvoicesByPersonCode($filter);
+            } else {
+                $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
+            }
         }
 
         $totals = $this->invoiceService->getInvoiceTotals();
@@ -65,6 +84,7 @@ class DashboardController extends Controller
             'dataQuality' => $dataQuality,
             'lastUpdated' => now()->format('d-m-Y H:i'),
             'currentFilter' => $filter,
+            'currentGrouping' => $grouping,        // NEW
             'lastSyncedAt' => $lastSyncedAt,       // NEW
             'nextSyncAt' => $nextSyncAt,           // NEW
             'syncStats' => $syncStats,             // NEW

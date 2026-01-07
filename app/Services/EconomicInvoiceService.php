@@ -326,6 +326,61 @@ class EconomicInvoiceService
     }
 
     /**
+     * Get invoices grouped by person code from external_reference field
+     *
+     * This groups invoices by the person code (e.g., LH, AKS, MB) found in the
+     * external_reference field (references.other in API). This is a separate
+     * grouping from employee-based grouping.
+     *
+     * @param string $filter 'all', 'overdue', or 'unpaid'
+     */
+    public function getInvoicesByPersonCode(string $filter = 'overdue'): Collection
+    {
+        // Person code mapping
+        $personCodeMapping = [
+            'LH' => 'Lone Holgersen',
+            'AKS' => 'Anne Karin Skøtt',
+            'MB' => 'Michael Binder',
+            'MW' => 'Michael Wichmann',
+            'EKL' => 'Emil Kremer Lildballe',
+            'BC' => 'Brian Christiansen',
+            'LNJ' => 'Lars Nørby Jessen',
+            'DH' => 'Dorte Hindahl',
+            'JEN' => 'Jakob Erik Nielsen',
+        ];
+
+        $invoices = match($filter) {
+            'all' => $this->getAllInvoices(),
+            'unpaid' => $this->getUnpaidInvoices(),
+            default => $this->getOverdueInvoices(),
+        };
+
+        // Group invoices by person code in external_reference
+        return $invoices->groupBy(function ($invoice) use ($personCodeMapping) {
+            $extRef = strtoupper(trim($invoice['references']['other'] ?? ''));
+
+            // Check if it matches a known person code
+            if (isset($personCodeMapping[$extRef])) {
+                return $extRef;
+            }
+
+            // Otherwise, it's unassigned
+            return 'unassigned';
+        })->map(function ($group, $personCode) use ($personCodeMapping) {
+            return [
+                'employeeNumber' => $personCode,
+                'employeeName' => $personCode === 'unassigned'
+                    ? 'Unassigned / No Person Code'
+                    : $personCodeMapping[$personCode],
+                'invoiceCount' => $group->count(),
+                'totalAmount' => $group->sum('grossAmount'),
+                'totalRemainder' => $group->sum('remainder'),
+                'invoices' => $group->map(fn($inv) => $this->formatInvoice($inv))->sortByDesc('daysOverdue'),
+            ];
+        });
+    }
+
+    /**
      * Get employee name by number
      */
     protected function getEmployeeName(int|string $employeeNumber): string
@@ -738,6 +793,152 @@ class EconomicInvoiceService
                     'employeeName' => $employeeNumber === 'unassigned'
                         ? 'Unassigned'
                         : ($group->employee_name ?? "Employee #{$employeeNumber}"),
+                    'invoiceCount' => (int) $group->invoice_count,
+                    'totalAmount' => (float) $group->total_amount,
+                    'totalRemainder' => (float) $group->total_remainder,
+                    'invoices' => $invoices->all(),
+                ]
+            ];
+        });
+    }
+
+    /**
+     * Get invoices grouped by person code from database
+     *
+     * This groups invoices by the person code (e.g., LH, AKS, MB) found in the
+     * external_reference field. This is a separate grouping from employee-based grouping.
+     *
+     * @param string $filter 'all', 'overdue', or 'unpaid'
+     * @param string|null $dateFrom Start date filter (YYYY-MM-DD)
+     * @param string|null $dateTo End date filter (YYYY-MM-DD)
+     * @param string|null $search Search term for customer name/invoice number
+     */
+    public function getInvoicesByPersonCodeFromDatabase(
+        string $filter = 'overdue',
+        ?string $dateFrom = null,
+        ?string $dateTo = null,
+        ?string $search = null
+    ): Collection
+    {
+        // Person code mapping
+        $personCodeMapping = [
+            'LH' => 'Lone Holgersen',
+            'AKS' => 'Anne Karin Skøtt',
+            'MB' => 'Michael Binder',
+            'MW' => 'Michael Wichmann',
+            'EKL' => 'Emil Kremer Lildballe',
+            'BC' => 'Brian Christiansen',
+            'LNJ' => 'Lars Nørby Jessen',
+            'DH' => 'Dorte Hindahl',
+            'JEN' => 'Jakob Erik Nielsen',
+        ];
+
+        // Build base query with filter
+        $baseQuery = \App\Models\Invoice::query();
+
+        switch ($filter) {
+            case 'overdue':
+                $baseQuery->overdue();
+                break;
+            case 'unpaid':
+                $baseQuery->unpaid();
+                break;
+            case 'all':
+                // No filter
+                break;
+        }
+
+        // Apply date range filter
+        $baseQuery->dateRange($dateFrom, $dateTo);
+
+        // Apply search filter
+        $baseQuery->search($search);
+
+        // Get person code groupings with aggregations
+        // We use UPPER() to normalize the external_reference for grouping
+        $personCodeGroups = (clone $baseQuery)
+            ->select([
+                \DB::raw('UPPER(TRIM(COALESCE(external_reference, "unassigned"))) as person_code'),
+                \DB::raw('COUNT(*) as invoice_count'),
+                \DB::raw('SUM(gross_amount) as total_amount'),
+                \DB::raw('SUM(remainder) as total_remainder'),
+            ])
+            ->groupBy(\DB::raw('UPPER(TRIM(COALESCE(external_reference, "unassigned")))'))
+            ->get();
+
+        // Filter to only person codes we know about
+        $personCodeGroups = $personCodeGroups->filter(function ($group) use ($personCodeMapping) {
+            return $group->person_code === 'UNASSIGNED' || isset($personCodeMapping[$group->person_code]);
+        });
+
+        // Now fetch invoices for each person code group
+        return $personCodeGroups->mapWithKeys(function ($group) use ($filter, $dateFrom, $dateTo, $search, $personCodeMapping) {
+            $personCode = $group->person_code;
+
+            // Build query for this person code's invoices
+            $invoiceQuery = \App\Models\Invoice::query();
+
+            // Apply same filter
+            switch ($filter) {
+                case 'overdue':
+                    $invoiceQuery->overdue();
+                    break;
+                case 'unpaid':
+                    $invoiceQuery->unpaid();
+                    break;
+            }
+
+            // Apply date range filter
+            $invoiceQuery->dateRange($dateFrom, $dateTo);
+
+            // Apply search filter
+            $invoiceQuery->search($search);
+
+            // Filter by person code
+            if ($personCode === 'UNASSIGNED') {
+                // Match invoices that don't have a known person code
+                $invoiceQuery->where(function ($query) use ($personCodeMapping) {
+                    $query->whereNull('external_reference')
+                        ->orWhereNotIn(\DB::raw('UPPER(TRIM(external_reference))'), array_keys($personCodeMapping));
+                });
+            } else {
+                $invoiceQuery->whereRaw('UPPER(TRIM(external_reference)) = ?', [$personCode]);
+            }
+
+            // Fetch invoices for this person code (limited to prevent memory issues)
+            $invoices = $invoiceQuery
+                ->orderBy('due_date', 'asc')
+                ->limit(100) // Dashboard limit: show top 100 per person
+                ->get()
+                ->map(function ($invoice) {
+                    return [
+                        'invoiceNumber' => $invoice->invoice_number,
+                        'kundenr' => $invoice->customer_number,
+                        'kundenavn' => $invoice->customer_name,
+                        'overskrift' => $invoice->subject,
+                        'beloeb' => $invoice->gross_amount,
+                        'remainder' => $invoice->remainder,
+                        'currency' => $invoice->currency,
+                        'eksterntId' => $invoice->external_reference,
+                        'date' => $invoice->invoice_date->format('Y-m-d'),
+                        'dueDate' => $invoice->due_date->format('Y-m-d'),
+                        'daysOverdue' => $invoice->days_overdue,
+                        'daysTillDue' => $invoice->days_till_due,
+                        'status' => $invoice->status,
+                        'pdfUrl' => $invoice->pdf_url,
+                        'employeeNumber' => $invoice->employee_number,
+                        'employeeName' => $invoice->employee_name,
+                    ];
+                })
+                ->sortByDesc('daysOverdue')
+                ->values();
+
+            return [
+                $personCode => [
+                    'employeeNumber' => $personCode,
+                    'employeeName' => $personCode === 'UNASSIGNED'
+                        ? 'Unassigned / No Person Code'
+                        : $personCodeMapping[$personCode],
                     'invoiceCount' => (int) $group->invoice_count,
                     'totalAmount' => (float) $group->total_amount,
                     'totalRemainder' => (float) $group->total_remainder,

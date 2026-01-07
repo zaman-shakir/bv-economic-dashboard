@@ -23,6 +23,18 @@
                     </a>
                 </div>
 
+                <!-- Grouping Selector -->
+                <div class="flex gap-2">
+                    <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'employee']) }}"
+                       class="px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-elevation-2 btn-lift' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md' }}">
+                        👤 By Employee
+                    </a>
+                    <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'person_code']) }}"
+                       class="px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 {{ ($currentGrouping ?? 'employee') === 'person_code' ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-elevation-2 btn-lift' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md' }}">
+                        🏷️ By Person Code
+                    </a>
+                </div>
+
                 <!-- Employee Filter -->
                 <div class="flex-1 min-w-[200px]">
                     <select id="employeeFilter" onchange="filterByEmployee(this.value)"
