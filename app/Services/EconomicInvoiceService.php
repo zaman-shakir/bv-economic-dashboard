@@ -928,23 +928,23 @@ class EconomicInvoiceService
                 $displayName = 'No External Reference';
                 $isPatternGroup = true; // Don't show employee for this catch-all group
             } elseif ($otherRef === 'BV-Webordrer') {
-                $displayName = '🛒 BilligVentilation Webordrer';
+                $displayName = 'BilligVentilation Webordrer';
                 $isPatternGroup = true;
             } elseif ($otherRef === 'BF-Webordrer') {
-                $displayName = '🛒 BilligFilter Webordrer';
+                $displayName = 'BilligFilter Webordrer';
                 $isPatternGroup = true;
             } elseif ($otherRef === 'BM-Orders') {
-                $displayName = '📦 BM Orders (Legacy)';
+                $displayName = 'BM Orders (Legacy)';
                 $isPatternGroup = true;
             } elseif ($otherRef === 'BV-Orders') {
-                $displayName = '📦 BV Orders (Non-Web)';
+                $displayName = 'BV Orders (Non-Web)';
                 $isPatternGroup = true;
             } elseif ($otherRef === 'BF-Orders') {
-                $displayName = '📦 BF Orders (Non-Web)';
+                $displayName = 'BF Orders (Non-Web)';
                 $isPatternGroup = true;
             } elseif (strpos($otherRef, 'Project-') === 0) {
                 $projectNum = str_replace('Project-', '', $otherRef);
-                $displayName = "🏗️ Project {$projectNum}";
+                $displayName = "Project {$projectNum}";
                 $isPatternGroup = true;
             } elseif (isset($personCodeMapping[$upperRef])) {
                 $displayName = $personCodeMapping[$upperRef] . " ({$otherRef})";
@@ -954,7 +954,7 @@ class EconomicInvoiceService
 
             // Add employee info to display name if available (but not for pattern groups)
             if ($employeeName && !$isPatternGroup) {
-                $displayName .= " → 👤 {$employeeName}";
+                $displayName .= " [Employee: {$employeeName}]";
             }
 
             // Limit to 100 invoices per group for display
