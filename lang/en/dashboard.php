@@ -170,4 +170,19 @@ return [
     'enter_comment' => 'Please enter a comment',
     'failed_load_comments' => 'Failed to load comments. Please try again.',
     'unknown_user' => 'Unknown user',
+
+    // Comments Page
+    'all_comments' => 'All comments',
+    'total_comments' => 'Total comments',
+    'invoices_with_comments' => 'Invoices with comments',
+    'users_who_commented' => 'Users who commented',
+    'search_comments' => 'Search comments',
+    'search_comments_placeholder' => 'Search in comment text...',
+    'filter_by_user' => 'Filter by user',
+    'all_users' => 'All users',
+    'search' => 'Search',
+    'clear' => 'Clear',
+    'go_to_invoice' => 'Go to invoice',
+    'no_comments_found' => 'No comments found',
+    'no_comments_found_message' => 'Try adjusting your search filters.',
 ];

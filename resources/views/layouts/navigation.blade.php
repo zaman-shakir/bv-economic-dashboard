@@ -21,6 +21,9 @@
                     <x-nav-link :href="route('reminders.index')" :active="request()->routeIs('reminders.index')">
                         🔔 Reminders
                     </x-nav-link>
+                    <x-nav-link :href="route('comments.page')" :active="request()->routeIs('comments.page')">
+                        💬 {{ __('dashboard.comments') }}
+                    </x-nav-link>
                     @if(Auth::user()->is_admin)
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                             {{ __('dashboard.users') }}
@@ -133,6 +136,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('reminders.index')" :active="request()->routeIs('reminders.index')">
                 🔔 Reminders
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('comments.page')" :active="request()->routeIs('comments.page')">
+                💬 {{ __('dashboard.comments') }}
             </x-responsive-nav-link>
             @if(Auth::user()->is_admin)
                 <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">

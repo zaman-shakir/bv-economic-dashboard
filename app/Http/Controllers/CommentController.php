@@ -6,11 +6,43 @@ use App\Models\Invoice;
 use App\Models\InvoiceComment;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class CommentController extends Controller
 {
     /**
-     * Get all comments for a specific invoice.
+     * Display all comments page with search and filters.
+     */
+    public function indexPage(Request $request): View
+    {
+        $search = $request->input('search', '');
+        $userId = $request->input('user_id', '');
+
+        $query = InvoiceComment::with(['user:id,name', 'invoice'])
+            ->orderBy('created_at', 'desc');
+
+        // Search filter
+        if ($search) {
+            $query->where('comment', 'LIKE', "%{$search}%");
+        }
+
+        // User filter
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+
+        $comments = $query->paginate(50);
+
+        // Get all users who have commented for filter dropdown
+        $users = \App\Models\User::whereHas('comments')
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return view('comments.index', compact('comments', 'users', 'search', 'userId'));
+    }
+
+    /**
+     * Get all comments for a specific invoice (API).
      */
     public function index($invoiceId): JsonResponse
     {

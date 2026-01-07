@@ -26,6 +26,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/reminders/send-employee', [ReminderController::class, 'sendEmployeeReminder'])->name('reminders.send-employee');
     Route::get('/reminders/{invoiceNumber}/history', [ReminderController::class, 'getReminderHistory'])->name('reminders.history');
 
+    // Comments page route
+    Route::get('/comments', [\App\Http\Controllers\CommentController::class, 'indexPage'])->name('comments.page');
+
     // Invoice comments routes
     Route::get('/api/invoices/{invoiceId}/comments', [\App\Http\Controllers\CommentController::class, 'index'])->name('comments.index');
     Route::post('/api/invoices/{invoiceId}/comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');

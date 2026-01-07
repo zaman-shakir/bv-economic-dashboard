@@ -170,4 +170,19 @@ return [
     'enter_comment' => 'Indtast venligst en kommentar',
     'failed_load_comments' => 'Kunne ikke indlæse kommentarer. Prøv venligst igen.',
     'unknown_user' => 'Ukendt bruger',
+
+    // Comments Page
+    'all_comments' => 'Alle kommentarer',
+    'total_comments' => 'Total kommentarer',
+    'invoices_with_comments' => 'Fakturaer med kommentarer',
+    'users_who_commented' => 'Brugere der har kommenteret',
+    'search_comments' => 'Søg kommentarer',
+    'search_comments_placeholder' => 'Søg i kommentar tekst...',
+    'filter_by_user' => 'Filtrer efter bruger',
+    'all_users' => 'Alle brugere',
+    'search' => 'Søg',
+    'clear' => 'Ryd',
+    'go_to_invoice' => 'Gå til faktura',
+    'no_comments_found' => 'Ingen kommentarer fundet',
+    'no_comments_found_message' => 'Prøv at justere dine søgefiltre.',
 ];

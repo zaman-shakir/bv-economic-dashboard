@@ -47,4 +47,12 @@ class User extends Authenticatable
             'is_admin' => 'boolean',
         ];
     }
+
+    /**
+     * Get all comments made by this user.
+     */
+    public function comments()
+    {
+        return $this->hasMany(InvoiceComment::class);
+    }
 }
