@@ -171,18 +171,16 @@
                                     <span class="text-gray-400 dark:text-gray-600">-</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-center">
-                                <div class="flex items-center justify-center gap-2">
+                            <td class="px-3 py-2 text-center">
+                                <div class="flex flex-col items-center gap-0.5">
                                     <!-- Comments Button -->
                                     <button
                                         onclick="toggleComments({{ $invoice['invoiceId'] ?? 'null' }})"
-                                        class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded transition"
+                                        class="inline-flex items-center justify-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded transition min-w-[60px]"
                                         title="View/Add Comments">
-                                        💬 Comments
+                                        <span style="font-size: 11px">💬</span>
                                         @if(($invoice['commentCount'] ?? 0) > 0)
-                                            <span class="inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold text-white bg-blue-600 rounded-full">
-                                                {{ $invoice['commentCount'] }}
-                                            </span>
+                                            <span class="bg-blue-600 text-white rounded-full px-1 text-[9px] font-bold">{{ $invoice['commentCount'] }}</span>
                                         @endif
                                     </button>
 
@@ -190,10 +188,13 @@
                                     @if($invoice['status'] !== 'paid')
                                         <button
                                             onclick="sendReminder({{ $invoice['invoiceNumber'] }}, {{ $invoice['kundenr'] }}, this)"
-                                            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                            class="inline-flex items-center justify-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition disabled:opacity-50 disabled:cursor-not-allowed min-w-[60px]"
                                             title="{{ __('dashboard.send_reminder') }}">
-                                            <span class="text-base">📧</span> Email
+                                            <span style="font-size: 11px">📧</span>
+                                            <span>Send</span>
                                         </button>
+                                    @else
+                                        <div class="h-5"></div>
                                     @endif
                                 </div>
                             </td>

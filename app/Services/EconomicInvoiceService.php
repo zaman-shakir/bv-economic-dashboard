@@ -673,7 +673,11 @@ class EconomicInvoiceService
 
         // Use cursor for memory efficiency with large datasets
         return $query->orderBy('due_date', 'asc')->cursor()->map(function ($invoice) {
+            // Get comment count for this invoice
+            $commentCount = \App\Models\InvoiceComment::where('invoice_id', $invoice->id)->count();
+
             return [
+                'invoiceId' => $invoice->id,
                 'invoiceNumber' => $invoice->invoice_number,
                 'kundenr' => $invoice->customer_number,
                 'kundenavn' => $invoice->customer_name,
@@ -691,6 +695,7 @@ class EconomicInvoiceService
                 'pdfUrl' => $invoice->pdf_url,
                 'employeeNumber' => $invoice->employee_number,
                 'employeeName' => $invoice->employee_name,
+                'commentCount' => $commentCount,
             ];
         })->collect();
     }
