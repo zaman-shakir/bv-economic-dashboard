@@ -952,19 +952,11 @@
                 }
             });
 
-            // Scroll to the invoice row BEFORE opening the panel
-            const invoiceRow = panel.previousElementSibling;
-            if (invoiceRow) {
-                invoiceRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-
-            // Show panel with slide down (after a short delay to allow scroll)
-            setTimeout(() => {
-                panel.classList.remove('hidden');
-                panel.style.maxHeight = '0';
-                panel.style.overflow = 'hidden';
-                panel.style.transition = 'max-height 0.3s ease-in';
-            }, 300);
+            // Show panel with slide down animation
+            panel.classList.remove('hidden');
+            panel.style.maxHeight = '0';
+            panel.style.overflow = 'hidden';
+            panel.style.transition = 'max-height 0.3s ease-in';
 
             // Load comments if not cached
             if (!commentsCache[invoiceId] ||
@@ -976,13 +968,24 @@
 
             setTimeout(() => {
                 panel.style.maxHeight = panel.scrollHeight + 'px';
-            }, 310);
+            }, 10);
+
+            // After panel starts expanding, scroll to show it at the top
+            setTimeout(() => {
+                const invoiceRow = panel.previousElementSibling;
+                if (invoiceRow) {
+                    // Scroll with offset to account for fixed headers
+                    const yOffset = -20; // 20px from top
+                    const y = invoiceRow.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                }
+            }, 50);
 
             setTimeout(() => {
                 panel.style.maxHeight = '';
                 panel.style.overflow = '';
                 panel.style.transition = '';
-            }, 610);
+            }, 310);
         }
 
         function closeCommentsPanel(panel) {
