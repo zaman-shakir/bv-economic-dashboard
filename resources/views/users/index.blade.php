@@ -2,10 +2,10 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('User Management') }}
+                {{ __('dashboard.user_management') }}
             </h2>
             <a href="{{ route('users.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition">
-                + Add New User
+                {{ __('dashboard.add_new_user') }}
             </a>
         </div>
     </x-slot>
@@ -31,11 +31,11 @@
                     <table class="w-full">
                         <thead class="bg-gray-50 dark:bg-gray-700 text-xs text-gray-500 dark:text-gray-400 uppercase">
                             <tr>
-                                <th class="px-6 py-3 text-left font-medium">Name</th>
-                                <th class="px-6 py-3 text-left font-medium">Email</th>
-                                <th class="px-6 py-3 text-center font-medium">Admin</th>
-                                <th class="px-6 py-3 text-left font-medium">Created</th>
-                                <th class="px-6 py-3 text-center font-medium">Actions</th>
+                                <th class="px-6 py-3 text-left font-medium">{{ __('dashboard.name') }}</th>
+                                <th class="px-6 py-3 text-left font-medium">{{ __('dashboard.email') }}</th>
+                                <th class="px-6 py-3 text-center font-medium">{{ __('dashboard.admin') }}</th>
+                                <th class="px-6 py-3 text-left font-medium">{{ __('dashboard.created') }}</th>
+                                <th class="px-6 py-3 text-center font-medium">{{ __('dashboard.actions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -44,7 +44,7 @@
                                     <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                                         {{ $user->name }}
                                         @if($user->id === auth()->id())
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">(You)</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">({{ __('dashboard.you') }})</span>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
@@ -53,11 +53,11 @@
                                     <td class="px-6 py-4 text-center">
                                         @if($user->is_admin)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400">
-                                                Admin
+                                                {{ __('dashboard.admin') }}
                                             </span>
                                         @else
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                                                User
+                                                {{ __('dashboard.user') }}
                                             </span>
                                         @endif
                                     </td>
@@ -66,11 +66,11 @@
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         @if($user->id !== auth()->id())
-                                            <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                            <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('dashboard.confirm_delete_user') }}');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium text-sm">
-                                                    Delete
+                                                    {{ __('dashboard.delete') }}
                                                 </button>
                                             </form>
                                         @else

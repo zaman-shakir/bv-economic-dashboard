@@ -16,13 +16,13 @@
                         {{ __('dashboard.dashboard') }}
                     </x-nav-link>
                     <x-nav-link :href="route('dashboard.stats')" :active="request()->routeIs('dashboard.stats')">
-                        📊 Stats
+                        {{ __('dashboard.stats') }}
                     </x-nav-link>
                     <x-nav-link :href="route('reminders.index')" :active="request()->routeIs('reminders.index')">
-                        🔔 Reminders
+                        {{ __('dashboard.reminders') }}
                     </x-nav-link>
                     <x-nav-link :href="route('comments.page')" :active="request()->routeIs('comments.page')">
-                        💬 {{ __('dashboard.comments') }}
+                        {{ __('dashboard.comments') }}
                     </x-nav-link>
                     @if(Auth::user()->is_admin)
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
@@ -132,13 +132,13 @@
                 {{ __('dashboard.dashboard') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('dashboard.stats')" :active="request()->routeIs('dashboard.stats')">
-                📊 Stats
+                {{ __('dashboard.stats') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('reminders.index')" :active="request()->routeIs('reminders.index')">
-                🔔 Reminders
+                {{ __('dashboard.reminders') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('comments.page')" :active="request()->routeIs('comments.page')">
-                💬 {{ __('dashboard.comments') }}
+                {{ __('dashboard.comments') }}
             </x-responsive-nav-link>
             @if(Auth::user()->is_admin)
                 <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">

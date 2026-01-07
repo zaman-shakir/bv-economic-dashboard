@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                📊 Statistics & Analytics
+                {{ __('dashboard.stats') }}
             </h2>
             <span class="text-sm text-gray-500 dark:text-gray-400">
                 {{ __('dashboard.last_updated') }}: {{ $lastUpdated }}

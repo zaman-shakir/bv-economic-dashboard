@@ -32,9 +32,10 @@
                     @if($employeeData['totalRemainder'] > 0 && ($currentFilter ?? 'overdue') === 'overdue' && $employeeData['employeeNumber'] !== 'unassigned')
                         <button
                             onclick="event.stopPropagation(); sendEmployeeReminder('{{ $employeeData['employeeNumber'] }}', this)"
-                            class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
                             title="{{ __('dashboard.send_employee_reminder') }}">
-                            <span class="text-base">🔔</span> Send Email
+                            <svg class="w-4 h-4 group-hover:animate-swing" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                            <span>Send Email</span>
                         </button>
                     @endif
                     <div class="text-right">
@@ -177,11 +178,11 @@
                                     <!-- Comments Button -->
                                     <button
                                         onclick="toggleComments({{ $invoice['invoiceId'] ?? 'null' }})"
-                                        class="inline-flex items-center justify-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded transition min-w-[60px]"
+                                        class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30 transition-all duration-200 relative group"
                                         title="{{ __('dashboard.view_add_comments') }}">
-                                        <span style="font-size: 11px">💬</span>
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                                         @if(($invoice['commentCount'] ?? 0) > 0)
-                                            <span class="bg-blue-600 text-white rounded-full px-1 text-[9px] font-bold">{{ $invoice['commentCount'] }}</span>
+                                            <span class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white dark:border-gray-800 shadow-sm">{{ $invoice['commentCount'] }}</span>
                                         @endif
                                     </button>
 
@@ -189,10 +190,9 @@
                                     @if($invoice['status'] !== 'paid')
                                         <button
                                             onclick="sendReminder({{ $invoice['invoiceNumber'] }}, {{ $invoice['kundenr'] }}, this)"
-                                            class="inline-flex items-center justify-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition disabled:opacity-50 disabled:cursor-not-allowed min-w-[60px]"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30 transition-all duration-200 group"
                                             title="{{ __('dashboard.send_reminder') }}">
-                                            <span style="font-size: 11px">📧</span>
-                                            <span>Send</span>
+                                            <svg class="w-5 h-5 transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                                         </button>
                                     @else
                                         <div class="h-5"></div>
@@ -201,9 +201,8 @@
                             </td>
                         </tr>
 
-                        <!-- Sticky Notes Row (Always visible if comments exist) -->
                         <tr id="comments-row-{{ $invoice['invoiceId'] ?? '' }}" class="comments-row hidden">
-                            <td colspan="12" class="px-0 py-0 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-gray-800 dark:to-gray-850">
+                            <td colspan="12" class="px-0 py-0 bg-gray-50/50 dark:bg-gray-800/50">
                                 <div class="comments-panel">
                                     <!-- Sticky Notes Header -->
                                     <div class="flex justify-between items-center px-6 pt-3 pb-2">
@@ -250,15 +249,15 @@
                                             </button>
 
                                             <!-- Add form (hidden initially) -->
-                                            <div id="add-form-{{ $invoice['invoiceId'] ?? '' }}" class="hidden mt-3 sticky-note bg-yellow-200 dark:bg-yellow-600 p-3 rounded shadow-lg max-w-md">
+                                            <div id="add-form-{{ $invoice['invoiceId'] ?? '' }}" class="hidden mt-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl shadow-lg max-w-md">
                                                 <!-- Formatting Toolbar -->
-                                                <div class="flex items-center gap-1 mb-2 pb-2 border-b border-yellow-400 dark:border-yellow-700">
-                                                    <span class="text-xs text-gray-600 dark:text-gray-800 mr-2">Format:</span>
-                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '**', '**', 'bold text')" class="px-2 py-1 text-xs font-bold bg-yellow-300 dark:bg-yellow-500 hover:bg-yellow-400 dark:hover:bg-yellow-600 rounded transition" title="Bold">B</button>
-                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '_', '_', 'italic text')" class="px-2 py-1 text-xs italic bg-yellow-300 dark:bg-yellow-500 hover:bg-yellow-400 dark:hover:bg-yellow-600 rounded transition" title="Italic">I</button>
-                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '[', '](url)', 'link text')" class="px-2 py-1 text-xs bg-yellow-300 dark:bg-yellow-500 hover:bg-yellow-400 dark:hover:bg-yellow-600 rounded transition" title="Link">🔗</button>
-                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '- ', '', 'list item')" class="px-2 py-1 text-xs bg-yellow-300 dark:bg-yellow-500 hover:bg-yellow-400 dark:hover:bg-yellow-600 rounded transition" title="Bullet List">•</button>
-                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '`', '`', 'code')" class="px-2 py-1 text-xs font-mono bg-yellow-300 dark:bg-yellow-500 hover:bg-yellow-400 dark:hover:bg-yellow-600 rounded transition" title="Code">&lt;/&gt;</button>
+                                                <div class="flex items-center gap-1 mb-2 pb-2 border-b border-gray-100 dark:border-gray-700">
+                                                    <span class="text-xs text-gray-400 mr-2">Format:</span>
+                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '**', '**', 'bold text')" class="px-2 py-1 text-xs font-bold text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded transition" title="Bold">B</button>
+                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '_', '_', 'italic text')" class="px-2 py-1 text-xs italic text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded transition" title="Italic">I</button>
+                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '[', '](url)', 'link text')" class="px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded transition" title="Link">🔗</button>
+                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '- ', '', 'list item')" class="px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded transition" title="Bullet List">•</button>
+                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '`', '`', 'code')" class="px-2 py-1 text-xs font-mono text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded transition" title="Code">&lt;/&gt;</button>
                                                 </div>
                                                 <textarea
                                                     id="comment-input-{{ $invoice['invoiceId'] ?? '' }}"

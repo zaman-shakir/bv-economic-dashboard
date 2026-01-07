@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            💬 {{ __('dashboard.all_comments') }}
+            {{ __('dashboard.all_comments') }}
         </h2>
     </x-slot>
 
@@ -11,37 +11,62 @@
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <!-- Total Comments -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('dashboard.total_comments') }}</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $comments->total() }}</p>
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-xl p-5 border border-gray-100 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('dashboard.total_comments') }}</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ $comments->total() }}</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Invoices with Comments (Clickable) -->
                 <a href="{{ route('dashboard', ['has_comments' => '1', 'filter' => 'all']) }}"
-                   class="bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 overflow-hidden shadow-sm sm:rounded-lg p-6 transition cursor-pointer group">
-                    <p class="text-sm text-blue-600 dark:text-blue-400 group-hover:underline">{{ __('dashboard.invoices_with_comments') }}</p>
-                    <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ \App\Models\InvoiceComment::distinct('invoice_id')->count('invoice_id') }}</p>
-                    <p class="text-xs text-blue-500 dark:text-blue-300 mt-2">{{ __('dashboard.click_to_view') }} →</p>
+                   class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:underline">{{ __('dashboard.invoices_with_comments') }}</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ \App\Models\InvoiceComment::distinct('invoice_id')->count('invoice_id') }}</p>
+                        </div>
+                        <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-500 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                    </div>
                 </a>
 
                 <!-- Comments Today (Clickable) -->
                 <a href="{{ route('dashboard', ['comment_date_filter' => 'today', 'filter' => 'all', 'has_comments' => '1']) }}"
-                   class="bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 overflow-hidden shadow-sm sm:rounded-lg p-6 transition cursor-pointer group">
-                    <p class="text-sm text-green-600 dark:text-green-400 group-hover:underline">{{ __('dashboard.comments_today') }}</p>
-                    <p class="text-3xl font-bold text-green-600 dark:text-green-400">
-                        {{ \App\Models\InvoiceComment::where('created_at', '>=', now()->startOfDay())->distinct('invoice_id')->count('invoice_id') }}
-                    </p>
-                    <p class="text-xs text-green-500 dark:text-green-300 mt-2">{{ __('dashboard.click_to_view') }} →</p>
+                   class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-green-200 dark:hover:border-green-800 transition group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-green-600 dark:text-green-400 group-hover:underline">{{ __('dashboard.comments_today') }}</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                                {{ \App\Models\InvoiceComment::where('created_at', '>=', now()->startOfDay())->distinct('invoice_id')->count('invoice_id') }}
+                            </p>
+                        </div>
+                        <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-500 group-hover:bg-green-100 dark:group-hover:bg-green-900/40 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                    </div>
                 </a>
 
                 <!-- Comments This Week (Clickable) -->
                 <a href="{{ route('dashboard', ['comment_date_filter' => 'week', 'filter' => 'all', 'has_comments' => '1']) }}"
-                   class="bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 overflow-hidden shadow-sm sm:rounded-lg p-6 transition cursor-pointer group">
-                    <p class="text-sm text-purple-600 dark:text-purple-400 group-hover:underline">{{ __('dashboard.comments_this_week') }}</p>
-                    <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                        {{ \App\Models\InvoiceComment::where('created_at', '>=', now()->subWeek())->distinct('invoice_id')->count('invoice_id') }}
-                    </p>
-                    <p class="text-xs text-purple-500 dark:text-purple-300 mt-2">{{ __('dashboard.click_to_view') }} →</p>
+                   class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-purple-200 dark:hover:border-purple-800 transition group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-purple-600 dark:text-purple-400 group-hover:underline">{{ __('dashboard.comments_this_week') }}</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                                {{ \App\Models\InvoiceComment::where('created_at', '>=', now()->subWeek())->distinct('invoice_id')->count('invoice_id') }}
+                            </p>
+                        </div>
+                        <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-purple-500 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/40 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        </div>
+                    </div>
                 </a>
             </div>
 
@@ -92,8 +117,8 @@
                 </form>
             </div>
 
-            <!-- Comments Grid with Sticky Notes -->
-            <div class="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-gray-800 dark:to-gray-850 overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <!-- Comments Grid -->
+            <div class="bg-gray-50 dark:bg-gray-900/50 overflow-hidden sm:rounded-lg p-6 border border-gray-100 dark:border-gray-800">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
                     <span class="text-xl">📌</span>
                     {{ __('dashboard.all_comments') }}
@@ -101,55 +126,50 @@
                 </h3>
 
                 @if($comments->count() > 0)
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
-                        @php
-                            $stickyColors = [
-                                'bg-yellow-200 dark:bg-yellow-600',
-                                'bg-pink-200 dark:bg-pink-600',
-                                'bg-blue-200 dark:bg-blue-600',
-                                'bg-green-200 dark:bg-green-600',
-                                'bg-purple-200 dark:bg-purple-600'
-                            ];
-                        @endphp
-
-                        @foreach($comments as $index => $comment)
-                            @php
-                                $colorClass = $stickyColors[$index % count($stickyColors)];
-                                $rotation = ($index % 3 === 0) ? '-rotate-1' : (($index % 3 === 1) ? 'rotate-1' : '');
-                            @endphp
-
-                            <div class="sticky-note {{ $colorClass }} {{ $rotation }} p-4 rounded shadow-md transform hover:scale-105 transition-transform duration-200">
-                                <!-- Header -->
-                                <div class="flex items-start justify-between mb-2 pb-2 border-b border-current/20">
-                                    <div>
-                                        <div class="text-xs font-bold text-gray-800 dark:text-gray-900">
-                                            {{ $comment->user->name ?? __('dashboard.unknown_user') }}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6">
+                        @foreach($comments as $comment)
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 dark:border-gray-700 flex flex-col h-full group">
+                                <!-- Card Header -->
+                                <div class="px-5 py-4 border-b border-gray-50 dark:border-gray-700 flex justify-between items-start">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                                            {{ substr($comment->user->name ?? '?', 0, 1) }}
                                         </div>
-                                        <div class="text-[10px] text-gray-600 dark:text-gray-800 opacity-75">
-                                            {{ $comment->created_at->format('d M Y H:i') }}
+                                        <div>
+                                            <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                                {{ $comment->user->name ?? __('dashboard.unknown_user') }}
+                                            </div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                {{ $comment->created_at->format('M d, H:i') }}
+                                            </div>
                                         </div>
                                     </div>
                                     @if($comment->invoice)
                                         <a href="{{ route('dashboard', ['search' => $comment->invoice->invoice_number]) }}"
-                                           class="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold bg-white/50 hover:bg-white/80 dark:bg-gray-900/30 dark:hover:bg-gray-900/50 rounded transition"
+                                           class="text-xs font-medium text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                                            title="{{ __('dashboard.go_to_invoice') }}">
-                                            <span>📄</span>
                                             #{{ $comment->invoice->invoice_number }}
                                         </a>
                                     @endif
                                 </div>
 
-                                <!-- Comment Text -->
-                                <div class="text-sm text-gray-800 dark:text-gray-900 whitespace-pre-wrap leading-snug">
-                                    {{ $comment->comment }}
+                                <!-- Comment Body -->
+                                <div class="px-5 py-4 flex-grow">
+                                    <div class="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                                        {{ $comment->comment }}
+                                    </div>
                                 </div>
 
-                                <!-- Invoice Info -->
+                                <!-- Card Footer -->
                                 @if($comment->invoice)
-                                    <div class="mt-3 pt-2 border-t border-current/20 text-[10px] text-gray-600 dark:text-gray-800 opacity-75">
-                                        <div class="flex justify-between">
-                                            <span>{{ $comment->invoice->customer_name }}</span>
-                                            <span>{{ number_format($comment->invoice->remainder, 0, ',', '.') }} DKK</span>
+                                    <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 rounded-b-xl border-t border-gray-100 dark:border-gray-700 mt-auto">
+                                        <div class="flex justify-between items-center text-xs">
+                                            <span class="font-medium text-gray-700 dark:text-gray-300 truncate max-w-[60%]">
+                                                {{ $comment->invoice->customer_name }}
+                                            </span>
+                                            <span class="{{ $comment->invoice->remainder > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }} font-medium">
+                                                {{ number_format($comment->invoice->remainder, 0, ',', '.') }} DKK
+                                            </span>
                                         </div>
                                     </div>
                                 @endif
@@ -172,28 +192,5 @@
     </div>
 
     <style>
-        /* Sticky Note Styling */
-        .sticky-note {
-            position: relative;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-            transition: all 0.2s ease;
-        }
-
-        .sticky-note:hover {
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-        }
-
-        .sticky-note::before {
-            content: '';
-            position: absolute;
-            top: -4px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 2px;
-        }
     </style>
 </x-app-layout>

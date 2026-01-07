@@ -8,6 +8,8 @@ return [
 
     // Navigation
     'dashboard' => 'Dashboard',
+    'stats' => 'Statistik',
+    'reminders' => 'Påmindelser',
     'users' => 'Brugere',
     'profile' => 'Profil',
     'log_out' => 'Log ud',
