@@ -198,12 +198,12 @@
                     <!-- Quick Date Presets -->
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="text-xs text-gray-500 dark:text-gray-400">Quick:</span>
+                        <button onclick="setDatePreset('today')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Today</button>
+                        <button onclick="setDatePreset('last_3_days')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last 3 Days</button>
+                        <button onclick="setDatePreset('last_week')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last Week</button>
                         <button onclick="setDatePreset('this_month')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">This Month</button>
                         <button onclick="setDatePreset('last_month')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last Month</button>
                         <button onclick="setDatePreset('this_quarter')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">This Quarter</button>
-                        <button onclick="setDatePreset('last_quarter')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last Quarter</button>
-                        <button onclick="setDatePreset('ytd')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">YTD</button>
-                        <button onclick="setDatePreset('last_year')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last Year</button>
                     </div>
                 </div>
 
@@ -528,6 +528,20 @@
             let dateFrom, dateTo;
 
             switch(preset) {
+                case 'today':
+                    dateFrom = today;
+                    dateTo = today;
+                    break;
+                case 'last_3_days':
+                    dateFrom = new Date(today);
+                    dateFrom.setDate(today.getDate() - 3);
+                    dateTo = today;
+                    break;
+                case 'last_week':
+                    dateFrom = new Date(today);
+                    dateFrom.setDate(today.getDate() - 7);
+                    dateTo = today;
+                    break;
                 case 'this_month':
                     dateFrom = new Date(today.getFullYear(), today.getMonth(), 1);
                     dateTo = today;
@@ -540,21 +554,6 @@
                     const currentQuarter = Math.floor(today.getMonth() / 3);
                     dateFrom = new Date(today.getFullYear(), currentQuarter * 3, 1);
                     dateTo = today;
-                    break;
-                case 'last_quarter':
-                    const lastQuarter = Math.floor(today.getMonth() / 3) - 1;
-                    const lastQuarterYear = lastQuarter < 0 ? today.getFullYear() - 1 : today.getFullYear();
-                    const lastQuarterMonth = lastQuarter < 0 ? 9 : lastQuarter * 3;
-                    dateFrom = new Date(lastQuarterYear, lastQuarterMonth, 1);
-                    dateTo = new Date(lastQuarterYear, lastQuarterMonth + 3, 0);
-                    break;
-                case 'ytd':
-                    dateFrom = new Date(today.getFullYear(), 0, 1);
-                    dateTo = today;
-                    break;
-                case 'last_year':
-                    dateFrom = new Date(today.getFullYear() - 1, 0, 1);
-                    dateTo = new Date(today.getFullYear() - 1, 11, 31);
                     break;
             }
 
