@@ -722,7 +722,9 @@ class EconomicInvoiceService
         string $filter = 'overdue',
         ?string $dateFrom = null,
         ?string $dateTo = null,
-        ?string $search = null
+        ?string $search = null,
+        ?string $hasComments = null,
+        ?string $commentDateFilter = null
     ): Collection
     {
         // Build base query with filter
@@ -745,6 +747,26 @@ class EconomicInvoiceService
 
         // Apply search filter
         $baseQuery->search($search);
+
+        // Apply comment filters
+        if ($hasComments === '1' || $hasComments === 'true') {
+            $baseQuery->has('comments');
+        }
+
+        if ($commentDateFilter) {
+            $commentDate = match($commentDateFilter) {
+                'today' => now()->startOfDay(),
+                '3days' => now()->subDays(3)->startOfDay(),
+                'week' => now()->subWeek()->startOfDay(),
+                default => null
+            };
+
+            if ($commentDate) {
+                $baseQuery->whereHas('comments', function($query) use ($commentDate) {
+                    $query->where('created_at', '>=', $commentDate);
+                });
+            }
+        }
 
         // Get employee groupings with aggregations (MEMORY EFFICIENT!)
         $employeeGroups = (clone $baseQuery)
@@ -857,7 +879,9 @@ class EconomicInvoiceService
         string $filter = 'overdue',
         ?string $dateFrom = null,
         ?string $dateTo = null,
-        ?string $search = null
+        ?string $search = null,
+        ?string $hasComments = null,
+        ?string $commentDateFilter = null
     ): Collection
     {
         // Person code mapping for display names
@@ -893,6 +917,26 @@ class EconomicInvoiceService
 
         // Apply search filter
         $baseQuery->search($search);
+
+        // Apply comment filters
+        if ($hasComments === '1' || $hasComments === 'true') {
+            $baseQuery->has('comments');
+        }
+
+        if ($commentDateFilter) {
+            $commentDate = match($commentDateFilter) {
+                'today' => now()->startOfDay(),
+                '3days' => now()->subDays(3)->startOfDay(),
+                'week' => now()->subWeek()->startOfDay(),
+                default => null
+            };
+
+            if ($commentDate) {
+                $baseQuery->whereHas('comments', function($query) use ($commentDate) {
+                    $query->where('created_at', '>=', $commentDate);
+                });
+            }
+        }
 
         // Group by pattern (combine similar orders into logical groups)
         $groupingLogic = "CASE

@@ -31,11 +31,13 @@ class DashboardController extends Controller
             session(['dashboard.grouping' => $grouping]);
         }
 
-        // Get date range and search parameters
+        // Get date range, search, and comment filter parameters
         // Default: oldest invoice date to today
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
         $search = $request->get('search');
+        $hasComments = $request->get('has_comments'); // Filter for invoices with comments
+        $commentDateFilter = $request->get('comment_date_filter'); // today, 3days, week
 
         // Set defaults if not provided
         if (!$dateFrom && !$dateTo) {
@@ -54,14 +56,18 @@ class DashboardController extends Controller
                     $filter,
                     $dateFrom,
                     $dateTo,
-                    $search
+                    $search,
+                    $hasComments,
+                    $commentDateFilter
                 );
             } else {
                 $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployeeFromDatabase(
                     $filter,
                     $dateFrom,
                     $dateTo,
-                    $search
+                    $search,
+                    $hasComments,
+                    $commentDateFilter
                 );
             }
         } else {
