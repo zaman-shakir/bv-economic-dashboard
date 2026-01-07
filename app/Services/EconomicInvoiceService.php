@@ -279,6 +279,19 @@ class EconomicInvoiceService
      */
     public function getInvoicesByEmployee(string $filter = 'overdue'): Collection
     {
+        // Person code mapping for re-assignment
+        $personCodeMapping = [
+            'LH' => 'Lone Holgersen',
+            'AKS' => 'Anne Karin Skøtt',
+            'MB' => 'Michael Binder',
+            'MW' => 'Michael Wichmann',
+            'EKL' => 'Emil Kremer Lildballe',
+            'BC' => 'Brian Christiansen',
+            'LNJ' => 'Lars Nørby Jessen',
+            'DH' => 'Dorte Hindahl',
+            'JEN' => 'Jakob Erik Nielsen',
+        ];
+
         $invoices = match($filter) {
             'all' => $this->getAllInvoices(),
             'unpaid' => $this->getUnpaidInvoices(),
@@ -302,12 +315,39 @@ class EconomicInvoiceService
             ]);
         }
 
-        return $invoices->groupBy(function ($invoice) {
-            return $invoice['references']['salesPerson']['employeeNumber'] ?? 'unassigned';
-        })->map(function ($group, $employeeNumber) {
+        return $invoices->groupBy(function ($invoice) use ($personCodeMapping) {
+            // First check if invoice has salesPerson
+            if (isset($invoice['references']['salesPerson']['employeeNumber'])) {
+                return 'emp_' . $invoice['references']['salesPerson']['employeeNumber'];
+            }
+
+            // If no salesPerson, check external_reference for person codes
+            $extRef = strtoupper(trim($invoice['references']['other'] ?? ''));
+            if (isset($personCodeMapping[$extRef])) {
+                return 'person_' . $extRef;
+            }
+
+            // Otherwise, it's unassigned
+            return 'unassigned';
+        })->map(function ($group, $key) use ($personCodeMapping) {
+            // Determine employee info
+            if ($key === 'unassigned') {
+                $employeeNumber = 'unassigned';
+                $employeeName = 'Unassigned';
+            } elseif (strpos($key, 'emp_') === 0) {
+                // Employee from salesPerson field
+                $employeeNumber = str_replace('emp_', '', $key);
+                $employeeName = $this->getEmployeeName($employeeNumber);
+            } else {
+                // Person from external_reference
+                $personCode = str_replace('person_', '', $key);
+                $employeeNumber = $personCode;
+                $employeeName = $personCodeMapping[$personCode] . ' (via ref)';
+            }
+
             return [
                 'employeeNumber' => $employeeNumber,
-                'employeeName' => $this->getEmployeeName($employeeNumber),
+                'employeeName' => $employeeName,
                 'invoiceCount' => $group->count(),
                 'totalAmount' => $group->sum('grossAmount'),
                 'totalRemainder' => $group->sum('remainder'),
@@ -640,6 +680,19 @@ class EconomicInvoiceService
         ?string $search = null
     ): Collection
     {
+        // Person code mapping for re-assignment
+        $personCodeMapping = [
+            'LH' => 'Lone Holgersen',
+            'AKS' => 'Anne Karin Skøtt',
+            'MB' => 'Michael Binder',
+            'MW' => 'Michael Wichmann',
+            'EKL' => 'Emil Kremer Lildballe',
+            'BC' => 'Brian Christiansen',
+            'LNJ' => 'Lars Nørby Jessen',
+            'DH' => 'Dorte Hindahl',
+            'JEN' => 'Jakob Erik Nielsen',
+        ];
+
         // Build base query with filter
         $baseQuery = \App\Models\Invoice::query();
 
@@ -661,90 +714,78 @@ class EconomicInvoiceService
         // Apply search filter
         $baseQuery->search($search);
 
-        // Get employee groupings with aggregations (MEMORY EFFICIENT!)
-        $employeeGroups = (clone $baseQuery)
-            ->select([
-                \DB::raw('COALESCE(employee_number, "unassigned") as employee_number'),
-                \DB::raw('MAX(employee_name) as employee_name'),
-                \DB::raw('COUNT(*) as invoice_count'),
-                \DB::raw('SUM(gross_amount) as total_amount'),
-                \DB::raw('SUM(remainder) as total_remainder'),
-            ])
-            ->groupBy(\DB::raw('COALESCE(employee_number, "unassigned")'))
-            ->get();
+        // Get ALL invoices (we need to re-group them by person code)
+        $allInvoices = $baseQuery->orderBy('due_date', 'asc')->get();
 
-        // Now fetch invoices for each employee group using chunking
-        return $employeeGroups->mapWithKeys(function ($group) use ($filter, $dateFrom, $dateTo, $search) {
-            $employeeNumber = $group->employee_number;
-
-            // Build query for this employee's invoices
-            $invoiceQuery = \App\Models\Invoice::query();
-
-            // Apply same filter
-            switch ($filter) {
-                case 'overdue':
-                    $invoiceQuery->overdue();
-                    break;
-                case 'unpaid':
-                    $invoiceQuery->unpaid();
-                    break;
+        // Re-group invoices by employee or person code
+        $groupedByEmployee = $allInvoices->groupBy(function ($invoice) use ($personCodeMapping) {
+            // First check if invoice has employee_number
+            if ($invoice->employee_number) {
+                return 'emp_' . $invoice->employee_number; // Prefix to distinguish from person codes
             }
 
-            // Apply date range filter
-            $invoiceQuery->dateRange($dateFrom, $dateTo);
+            // If no employee_number, check external_reference for person codes
+            $extRef = strtoupper(trim($invoice->external_reference ?? ''));
+            if (isset($personCodeMapping[$extRef])) {
+                return 'person_' . $extRef; // Prefix to distinguish from employee numbers
+            }
 
-            // Apply search filter
-            $invoiceQuery->search($search);
+            // Otherwise, it's unassigned
+            return 'unassigned';
+        });
 
-            // Filter by employee
-            if ($employeeNumber === 'unassigned') {
-                $invoiceQuery->whereNull('employee_number');
+        // Convert to collection with proper structure
+        return $groupedByEmployee->map(function ($invoices, $key) use ($personCodeMapping) {
+            // Determine employee info
+            if ($key === 'unassigned') {
+                $employeeNumber = 'unassigned';
+                $employeeName = 'Unassigned';
+            } elseif (strpos($key, 'emp_') === 0) {
+                // Employee from employee_number field
+                $employeeNumber = str_replace('emp_', '', $key);
+                $employeeName = $invoices->first()->employee_name ?? "Employee #{$employeeNumber}";
             } else {
-                $invoiceQuery->where('employee_number', $employeeNumber);
+                // Person from external_reference
+                $personCode = str_replace('person_', '', $key);
+                $employeeNumber = $personCode; // Use person code as ID
+                $employeeName = $personCodeMapping[$personCode] . ' (via ref)';
             }
 
-            // Fetch invoices for this employee (limited to prevent memory issues)
-            // Only load top 100 most critical invoices per employee for dashboard display
-            $invoices = $invoiceQuery
-                ->orderBy('due_date', 'asc')
-                ->limit(100) // Dashboard limit: show top 100 per employee
-                ->get()
-                ->map(function ($invoice) {
-                    return [
-                        'invoiceNumber' => $invoice->invoice_number,
-                        'kundenr' => $invoice->customer_number,
-                        'kundenavn' => $invoice->customer_name,
-                        'overskrift' => $invoice->subject,
-                        'beloeb' => $invoice->gross_amount,
-                        'remainder' => $invoice->remainder,
-                        'currency' => $invoice->currency,
-                        'eksterntId' => $invoice->external_reference,
-                        'date' => $invoice->invoice_date->format('Y-m-d'),
-                        'dueDate' => $invoice->due_date->format('Y-m-d'),
-                        'daysOverdue' => $invoice->days_overdue,
-                        'daysTillDue' => $invoice->days_till_due,
-                        'status' => $invoice->status,
-                        'pdfUrl' => $invoice->pdf_url,
-                        'employeeNumber' => $invoice->employee_number,
-                        'employeeName' => $invoice->employee_name,
-                    ];
-                })
-                ->sortByDesc('daysOverdue')
-                ->values();
+            // Calculate totals
+            $totalAmount = $invoices->sum('gross_amount');
+            $totalRemainder = $invoices->sum('remainder');
+
+            // Format invoices (limit to 100 per group)
+            $formattedInvoices = $invoices->take(100)->map(function ($invoice) {
+                return [
+                    'invoiceNumber' => $invoice->invoice_number,
+                    'kundenr' => $invoice->customer_number,
+                    'kundenavn' => $invoice->customer_name,
+                    'overskrift' => $invoice->subject,
+                    'beloeb' => $invoice->gross_amount,
+                    'remainder' => $invoice->remainder,
+                    'currency' => $invoice->currency,
+                    'eksterntId' => $invoice->external_reference,
+                    'date' => $invoice->invoice_date->format('Y-m-d'),
+                    'dueDate' => $invoice->due_date->format('Y-m-d'),
+                    'daysOverdue' => $invoice->days_overdue,
+                    'daysTillDue' => $invoice->days_till_due,
+                    'status' => $invoice->status,
+                    'pdfUrl' => $invoice->pdf_url,
+                    'employeeNumber' => $invoice->employee_number,
+                    'employeeName' => $invoice->employee_name,
+                ];
+            })->sortByDesc('daysOverdue')->values();
 
             return [
-                $employeeNumber => [
-                    'employeeNumber' => $employeeNumber,
-                    'employeeName' => $employeeNumber === 'unassigned'
-                        ? 'Unassigned'
-                        : ($group->employee_name ?? "Employee #{$employeeNumber}"),
-                    'invoiceCount' => (int) $group->invoice_count,
-                    'totalAmount' => (float) $group->total_amount,
-                    'totalRemainder' => (float) $group->total_remainder,
-                    'invoices' => $invoices->all(),
-                ]
+                'employeeNumber' => $employeeNumber,
+                'employeeName' => $employeeName,
+                'invoiceCount' => $invoices->count(),
+                'totalAmount' => $totalAmount,
+                'totalRemainder' => $totalRemainder,
+                'invoices' => $formattedInvoices->all(),
             ];
-        });
+        })->keyBy('employeeNumber');
     }
 
     /**
