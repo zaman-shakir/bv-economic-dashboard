@@ -443,7 +443,13 @@ class EconomicInvoiceService
         // Determine status
         $status = $isPaid ? 'paid' : ($isOverdue ? 'overdue' : 'unpaid');
 
+        // Try to find invoice in database to get ID and comment count
+        $dbInvoice = \App\Models\Invoice::where('invoice_number', $invoice['bookedInvoiceNumber'])->first();
+        $invoiceId = $dbInvoice ? $dbInvoice->id : null;
+        $commentCount = $invoiceId ? \App\Models\InvoiceComment::where('invoice_id', $invoiceId)->count() : 0;
+
         return [
+            'invoiceId' => $invoiceId,
             'invoiceNumber' => $invoice['bookedInvoiceNumber'],
             'kundenr' => $invoice['customer']['customerNumber'] ?? null,
             'kundenavn' => $invoice['recipient']['name'] ?? 'Unknown customer',
@@ -452,12 +458,14 @@ class EconomicInvoiceService
             'remainder' => $invoice['remainder'],
             'currency' => $invoice['currency'],
             'eksterntId' => $invoice['references']['other'] ?? null,
+            'externalId' => $invoice['externalId'] ?? null,
             'date' => $invoice['date'],
             'dueDate' => $invoice['dueDate'],
             'daysOverdue' => $daysOverdue,
             'daysTillDue' => $daysTillDue,
             'status' => $status,
             'pdfUrl' => $invoice['pdf']['download'] ?? null,
+            'commentCount' => $commentCount,
         ];
     }
 
