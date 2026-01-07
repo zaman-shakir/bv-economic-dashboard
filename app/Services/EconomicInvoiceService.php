@@ -874,77 +874,23 @@ class EconomicInvoiceService
         // Apply search filter
         $baseQuery->search($search);
 
-        // Get ALL external_reference groupings with aggregations and employee info
-        $otherRefGroups = (clone $baseQuery)
-            ->select([
-                \DB::raw('COALESCE(TRIM(external_reference), "unassigned") as other_ref'),
-                \DB::raw('MAX(employee_number) as employee_number'),
-                \DB::raw('MAX(employee_name) as employee_name'),
-                \DB::raw('COUNT(*) as invoice_count'),
-                \DB::raw('SUM(gross_amount) as total_amount'),
-                \DB::raw('SUM(remainder) as total_remainder'),
-            ])
-            ->groupBy(\DB::raw('COALESCE(TRIM(external_reference), "unassigned")'))
+        // Load ALL invoices ONCE (much faster than per-group queries)
+        $allInvoices = $baseQuery
+            ->orderBy('due_date', 'asc')
             ->get();
 
-        // Now fetch invoices for each external reference group
-        return $otherRefGroups->mapWithKeys(function ($group) use ($filter, $dateFrom, $dateTo, $search, $personCodeMapping) {
-            $otherRef = $group->other_ref;
+        // Group invoices by external_reference in memory
+        $groupedInvoices = $allInvoices->groupBy(function ($invoice) {
+            $extRef = trim($invoice->external_reference ?? '');
+            return $extRef !== '' ? $extRef : 'unassigned';
+        });
 
-            // Build query for this other ref's invoices
-            $invoiceQuery = \App\Models\Invoice::query();
-
-            // Apply same filter
-            switch ($filter) {
-                case 'overdue':
-                    $invoiceQuery->overdue();
-                    break;
-                case 'unpaid':
-                    $invoiceQuery->unpaid();
-                    break;
-            }
-
-            // Apply date range filter
-            $invoiceQuery->dateRange($dateFrom, $dateTo);
-
-            // Apply search filter
-            $invoiceQuery->search($search);
-
-            // Filter by external reference
-            if ($otherRef === 'unassigned') {
-                $invoiceQuery->whereNull('external_reference')
-                    ->orWhere('external_reference', '');
-            } else {
-                $invoiceQuery->whereRaw('TRIM(external_reference) = ?', [$otherRef]);
-            }
-
-            // Fetch invoices for this external reference (limited to prevent memory issues)
-            $invoices = $invoiceQuery
-                ->orderBy('due_date', 'asc')
-                ->limit(100) // Dashboard limit: show top 100 per external ref
-                ->get()
-                ->map(function ($invoice) {
-                    return [
-                        'invoiceNumber' => $invoice->invoice_number,
-                        'kundenr' => $invoice->customer_number,
-                        'kundenavn' => $invoice->customer_name,
-                        'overskrift' => $invoice->subject,
-                        'beloeb' => $invoice->gross_amount,
-                        'remainder' => $invoice->remainder,
-                        'currency' => $invoice->currency,
-                        'eksterntId' => $invoice->external_reference,
-                        'date' => $invoice->invoice_date->format('Y-m-d'),
-                        'dueDate' => $invoice->due_date->format('Y-m-d'),
-                        'daysOverdue' => $invoice->days_overdue,
-                        'daysTillDue' => $invoice->days_till_due,
-                        'status' => $invoice->status,
-                        'pdfUrl' => $invoice->pdf_url,
-                        'employeeNumber' => $invoice->employee_number,
-                        'employeeName' => $invoice->employee_name,
-                    ];
-                })
-                ->sortByDesc('daysOverdue')
-                ->values();
+        // Build the result collection
+        return $groupedInvoices->map(function ($invoices, $otherRef) use ($personCodeMapping) {
+            // Get employee info from first invoice (they should all have same employee for this ref)
+            $firstInvoice = $invoices->first();
+            $employeeNumber = $firstInvoice->employee_number;
+            $employeeName = $firstInvoice->employee_name;
 
             // Determine display name
             $upperRef = strtoupper($otherRef);
@@ -957,21 +903,41 @@ class EconomicInvoiceService
             }
 
             // Add employee info to display name if available
-            if ($group->employee_name) {
-                $displayName .= " → 👤 {$group->employee_name}";
+            if ($employeeName) {
+                $displayName .= " → 👤 {$employeeName}";
             }
 
+            // Limit to 100 invoices per group for display
+            $limitedInvoices = $invoices->take(100)->map(function ($invoice) {
+                return [
+                    'invoiceNumber' => $invoice->invoice_number,
+                    'kundenr' => $invoice->customer_number,
+                    'kundenavn' => $invoice->customer_name,
+                    'overskrift' => $invoice->subject,
+                    'beloeb' => $invoice->gross_amount,
+                    'remainder' => $invoice->remainder,
+                    'currency' => $invoice->currency,
+                    'eksterntId' => $invoice->external_reference,
+                    'date' => $invoice->invoice_date->format('Y-m-d'),
+                    'dueDate' => $invoice->due_date->format('Y-m-d'),
+                    'daysOverdue' => $invoice->days_overdue,
+                    'daysTillDue' => $invoice->days_till_due,
+                    'status' => $invoice->status,
+                    'pdfUrl' => $invoice->pdf_url,
+                    'employeeNumber' => $invoice->employee_number,
+                    'employeeName' => $invoice->employee_name,
+                ];
+            })->sortByDesc('daysOverdue')->values();
+
             return [
-                $otherRef => [
-                    'employeeNumber' => $otherRef,
-                    'employeeName' => $displayName,
-                    'actualEmployeeNumber' => $group->employee_number,
-                    'actualEmployeeName' => $group->employee_name,
-                    'invoiceCount' => (int) $group->invoice_count,
-                    'totalAmount' => (float) $group->total_amount,
-                    'totalRemainder' => (float) $group->total_remainder,
-                    'invoices' => $invoices->all(),
-                ]
+                'employeeNumber' => $otherRef,
+                'employeeName' => $displayName,
+                'actualEmployeeNumber' => $employeeNumber,
+                'actualEmployeeName' => $employeeName,
+                'invoiceCount' => $invoices->count(),
+                'totalAmount' => $invoices->sum('gross_amount'),
+                'totalRemainder' => $invoices->sum('remainder'),
+                'invoices' => $limitedInvoices->all(),
             ];
         });
     }
