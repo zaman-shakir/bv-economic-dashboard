@@ -785,7 +785,7 @@ class EconomicInvoiceService
             ->get();
 
         // Now fetch invoices for each employee group using chunking
-        return $employeeGroups->mapWithKeys(function ($group) use ($filter, $dateFrom, $dateTo, $search) {
+        return $employeeGroups->mapWithKeys(function ($group) use ($filter, $dateFrom, $dateTo, $search, $hasComments, $commentDateFilter) {
             $employeeNumber = $group->employee_number;
 
             // Build query for this employee's invoices
@@ -806,6 +806,26 @@ class EconomicInvoiceService
 
             // Apply search filter
             $invoiceQuery->search($search);
+
+            // Apply comment filters
+            if ($hasComments === '1' || $hasComments === 'true') {
+                $invoiceQuery->has('comments');
+            }
+
+            if ($commentDateFilter) {
+                $commentDate = match($commentDateFilter) {
+                    'today' => now()->startOfDay(),
+                    '3days' => now()->subDays(3)->startOfDay(),
+                    'week' => now()->subWeek()->startOfDay(),
+                    default => null
+                };
+
+                if ($commentDate) {
+                    $invoiceQuery->whereHas('comments', function($query) use ($commentDate) {
+                        $query->where('created_at', '>=', $commentDate);
+                    });
+                }
+            }
 
             // Filter by employee
             if ($employeeNumber === 'unassigned') {
