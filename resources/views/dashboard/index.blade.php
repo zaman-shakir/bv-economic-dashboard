@@ -813,22 +813,19 @@
             const panel = document.getElementById(`comments-row-${invoiceId}`);
             if (!panel) return;
 
-            // Toggle visibility with slide animation
+            // If this panel is already open, close it
             if (!panel.classList.contains('hidden')) {
-                panel.style.maxHeight = panel.scrollHeight + 'px';
-                setTimeout(() => {
-                    panel.style.maxHeight = '0';
-                    panel.style.overflow = 'hidden';
-                    panel.style.transition = 'max-height 0.3s ease-out';
-                }, 10);
-                setTimeout(() => {
-                    panel.classList.add('hidden');
-                    panel.style.maxHeight = '';
-                    panel.style.overflow = '';
-                    panel.style.transition = '';
-                }, 310);
+                closeCommentsPanel(panel);
                 return;
             }
+
+            // Close all other open comment panels first
+            const allPanels = document.querySelectorAll('.comments-row:not(.hidden)');
+            allPanels.forEach(otherPanel => {
+                if (otherPanel.id !== `comments-row-${invoiceId}`) {
+                    closeCommentsPanel(otherPanel);
+                }
+            });
 
             // Show panel with slide down
             panel.classList.remove('hidden');
@@ -849,6 +846,23 @@
             }, 10);
 
             setTimeout(() => {
+                panel.style.maxHeight = '';
+                panel.style.overflow = '';
+                panel.style.transition = '';
+            }, 310);
+        }
+
+        function closeCommentsPanel(panel) {
+            if (!panel || panel.classList.contains('hidden')) return;
+
+            panel.style.maxHeight = panel.scrollHeight + 'px';
+            setTimeout(() => {
+                panel.style.maxHeight = '0';
+                panel.style.overflow = 'hidden';
+                panel.style.transition = 'max-height 0.3s ease-out';
+            }, 10);
+            setTimeout(() => {
+                panel.classList.add('hidden');
                 panel.style.maxHeight = '';
                 panel.style.overflow = '';
                 panel.style.transition = '';

@@ -204,6 +204,20 @@
                         <tr id="comments-row-{{ $invoice['invoiceId'] ?? '' }}" class="comments-row hidden">
                             <td colspan="12" class="px-0 py-0">
                                 <div class="comments-panel bg-gray-50 dark:bg-gray-900 border-t-2 border-blue-500">
+                                    <!-- Close Button Header -->
+                                    <div class="flex justify-between items-center px-6 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+                                        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                            Invoice Comments - #{{ $invoice['invoiceNumber'] }}
+                                        </h3>
+                                        <button
+                                            onclick="toggleComments({{ $invoice['invoiceId'] ?? 'null' }})"
+                                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition p-1"
+                                            title="Close comments">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                     <div class="p-6">
                                         <!-- Loading State -->
                                         <div id="loading-{{ $invoice['invoiceId'] ?? '' }}" class="text-center py-4 text-gray-600 dark:text-gray-400">
