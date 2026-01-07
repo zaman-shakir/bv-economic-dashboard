@@ -32,9 +32,17 @@ class DashboardController extends Controller
         }
 
         // Get date range and search parameters
+        // Default: oldest invoice date to today
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
         $search = $request->get('search');
+
+        // Set defaults if not provided
+        if (!$dateFrom && !$dateTo) {
+            $oldestInvoice = \App\Models\Invoice::orderBy('invoice_date', 'asc')->first();
+            $dateFrom = $oldestInvoice ? $oldestInvoice->invoice_date->format('Y-m-d') : now()->subYears(5)->format('Y-m-d');
+            $dateTo = now()->format('Y-m-d');
+        }
 
         // NEW: Check if we have database data, otherwise fall back to API
         $invoiceCount = \App\Models\Invoice::count();
@@ -186,9 +194,17 @@ class DashboardController extends Controller
         $filter = $request->get('filter', session('dashboard.filter', 'overdue'));
 
         // Get date range and search parameters
+        // Default: oldest invoice date to today
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
         $search = $request->get('search');
+
+        // Set defaults if not provided
+        if (!$dateFrom && !$dateTo) {
+            $oldestInvoice = \App\Models\Invoice::orderBy('invoice_date', 'asc')->first();
+            $dateFrom = $oldestInvoice ? $oldestInvoice->invoice_date->format('Y-m-d') : now()->subYears(5)->format('Y-m-d');
+            $dateTo = now()->format('Y-m-d');
+        }
 
         // Check if we have database data, otherwise fall back to API
         $invoiceCount = \App\Models\Invoice::count();

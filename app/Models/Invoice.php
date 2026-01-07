@@ -22,6 +22,7 @@ class Invoice extends Model
         'remainder',
         'currency',
         'external_reference',
+        'external_id',
         'employee_number',
         'employee_name',
         'pdf_url',
@@ -108,6 +109,7 @@ class Invoice extends Model
             $q->where('customer_name', 'LIKE', "%{$searchTerm}%")
               ->orWhere('invoice_number', 'LIKE', "%{$searchTerm}%")
               ->orWhere('external_reference', 'LIKE', "%{$searchTerm}%")
+              ->orWhere('external_id', 'LIKE', "%{$searchTerm}%")
               ->orWhere('subject', 'LIKE', "%{$searchTerm}%");
         });
     }
@@ -189,6 +191,7 @@ class Invoice extends Model
                 'remainder' => $apiData['remainder'] ?? 0,
                 'currency' => $apiData['currency'] ?? 'DKK',
                 'external_reference' => $apiData['references']['other'] ?? null,
+                'external_id' => $apiData['externalId'] ?? null,
                 'employee_number' => $apiData['references']['salesPerson']['employeeNumber'] ?? null,
                 'employee_name' => $apiData['references']['salesPerson']['name'] ?? null,
                 'pdf_url' => $apiData['pdf']['download'] ?? null,

@@ -65,9 +65,9 @@
                         <th class="px-6 py-3 text-left font-medium">{{ __('dashboard.subject') }}</th>
                         <th class="px-4 py-3 text-right font-medium">{{ __('dashboard.amount') }}</th>
                         <th class="px-4 py-3 text-right font-medium">{{ __('dashboard.outstanding') }}</th>
-                        <th class="px-4 py-3 text-center font-medium">{{ __('dashboard.currency') }}</th>
                         <th class="px-4 py-3 text-center font-medium">{{ __('dashboard.status') }}</th>
                         <th class="px-4 py-3 text-left font-medium">{{ __('dashboard.external_id') }}</th>
+                        <th class="px-4 py-3 text-left font-medium">External ID</th>
                         <th class="px-4 py-3 text-center font-medium">{{ __('dashboard.actions') }}</th>
                     </tr>
                 </thead>
@@ -108,9 +108,6 @@
                             </td>
                             <td class="px-4 py-4 text-sm text-right font-semibold {{ $invoice['remainder'] > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }}">
                                 {{ number_format($invoice['remainder'], 2, ',', '.') }}
-                            </td>
-                            <td class="px-4 py-4 text-sm text-center text-gray-600 dark:text-gray-400">
-                                <span class="font-medium">{{ $invoice['currency'] }}</span>
                             </td>
                             <td class="px-6 py-4 text-center">
                                 @if($invoice['status'] === 'paid')
@@ -163,6 +160,13 @@
                                     @else
                                         <span class="font-mono text-xs">{{ $invoice['eksterntId'] }}</span>
                                     @endif
+                                @else
+                                    <span class="text-gray-400 dark:text-gray-600">-</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                @if($invoice['externalId'] ?? null)
+                                    <span class="font-mono text-xs">{{ $invoice['externalId'] }}</span>
                                 @else
                                     <span class="text-gray-400 dark:text-gray-600">-</span>
                                 @endif
