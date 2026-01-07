@@ -175,6 +175,14 @@ class Invoice extends Model
     }
 
     /**
+     * Get the comments for the invoice.
+     */
+    public function comments()
+    {
+        return $this->hasMany(InvoiceComment::class);
+    }
+
+    /**
      * Create or update invoice from E-conomic API response
      */
     public static function createOrUpdateFromApi(array $apiData): self

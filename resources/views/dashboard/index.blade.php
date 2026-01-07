@@ -3,6 +3,10 @@
     <!-- HTMX Script -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
+    <!-- Flatpickr CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+
     <div class="pt-6 pb-12">
         <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
             <!-- Top Toolbar: Filters + Employee Filter + Refresh -->
@@ -798,5 +802,268 @@
                 clearInterval(progressInterval);
             }
         }
+
+        // Comments functionality
+        const commentsCache = {};
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+        async function toggleComments(invoiceId) {
+            if (!invoiceId) return;
+
+            const panel = document.getElementById(`comments-row-${invoiceId}`);
+            if (!panel) return;
+
+            // Toggle visibility with slide animation
+            if (!panel.classList.contains('hidden')) {
+                panel.style.maxHeight = panel.scrollHeight + 'px';
+                setTimeout(() => {
+                    panel.style.maxHeight = '0';
+                    panel.style.overflow = 'hidden';
+                    panel.style.transition = 'max-height 0.3s ease-out';
+                }, 10);
+                setTimeout(() => {
+                    panel.classList.add('hidden');
+                    panel.style.maxHeight = '';
+                    panel.style.overflow = '';
+                    panel.style.transition = '';
+                }, 310);
+                return;
+            }
+
+            // Show panel with slide down
+            panel.classList.remove('hidden');
+            panel.style.maxHeight = '0';
+            panel.style.overflow = 'hidden';
+            panel.style.transition = 'max-height 0.3s ease-in';
+
+            // Load comments if not cached
+            if (!commentsCache[invoiceId] ||
+                (Date.now() - (commentsCache[invoiceId].timestamp || 0)) > CACHE_DURATION) {
+                await loadComments(invoiceId);
+            } else {
+                renderComments(invoiceId, commentsCache[invoiceId].data);
+            }
+
+            setTimeout(() => {
+                panel.style.maxHeight = panel.scrollHeight + 'px';
+            }, 10);
+
+            setTimeout(() => {
+                panel.style.maxHeight = '';
+                panel.style.overflow = '';
+                panel.style.transition = '';
+            }, 310);
+        }
+
+        async function loadComments(invoiceId) {
+            const loadingDiv = document.getElementById(`loading-${invoiceId}`);
+            const listDiv = document.getElementById(`comments-list-${invoiceId}`);
+            const formDiv = document.getElementById(`add-comment-${invoiceId}`);
+
+            if (loadingDiv) loadingDiv.classList.remove('hidden');
+            if (listDiv) listDiv.classList.add('hidden');
+            if (formDiv) formDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch(`/api/invoices/${invoiceId}/comments`, {
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load comments');
+
+                const comments = await response.json();
+
+                // Cache the results
+                commentsCache[invoiceId] = {
+                    data: comments,
+                    timestamp: Date.now()
+                };
+
+                renderComments(invoiceId, comments);
+            } catch (error) {
+                console.error('Error loading comments:', error);
+                if (listDiv) {
+                    listDiv.innerHTML = '<p class="text-red-600 dark:text-red-400">Failed to load comments. Please try again.</p>';
+                    listDiv.classList.remove('hidden');
+                }
+            } finally {
+                if (loadingDiv) loadingDiv.classList.add('hidden');
+                if (formDiv) formDiv.classList.remove('hidden');
+            }
+        }
+
+        function renderComments(invoiceId, comments) {
+            const listDiv = document.getElementById(`comments-list-${invoiceId}`);
+            if (!listDiv) return;
+
+            if (comments.length === 0) {
+                listDiv.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm">No comments yet. Be the first to add a note!</p>';
+            } else {
+                const commentsHtml = comments.map(comment => {
+                    const date = new Date(comment.created_at);
+                    const formattedDate = date.toLocaleDateString('en-GB') + ' ' +
+                                        date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+                    return `
+                        <div class="bg-white dark:bg-gray-800 border-l-4 border-blue-500 rounded-lg shadow-sm mb-3 p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="font-semibold text-gray-900 dark:text-gray-100">
+                                    ${escapeHtml(comment.user?.name || 'Unknown User')}
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                    ${formattedDate}
+                                </div>
+                            </div>
+                            <div class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                                ${escapeHtml(comment.comment)}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                listDiv.innerHTML = commentsHtml;
+            }
+
+            listDiv.classList.remove('hidden');
+        }
+
+        async function saveComment(invoiceId) {
+            if (!invoiceId) return;
+
+            const textarea = document.getElementById(`comment-input-${invoiceId}`);
+            const button = event.target;
+
+            if (!textarea) return;
+
+            const comment = textarea.value.trim();
+            if (!comment) {
+                alert('Please enter a comment');
+                return;
+            }
+
+            // Disable button and show loading state
+            button.disabled = true;
+            const originalText = button.innerText;
+            button.innerText = 'Saving...';
+
+            try {
+                const response = await fetch(`/api/invoices/${invoiceId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ comment })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to save comment');
+                }
+
+                const newComment = await response.json();
+
+                // Clear cache and reload comments
+                delete commentsCache[invoiceId];
+                await loadComments(invoiceId);
+
+                // Clear textarea
+                textarea.value = '';
+                updateCharCount(invoiceId);
+
+                // Update comment count badge
+                updateCommentCountBadge(invoiceId);
+
+            } catch (error) {
+                console.error('Error saving comment:', error);
+                alert('Failed to save comment: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.innerText = originalText;
+            }
+        }
+
+        function updateCharCount(invoiceId) {
+            const textarea = document.getElementById(`comment-input-${invoiceId}`);
+            const countSpan = document.getElementById(`char-count-${invoiceId}`);
+
+            if (textarea && countSpan) {
+                const count = textarea.value.length;
+                countSpan.textContent = `${count}/1000`;
+
+                if (count > 900) {
+                    countSpan.classList.add('text-yellow-600', 'dark:text-yellow-400');
+                    countSpan.classList.remove('text-gray-500', 'dark:text-gray-400');
+                } else {
+                    countSpan.classList.remove('text-yellow-600', 'dark:text-yellow-400');
+                    countSpan.classList.add('text-gray-500', 'dark:text-gray-400');
+                }
+            }
+        }
+
+        function updateCommentCountBadge(invoiceId) {
+            // Find the comments button for this invoice
+            const buttons = document.querySelectorAll('button[onclick^="toggleComments"]');
+            buttons.forEach(button => {
+                if (button.getAttribute('onclick').includes(invoiceId)) {
+                    // Get current count from cache
+                    const count = commentsCache[invoiceId]?.data?.length || 0;
+
+                    // Find or create badge
+                    let badge = button.querySelector('span.bg-blue-600');
+
+                    if (count > 0) {
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold text-white bg-blue-600 rounded-full';
+                            button.appendChild(badge);
+                        }
+                        badge.textContent = count;
+                    } else if (badge) {
+                        badge.remove();
+                    }
+                }
+            });
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Initialize Flatpickr for date inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            // Date From picker
+            flatpickr("#dateFrom", {
+                dateFormat: "Y-m-d",
+                defaultDate: "{{ $dateFrom ?? '' }}",
+                maxDate: "today",
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Update the "dateTo" minDate when "dateFrom" changes
+                    const dateToInstance = document.querySelector("#dateTo")._flatpickr;
+                    if (dateToInstance) {
+                        dateToInstance.set('minDate', dateStr);
+                    }
+                }
+            });
+
+            // Date To picker
+            flatpickr("#dateTo", {
+                dateFormat: "Y-m-d",
+                defaultDate: "{{ $dateTo ?? '' }}",
+                maxDate: "today",
+                minDate: "{{ $dateFrom ?? '' }}"
+            });
+        });
     </script>
 </x-app-layout>

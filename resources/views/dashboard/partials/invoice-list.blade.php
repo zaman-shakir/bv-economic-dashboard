@@ -172,16 +172,78 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-center">
-                                @if($invoice['status'] !== 'paid')
+                                <div class="flex items-center justify-center gap-2">
+                                    <!-- Comments Button -->
                                     <button
-                                        onclick="sendReminder({{ $invoice['invoiceNumber'] }}, {{ $invoice['kundenr'] }}, this)"
-                                        class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                        title="{{ __('dashboard.send_reminder') }}">
-                                        <span class="text-base">📧</span> Email
+                                        onclick="toggleComments({{ $invoice['invoiceId'] ?? 'null' }})"
+                                        class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded transition"
+                                        title="View/Add Comments">
+                                        💬 Comments
+                                        @if(($invoice['commentCount'] ?? 0) > 0)
+                                            <span class="inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold text-white bg-blue-600 rounded-full">
+                                                {{ $invoice['commentCount'] }}
+                                            </span>
+                                        @endif
                                     </button>
-                                @else
-                                    <span class="text-xs text-gray-400 dark:text-gray-600">-</span>
-                                @endif
+
+                                    <!-- Email Button -->
+                                    @if($invoice['status'] !== 'paid')
+                                        <button
+                                            onclick="sendReminder({{ $invoice['invoiceNumber'] }}, {{ $invoice['kundenr'] }}, this)"
+                                            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title="{{ __('dashboard.send_reminder') }}">
+                                            <span class="text-base">📧</span> Email
+                                        </button>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Comments Row (Hidden by default) -->
+                        <tr id="comments-row-{{ $invoice['invoiceId'] ?? '' }}" class="comments-row hidden">
+                            <td colspan="12" class="px-0 py-0">
+                                <div class="comments-panel bg-gray-50 dark:bg-gray-900 border-t-2 border-blue-500">
+                                    <div class="p-6">
+                                        <!-- Loading State -->
+                                        <div id="loading-{{ $invoice['invoiceId'] ?? '' }}" class="text-center py-4 text-gray-600 dark:text-gray-400">
+                                            <svg class="animate-spin h-8 w-8 mx-auto text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <p class="mt-2">Loading comments...</p>
+                                        </div>
+
+                                        <!-- Comments List (Hidden initially) -->
+                                        <div id="comments-list-{{ $invoice['invoiceId'] ?? '' }}" class="hidden">
+                                            <!-- Comments will be inserted here via JavaScript -->
+                                        </div>
+
+                                        <!-- Add Comment Form -->
+                                        <div id="add-comment-{{ $invoice['invoiceId'] ?? '' }}" class="hidden mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                            <div class="relative">
+                                                <textarea
+                                                    id="comment-input-{{ $invoice['invoiceId'] ?? '' }}"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                                                    placeholder="Add a note (max 1000 characters)..."
+                                                    maxlength="1000"
+                                                    rows="3"
+                                                    onkeyup="updateCharCount({{ $invoice['invoiceId'] ?? 'null' }})"
+                                                ></textarea>
+                                                <div class="flex justify-between items-center mt-2">
+                                                    <span id="char-count-{{ $invoice['invoiceId'] ?? '' }}" class="text-xs text-gray-500 dark:text-gray-400">
+                                                        0/1000
+                                                    </span>
+                                                    <button
+                                                        onclick="saveComment({{ $invoice['invoiceId'] ?? 'null' }})"
+                                                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        Save Note
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @endforeach

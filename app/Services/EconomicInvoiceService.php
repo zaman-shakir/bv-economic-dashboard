@@ -782,7 +782,11 @@ class EconomicInvoiceService
                 ->limit(100) // Dashboard limit: show top 100 per employee
                 ->get()
                 ->map(function ($invoice) {
+                    // Get comment count for this invoice
+                    $commentCount = \App\Models\InvoiceComment::where('invoice_id', $invoice->id)->count();
+
                     return [
+                        'invoiceId' => $invoice->id,
                         'invoiceNumber' => $invoice->invoice_number,
                         'kundenr' => $invoice->customer_number,
                         'kundenavn' => $invoice->customer_name,
@@ -800,6 +804,7 @@ class EconomicInvoiceService
                         'pdfUrl' => $invoice->pdf_url,
                         'employeeNumber' => $invoice->employee_number,
                         'employeeName' => $invoice->employee_name,
+                        'commentCount' => $commentCount,
                     ];
                 })
                 ->sortByDesc('daysOverdue')
@@ -961,7 +966,11 @@ class EconomicInvoiceService
 
             // Limit to 100 invoices per group for display
             $limitedInvoices = $invoices->take(100)->map(function ($invoice) {
+                // Get comment count for this invoice
+                $commentCount = \App\Models\InvoiceComment::where('invoice_id', $invoice->id)->count();
+
                 return [
+                    'invoiceId' => $invoice->id,
                     'invoiceNumber' => $invoice->invoice_number,
                     'kundenr' => $invoice->customer_number,
                     'kundenavn' => $invoice->customer_name,
@@ -979,6 +988,7 @@ class EconomicInvoiceService
                     'pdfUrl' => $invoice->pdf_url,
                     'employeeNumber' => $invoice->employee_number,
                     'employeeName' => $invoice->employee_name,
+                    'commentCount' => $commentCount,
                 ];
             })->sortByDesc('daysOverdue')->values();
 
