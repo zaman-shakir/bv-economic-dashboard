@@ -177,7 +177,7 @@
                                     <button
                                         onclick="toggleComments({{ $invoice['invoiceId'] ?? 'null' }})"
                                         class="inline-flex items-center justify-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded transition min-w-[60px]"
-                                        title="View/Add Comments">
+                                        title="{{ __('dashboard.view_add_comments') }}">
                                         <span style="font-size: 11px">💬</span>
                                         @if(($invoice['commentCount'] ?? 0) > 0)
                                             <span class="bg-blue-600 text-white rounded-full px-1 text-[9px] font-bold">{{ $invoice['commentCount'] }}</span>
@@ -207,12 +207,12 @@
                                     <!-- Close Button Header -->
                                     <div class="flex justify-between items-center px-6 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700">
                                         <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                            Invoice Comments - #{{ $invoice['invoiceNumber'] }}
+                                            {{ __('dashboard.invoice_comments') }} - #{{ $invoice['invoiceNumber'] }}
                                         </h3>
                                         <button
                                             onclick="toggleComments({{ $invoice['invoiceId'] ?? 'null' }})"
                                             class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition p-1"
-                                            title="Close comments">
+                                            title="{{ __('dashboard.close_comments') }}">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                             </svg>
@@ -225,7 +225,7 @@
                                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
-                                            <p class="mt-2">Loading comments...</p>
+                                            <p class="mt-2">{{ __('dashboard.loading_comments') }}</p>
                                         </div>
 
                                         <!-- Comments List (Hidden initially) -->
@@ -239,7 +239,7 @@
                                                 <textarea
                                                     id="comment-input-{{ $invoice['invoiceId'] ?? '' }}"
                                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-                                                    placeholder="Add a note (max 1000 characters)..."
+                                                    placeholder="{{ __('dashboard.add_note') }}"
                                                     maxlength="1000"
                                                     rows="3"
                                                     onkeyup="updateCharCount({{ $invoice['invoiceId'] ?? 'null' }})"
@@ -252,7 +252,7 @@
                                                         onclick="saveComment({{ $invoice['invoiceId'] ?? 'null' }})"
                                                         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
-                                                        Save Note
+                                                        {{ __('dashboard.save_note') }}
                                                     </button>
                                                 </div>
                                             </div>

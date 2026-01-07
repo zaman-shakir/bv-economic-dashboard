@@ -154,4 +154,20 @@ return [
     // WooCommerce Order Link
     'view_order' => 'Se ordren',
     'view_woo_order' => 'Åbn ordre i WooCommerce',
+
+    // Comments Section
+    'invoice_comments' => 'Faktura kommentarer',
+    'comments' => 'Kommentarer',
+    'view_add_comments' => 'Se/Tilføj kommentarer',
+    'close_comments' => 'Luk kommentarer',
+    'loading_comments' => 'Indlæser kommentarer...',
+    'no_comments_yet' => 'Ingen kommentarer endnu. Vær den første til at tilføje en note!',
+    'add_comment' => 'Tilføj kommentar',
+    'add_note' => 'Tilføj en note (maks 1000 tegn)...',
+    'save_note' => 'Gem note',
+    'saving' => 'Gemmer...',
+    'comment_saved' => 'Kommentar gemt!',
+    'enter_comment' => 'Indtast venligst en kommentar',
+    'failed_load_comments' => 'Kunne ikke indlæse kommentarer. Prøv venligst igen.',
+    'unknown_user' => 'Ukendt bruger',
 ];

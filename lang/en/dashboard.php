@@ -154,4 +154,20 @@ return [
     // WooCommerce Order Link
     'view_order' => 'View order',
     'view_woo_order' => 'Open order in WooCommerce',
+
+    // Comments Section
+    'invoice_comments' => 'Invoice comments',
+    'comments' => 'Comments',
+    'view_add_comments' => 'View/Add comments',
+    'close_comments' => 'Close comments',
+    'loading_comments' => 'Loading comments...',
+    'no_comments_yet' => 'No comments yet. Be the first to add a note!',
+    'add_comment' => 'Add comment',
+    'add_note' => 'Add a note (max 1000 characters)...',
+    'save_note' => 'Save note',
+    'saving' => 'Saving...',
+    'comment_saved' => 'Comment saved!',
+    'enter_comment' => 'Please enter a comment',
+    'failed_load_comments' => 'Failed to load comments. Please try again.',
+    'unknown_user' => 'Unknown user',
 ];

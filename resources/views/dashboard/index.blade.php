@@ -900,7 +900,7 @@
             } catch (error) {
                 console.error('Error loading comments:', error);
                 if (listDiv) {
-                    listDiv.innerHTML = '<p class="text-red-600 dark:text-red-400">Failed to load comments. Please try again.</p>';
+                    listDiv.innerHTML = '<p class="text-red-600 dark:text-red-400">{{ __('dashboard.failed_load_comments') }}</p>';
                     listDiv.classList.remove('hidden');
                 }
             } finally {
@@ -914,7 +914,7 @@
             if (!listDiv) return;
 
             if (comments.length === 0) {
-                listDiv.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm">No comments yet. Be the first to add a note!</p>';
+                listDiv.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm">{{ __('dashboard.no_comments_yet') }}</p>';
             } else {
                 const commentsHtml = comments.map(comment => {
                     const date = new Date(comment.created_at);
@@ -925,7 +925,7 @@
                         <div class="bg-white dark:bg-gray-800 border-l-4 border-blue-500 rounded-lg shadow-sm mb-3 p-4">
                             <div class="flex justify-between items-start mb-2">
                                 <div class="font-semibold text-gray-900 dark:text-gray-100">
-                                    ${escapeHtml(comment.user?.name || 'Unknown User')}
+                                    ${escapeHtml(comment.user?.name || '{{ __('dashboard.unknown_user') }}')}
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400">
                                     ${formattedDate}
@@ -954,14 +954,14 @@
 
             const comment = textarea.value.trim();
             if (!comment) {
-                alert('Please enter a comment');
+                alert('{{ __('dashboard.enter_comment') }}');
                 return;
             }
 
             // Disable button and show loading state
             button.disabled = true;
             const originalText = button.innerText;
-            button.innerText = 'Saving...';
+            button.innerText = '{{ __('dashboard.saving') }}';
 
             try {
                 const response = await fetch(`/api/invoices/${invoiceId}/comments`, {
