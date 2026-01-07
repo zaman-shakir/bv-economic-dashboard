@@ -203,6 +203,7 @@
                     <option value="amount_desc">{{ __('dashboard.sort_amount_desc') }}</option>
                     <option value="amount_asc">{{ __('dashboard.sort_amount_asc') }}</option>
                     <option value="customer">{{ __('dashboard.sort_customer') }}</option>
+                    <option value="recent_comments">💬 {{ __('dashboard.sort_recent_comments') }}</option>
                 </select>
 
                 <!-- Bulk Actions -->
@@ -536,6 +537,20 @@
                             aVal = a.cells[4]?.textContent.trim().toLowerCase() || '';
                             bVal = b.cells[4]?.textContent.trim().toLowerCase() || '';
                             return aVal.localeCompare(bVal);
+
+                        case 'recent_comments':
+                            // Most recent comments first (invoices without comments go last)
+                            aVal = a.dataset.latestComment || '';
+                            bVal = b.dataset.latestComment || '';
+
+                            // If both have comments, sort by timestamp (newest first)
+                            if (aVal && bVal) {
+                                return bVal.localeCompare(aVal);
+                            }
+                            // Invoices with comments come before those without
+                            if (aVal && !bVal) return -1;
+                            if (!aVal && bVal) return 1;
+                            return 0;
 
                         default:
                             return 0;

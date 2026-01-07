@@ -121,6 +121,7 @@ return [
     'sort_amount_desc' => 'Højeste beløb først',
     'sort_amount_asc' => 'Laveste beløb først',
     'sort_customer' => 'Kundenavn (A-Å)',
+    'sort_recent_comments' => 'Nyeste kommentarer',
 
     // Bulk Actions
     'bulk_actions' => 'Massehandlinger',

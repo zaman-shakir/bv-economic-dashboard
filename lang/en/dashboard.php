@@ -121,6 +121,7 @@ return [
     'sort_amount_desc' => 'Highest amount first',
     'sort_amount_asc' => 'Lowest amount first',
     'sort_customer' => 'Customer name (A-Z)',
+    'sort_recent_comments' => 'Recent comments',
 
     // Bulk Actions
     'bulk_actions' => 'Bulk actions',

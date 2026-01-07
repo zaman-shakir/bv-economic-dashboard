@@ -76,7 +76,8 @@
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50
                             {{ $invoice['status'] === 'overdue' && $invoice['daysOverdue'] > 30 ? 'bg-red-50 dark:bg-red-900/20' :
                                ($invoice['status'] === 'overdue' && $invoice['daysOverdue'] > 14 ? 'bg-yellow-50 dark:bg-yellow-900/20' :
-                               ($invoice['status'] === 'paid' ? 'bg-green-50 dark:bg-green-900/20' : '')) }}">
+                               ($invoice['status'] === 'paid' ? 'bg-green-50 dark:bg-green-900/20' : '')) }}"
+                            data-latest-comment="{{ $invoice['latestCommentAt'] ?? '' }}">
                             <td class="px-3 py-4 text-center bulk-column" style="display:none;">
                                 <input type="checkbox"
                                        class="invoice-checkbox rounded border-gray-300 dark:border-gray-600"

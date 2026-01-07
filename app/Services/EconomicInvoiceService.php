@@ -443,10 +443,13 @@ class EconomicInvoiceService
         // Determine status
         $status = $isPaid ? 'paid' : ($isOverdue ? 'overdue' : 'unpaid');
 
-        // Try to find invoice in database to get ID and comment count
+        // Try to find invoice in database to get ID, comment count, and latest comment timestamp
         $dbInvoice = \App\Models\Invoice::where('invoice_number', $invoice['bookedInvoiceNumber'])->first();
         $invoiceId = $dbInvoice ? $dbInvoice->id : null;
         $commentCount = $invoiceId ? \App\Models\InvoiceComment::where('invoice_id', $invoiceId)->count() : 0;
+        $latestComment = $invoiceId ? \App\Models\InvoiceComment::where('invoice_id', $invoiceId)
+            ->orderBy('created_at', 'desc')
+            ->first() : null;
 
         return [
             'invoiceId' => $invoiceId,
@@ -466,6 +469,7 @@ class EconomicInvoiceService
             'status' => $status,
             'pdfUrl' => $invoice['pdf']['download'] ?? null,
             'commentCount' => $commentCount,
+            'latestCommentAt' => $latestComment ? $latestComment->created_at->format('Y-m-d H:i:s') : null,
         ];
     }
 
@@ -817,8 +821,11 @@ class EconomicInvoiceService
                 ->limit(100) // Dashboard limit: show top 100 per employee
                 ->get()
                 ->map(function ($invoice) {
-                    // Get comment count for this invoice
+                    // Get comment count and latest comment timestamp for this invoice
                     $commentCount = \App\Models\InvoiceComment::where('invoice_id', $invoice->id)->count();
+                    $latestComment = \App\Models\InvoiceComment::where('invoice_id', $invoice->id)
+                        ->orderBy('created_at', 'desc')
+                        ->first();
 
                     return [
                         'invoiceId' => $invoice->id,
@@ -840,6 +847,7 @@ class EconomicInvoiceService
                         'employeeNumber' => $invoice->employee_number,
                         'employeeName' => $invoice->employee_name,
                         'commentCount' => $commentCount,
+                        'latestCommentAt' => $latestComment ? $latestComment->created_at->format('Y-m-d H:i:s') : null,
                     ];
                 })
                 ->sortByDesc('daysOverdue')
