@@ -874,8 +874,37 @@ class EconomicInvoiceService
         // Apply search filter
         $baseQuery->search($search);
 
-        // Load ALL invoices ONCE (much faster than per-group queries)
+        // Get top external references by count (to avoid memory issues)
+        // This query is fast because it only returns aggregated data
+        $topRefs = (clone $baseQuery)
+            ->select([
+                \DB::raw('COALESCE(TRIM(external_reference), "unassigned") as other_ref'),
+                \DB::raw('MAX(employee_number) as employee_number'),
+                \DB::raw('MAX(employee_name) as employee_name'),
+                \DB::raw('COUNT(*) as invoice_count'),
+                \DB::raw('SUM(gross_amount) as total_amount'),
+                \DB::raw('SUM(remainder) as total_remainder'),
+            ])
+            ->groupBy(\DB::raw('COALESCE(TRIM(external_reference), "unassigned")'))
+            ->orderByRaw('COUNT(*) DESC')
+            ->limit(50) // Show top 50 groups by invoice count
+            ->get();
+
+        // Get the list of top external references
+        $topRefList = $topRefs->pluck('other_ref')->toArray();
+
+        // Load only invoices for these top references (memory efficient!)
         $allInvoices = $baseQuery
+            ->where(function($query) use ($topRefList) {
+                foreach ($topRefList as $ref) {
+                    if ($ref === 'unassigned') {
+                        $query->orWhereNull('external_reference')
+                              ->orWhere('external_reference', '');
+                    } else {
+                        $query->orWhereRaw('TRIM(external_reference) = ?', [$ref]);
+                    }
+                }
+            })
             ->orderBy('due_date', 'asc')
             ->get();
 
@@ -885,12 +914,14 @@ class EconomicInvoiceService
             return $extRef !== '' ? $extRef : 'unassigned';
         });
 
-        // Build the result collection
-        return $groupedInvoices->map(function ($invoices, $otherRef) use ($personCodeMapping) {
-            // Get employee info from first invoice (they should all have same employee for this ref)
-            $firstInvoice = $invoices->first();
-            $employeeNumber = $firstInvoice->employee_number;
-            $employeeName = $firstInvoice->employee_name;
+        // Build the result collection using pre-calculated data from $topRefs
+        return $topRefs->mapWithKeys(function ($refData) use ($groupedInvoices, $personCodeMapping) {
+            $otherRef = $refData->other_ref;
+            $invoices = $groupedInvoices->get($otherRef, collect());
+
+            // Get employee info from aggregated data
+            $employeeNumber = $refData->employee_number;
+            $employeeName = $refData->employee_name;
 
             // Determine display name
             $upperRef = strtoupper($otherRef);
@@ -930,14 +961,16 @@ class EconomicInvoiceService
             })->sortByDesc('daysOverdue')->values();
 
             return [
-                'employeeNumber' => $otherRef,
-                'employeeName' => $displayName,
-                'actualEmployeeNumber' => $employeeNumber,
-                'actualEmployeeName' => $employeeName,
-                'invoiceCount' => $invoices->count(),
-                'totalAmount' => $invoices->sum('gross_amount'),
-                'totalRemainder' => $invoices->sum('remainder'),
-                'invoices' => $limitedInvoices->all(),
+                $otherRef => [
+                    'employeeNumber' => $otherRef,
+                    'employeeName' => $displayName,
+                    'actualEmployeeNumber' => $employeeNumber,
+                    'actualEmployeeName' => $employeeName,
+                    'invoiceCount' => (int) $refData->invoice_count,
+                    'totalAmount' => (float) $refData->total_amount,
+                    'totalRemainder' => (float) $refData->total_remainder,
+                    'invoices' => $limitedInvoices->all(),
+                ]
             ];
         });
     }
