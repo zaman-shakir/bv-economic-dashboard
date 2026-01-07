@@ -874,45 +874,41 @@ class EconomicInvoiceService
         // Apply search filter
         $baseQuery->search($search);
 
-        // Get top external references by count (to avoid memory issues)
-        // This query is fast because it only returns aggregated data
+        // Group by pattern (combine similar orders into logical groups)
+        $groupingLogic = "CASE
+            WHEN TRIM(external_reference) LIKE 'BV-WO-%' THEN 'BV-Webordrer'
+            WHEN TRIM(external_reference) LIKE 'BF-WO-%' THEN 'BF-Webordrer'
+            WHEN TRIM(external_reference) LIKE 'BM-%' THEN 'BM-Orders'
+            WHEN TRIM(external_reference) LIKE 'BV%' AND TRIM(external_reference) NOT LIKE 'BV-WO-%' THEN 'BV-Orders'
+            WHEN TRIM(external_reference) LIKE 'BF%' AND TRIM(external_reference) NOT LIKE 'BF-WO-%' THEN 'BF-Orders'
+            WHEN UPPER(TRIM(external_reference)) IN ('LH', 'AKS', 'MB', 'MW', 'EKL', 'BC', 'LNJ', 'DH', 'JEN') THEN UPPER(TRIM(external_reference))
+            WHEN TRIM(external_reference) = '' OR external_reference IS NULL THEN 'unassigned'
+            ELSE TRIM(external_reference)
+        END";
+
+        // Get grouped references by pattern (this creates logical groups)
         $topRefs = (clone $baseQuery)
             ->select([
-                \DB::raw('COALESCE(TRIM(external_reference), "unassigned") as other_ref'),
+                \DB::raw("{$groupingLogic} as other_ref"),
                 \DB::raw('MAX(employee_number) as employee_number'),
                 \DB::raw('MAX(employee_name) as employee_name'),
                 \DB::raw('COUNT(*) as invoice_count'),
                 \DB::raw('SUM(gross_amount) as total_amount'),
                 \DB::raw('SUM(remainder) as total_remainder'),
             ])
-            ->groupBy(\DB::raw('COALESCE(TRIM(external_reference), "unassigned")'))
+            ->groupBy(\DB::raw($groupingLogic))
             ->orderByRaw('COUNT(*) DESC')
             ->limit(50) // Show top 50 groups by invoice count
             ->get();
 
-        // Get the list of top external references
-        $topRefList = $topRefs->pluck('other_ref')->toArray();
-
-        // Load only invoices for these top references (memory efficient!)
+        // Load all invoices with their group classification
         $allInvoices = $baseQuery
-            ->where(function($query) use ($topRefList) {
-                foreach ($topRefList as $ref) {
-                    if ($ref === 'unassigned') {
-                        $query->orWhereNull('external_reference')
-                              ->orWhere('external_reference', '');
-                    } else {
-                        $query->orWhereRaw('TRIM(external_reference) = ?', [$ref]);
-                    }
-                }
-            })
+            ->selectRaw("*, {$groupingLogic} as group_key")
             ->orderBy('due_date', 'asc')
             ->get();
 
-        // Group invoices by external_reference in memory
-        $groupedInvoices = $allInvoices->groupBy(function ($invoice) {
-            $extRef = trim($invoice->external_reference ?? '');
-            return $extRef !== '' ? $extRef : 'unassigned';
-        });
+        // Group invoices by their pattern-based group key
+        $groupedInvoices = $allInvoices->groupBy('group_key');
 
         // Build the result collection using pre-calculated data from $topRefs
         return $topRefs->mapWithKeys(function ($refData) use ($groupedInvoices, $personCodeMapping) {
@@ -923,18 +919,35 @@ class EconomicInvoiceService
             $employeeNumber = $refData->employee_number;
             $employeeName = $refData->employee_name;
 
-            // Determine display name
+            // Determine display name based on group type
             $upperRef = strtoupper($otherRef);
+            $isPatternGroup = false;
+
             if ($otherRef === 'unassigned') {
                 $displayName = 'No External Reference';
+            } elseif ($otherRef === 'BV-Webordrer') {
+                $displayName = '🛒 BilligVentilation Webordrer';
+                $isPatternGroup = true;
+            } elseif ($otherRef === 'BF-Webordrer') {
+                $displayName = '🛒 BilligFilter Webordrer';
+                $isPatternGroup = true;
+            } elseif ($otherRef === 'BM-Orders') {
+                $displayName = '📦 BM Orders (Legacy)';
+                $isPatternGroup = true;
+            } elseif ($otherRef === 'BV-Orders') {
+                $displayName = '📦 BV Orders (Non-Web)';
+                $isPatternGroup = true;
+            } elseif ($otherRef === 'BF-Orders') {
+                $displayName = '📦 BF Orders (Non-Web)';
+                $isPatternGroup = true;
             } elseif (isset($personCodeMapping[$upperRef])) {
                 $displayName = $personCodeMapping[$upperRef] . " ({$otherRef})";
             } else {
                 $displayName = $otherRef;
             }
 
-            // Add employee info to display name if available
-            if ($employeeName) {
+            // Add employee info to display name if available (but not for pattern groups)
+            if ($employeeName && !$isPatternGroup) {
                 $displayName .= " → 👤 {$employeeName}";
             }
 
