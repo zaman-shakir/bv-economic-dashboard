@@ -926,6 +926,7 @@ class EconomicInvoiceService
 
             if ($otherRef === 'unassigned') {
                 $displayName = 'No External Reference';
+                $isPatternGroup = true; // Don't show employee for this catch-all group
             } elseif ($otherRef === 'BV-Webordrer') {
                 $displayName = '🛒 BilligVentilation Webordrer';
                 $isPatternGroup = true;
