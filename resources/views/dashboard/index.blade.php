@@ -174,24 +174,37 @@
                 </div>
 
                 <!-- Date Range Filter -->
-                <div class="flex items-center gap-2">
-                    <input type="date" id="dateFrom" value="{{ $dateFrom ?? '' }}"
-                           placeholder="dd-mm-yyyy"
-                           lang="en-GB"
-                           class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
-                    <span class="text-gray-500 dark:text-gray-400">to</span>
-                    <input type="date" id="dateTo" value="{{ $dateTo ?? '' }}"
-                           placeholder="dd-mm-yyyy"
-                           lang="en-GB"
-                           class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
-                    <button onclick="filterByDateRange()"
-                            class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-sm font-medium">
-                        📅 Filter
-                    </button>
-                    <button onclick="clearDateFilter()"
-                            class="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition text-sm font-medium">
-                        Clear
-                    </button>
+                <div class="flex flex-col gap-2">
+                    <!-- Date Inputs -->
+                    <div class="flex items-center gap-2">
+                        <input type="date" id="dateFrom" value="{{ $dateFrom ?? '' }}"
+                               placeholder="dd-mm-yyyy"
+                               lang="en-GB"
+                               class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                        <span class="text-gray-500 dark:text-gray-400">to</span>
+                        <input type="date" id="dateTo" value="{{ $dateTo ?? '' }}"
+                               placeholder="dd-mm-yyyy"
+                               lang="en-GB"
+                               class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                        <button onclick="filterByDateRange()"
+                                class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-sm font-medium">
+                            📅 Filter
+                        </button>
+                        <button onclick="clearDateFilter()"
+                                class="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition text-sm font-medium">
+                            Clear
+                        </button>
+                    </div>
+                    <!-- Quick Date Presets -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs text-gray-500 dark:text-gray-400">Quick:</span>
+                        <button onclick="setDatePreset('this_month')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">This Month</button>
+                        <button onclick="setDatePreset('last_month')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last Month</button>
+                        <button onclick="setDatePreset('this_quarter')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">This Quarter</button>
+                        <button onclick="setDatePreset('last_quarter')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last Quarter</button>
+                        <button onclick="setDatePreset('ytd')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">YTD</button>
+                        <button onclick="setDatePreset('last_year')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last Year</button>
+                    </div>
                 </div>
 
                 <!-- Sort -->
@@ -273,6 +286,22 @@
             height: 8px;
             background: rgba(0, 0, 0, 0.1);
             border-radius: 2px;
+        }
+
+        /* Pulse Animation for Comment Badge */
+        @keyframes pulse-badge {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        .pulse-badge {
+            animation: pulse-badge 0.6s ease-in-out 3;
         }
     </style>
 
@@ -492,6 +521,63 @@
 
             // Reload page
             window.location.href = url.toString();
+        }
+
+        function setDatePreset(preset) {
+            const today = new Date();
+            let dateFrom, dateTo;
+
+            switch(preset) {
+                case 'this_month':
+                    dateFrom = new Date(today.getFullYear(), today.getMonth(), 1);
+                    dateTo = today;
+                    break;
+                case 'last_month':
+                    dateFrom = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    dateTo = new Date(today.getFullYear(), today.getMonth(), 0);
+                    break;
+                case 'this_quarter':
+                    const currentQuarter = Math.floor(today.getMonth() / 3);
+                    dateFrom = new Date(today.getFullYear(), currentQuarter * 3, 1);
+                    dateTo = today;
+                    break;
+                case 'last_quarter':
+                    const lastQuarter = Math.floor(today.getMonth() / 3) - 1;
+                    const lastQuarterYear = lastQuarter < 0 ? today.getFullYear() - 1 : today.getFullYear();
+                    const lastQuarterMonth = lastQuarter < 0 ? 9 : lastQuarter * 3;
+                    dateFrom = new Date(lastQuarterYear, lastQuarterMonth, 1);
+                    dateTo = new Date(lastQuarterYear, lastQuarterMonth + 3, 0);
+                    break;
+                case 'ytd':
+                    dateFrom = new Date(today.getFullYear(), 0, 1);
+                    dateTo = today;
+                    break;
+                case 'last_year':
+                    dateFrom = new Date(today.getFullYear() - 1, 0, 1);
+                    dateTo = new Date(today.getFullYear() - 1, 11, 31);
+                    break;
+            }
+
+            // Format dates as YYYY-MM-DD
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            // Update the input fields
+            document.getElementById('dateFrom').value = formatDate(dateFrom);
+            document.getElementById('dateTo').value = formatDate(dateTo);
+
+            // Update flatpickr instances if they exist
+            const dateFromPicker = document.querySelector("#dateFrom")._flatpickr;
+            const dateToPicker = document.querySelector("#dateTo")._flatpickr;
+            if (dateFromPicker) dateFromPicker.setDate(formatDate(dateFrom));
+            if (dateToPicker) dateToPicker.setDate(formatDate(dateTo));
+
+            // Automatically apply the filter
+            filterByDateRange();
         }
 
         // Sort Invoices
@@ -866,11 +952,19 @@
                 }
             });
 
-            // Show panel with slide down
-            panel.classList.remove('hidden');
-            panel.style.maxHeight = '0';
-            panel.style.overflow = 'hidden';
-            panel.style.transition = 'max-height 0.3s ease-in';
+            // Scroll to the invoice row BEFORE opening the panel
+            const invoiceRow = panel.previousElementSibling;
+            if (invoiceRow) {
+                invoiceRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // Show panel with slide down (after a short delay to allow scroll)
+            setTimeout(() => {
+                panel.classList.remove('hidden');
+                panel.style.maxHeight = '0';
+                panel.style.overflow = 'hidden';
+                panel.style.transition = 'max-height 0.3s ease-in';
+            }, 300);
 
             // Load comments if not cached
             if (!commentsCache[invoiceId] ||
@@ -882,13 +976,13 @@
 
             setTimeout(() => {
                 panel.style.maxHeight = panel.scrollHeight + 'px';
-            }, 10);
+            }, 310);
 
             setTimeout(() => {
                 panel.style.maxHeight = '';
                 panel.style.overflow = '';
                 panel.style.transition = '';
-            }, 310);
+            }, 610);
         }
 
         function closeCommentsPanel(panel) {
@@ -983,8 +1077,8 @@
                                     ${formattedDate}
                                 </div>
                             </div>
-                            <div class="text-sm text-gray-800 dark:text-gray-900 whitespace-pre-wrap leading-snug">
-                                ${escapeHtml(comment.comment)}
+                            <div class="text-sm text-gray-800 dark:text-gray-900 leading-snug">
+                                ${formatCommentText(escapeHtml(comment.comment))}
                             </div>
                         </div>
                     `;
@@ -1066,8 +1160,8 @@
                 // Hide add form and show add button again
                 cancelAddComment(invoiceId);
 
-                // Update comment count badge
-                updateCommentCountBadge(invoiceId);
+                // Update comment count badge with pulse animation
+                updateCommentCountBadge(invoiceId, true);
 
             } catch (error) {
                 console.error('Error saving comment:', error);
@@ -1096,7 +1190,50 @@
             }
         }
 
-        function updateCommentCountBadge(invoiceId) {
+        function insertMarkdown(invoiceId, prefix, suffix, placeholder) {
+            const textarea = document.getElementById(`comment-input-${invoiceId}`);
+            if (!textarea) return;
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            const textToInsert = selectedText || placeholder;
+
+            const before = textarea.value.substring(0, start);
+            const after = textarea.value.substring(end);
+
+            textarea.value = before + prefix + textToInsert + suffix + after;
+
+            // Set cursor position
+            const newCursorPos = start + prefix.length + textToInsert.length;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+            textarea.focus();
+
+            updateCharCount(invoiceId);
+        }
+
+        function formatCommentText(text) {
+            if (!text) return '';
+
+            // Convert markdown to HTML
+            let html = text
+                // Bold: **text** -> <strong>text</strong>
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                // Italic: _text_ -> <em>text</em>
+                .replace(/\_(.+?)\_/g, '<em>$1</em>')
+                // Code: `text` -> <code>text</code>
+                .replace(/`(.+?)`/g, '<code class="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">$1</code>')
+                // Links: [text](url) -> <a href="url">text</a>
+                .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" class="text-blue-600 dark:text-blue-400 underline hover:text-blue-800">$1</a>')
+                // Bullet lists: - item -> <li>item</li>
+                .replace(/^- (.+)$/gm, '<li class="ml-4">• $1</li>')
+                // Line breaks
+                .replace(/\n/g, '<br>');
+
+            return html;
+        }
+
+        function updateCommentCountBadge(invoiceId, triggerPulse = false) {
             // Find the comments button for this invoice
             const buttons = document.querySelectorAll('button[onclick^="toggleComments"]');
             buttons.forEach(button => {
@@ -1114,6 +1251,19 @@
                             button.appendChild(badge);
                         }
                         badge.textContent = count;
+
+                        // Trigger pulse animation when a new comment is added
+                        if (triggerPulse) {
+                            badge.classList.remove('pulse-badge');
+                            // Force reflow to restart animation
+                            void badge.offsetWidth;
+                            badge.classList.add('pulse-badge');
+
+                            // Remove class after animation completes
+                            setTimeout(() => {
+                                badge.classList.remove('pulse-badge');
+                            }, 1800); // 0.6s * 3 iterations = 1.8s
+                        }
                     } else if (badge) {
                         badge.remove();
                     }

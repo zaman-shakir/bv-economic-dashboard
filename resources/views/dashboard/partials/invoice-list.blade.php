@@ -250,13 +250,22 @@
                                             </button>
 
                                             <!-- Add form (hidden initially) -->
-                                            <div id="add-form-{{ $invoice['invoiceId'] ?? '' }}" class="hidden mt-3 sticky-note bg-yellow-200 dark:bg-yellow-600 p-3 rounded shadow-lg max-w-xs">
+                                            <div id="add-form-{{ $invoice['invoiceId'] ?? '' }}" class="hidden mt-3 sticky-note bg-yellow-200 dark:bg-yellow-600 p-3 rounded shadow-lg max-w-md">
+                                                <!-- Formatting Toolbar -->
+                                                <div class="flex items-center gap-1 mb-2 pb-2 border-b border-yellow-400 dark:border-yellow-700">
+                                                    <span class="text-xs text-gray-600 dark:text-gray-800 mr-2">Format:</span>
+                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '**', '**', 'bold text')" class="px-2 py-1 text-xs font-bold bg-yellow-300 dark:bg-yellow-500 hover:bg-yellow-400 dark:hover:bg-yellow-600 rounded transition" title="Bold">B</button>
+                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '_', '_', 'italic text')" class="px-2 py-1 text-xs italic bg-yellow-300 dark:bg-yellow-500 hover:bg-yellow-400 dark:hover:bg-yellow-600 rounded transition" title="Italic">I</button>
+                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '[', '](url)', 'link text')" class="px-2 py-1 text-xs bg-yellow-300 dark:bg-yellow-500 hover:bg-yellow-400 dark:hover:bg-yellow-600 rounded transition" title="Link">🔗</button>
+                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '- ', '', 'list item')" class="px-2 py-1 text-xs bg-yellow-300 dark:bg-yellow-500 hover:bg-yellow-400 dark:hover:bg-yellow-600 rounded transition" title="Bullet List">•</button>
+                                                    <button type="button" onclick="insertMarkdown({{ $invoice['invoiceId'] ?? 'null' }}, '`', '`', 'code')" class="px-2 py-1 text-xs font-mono bg-yellow-300 dark:bg-yellow-500 hover:bg-yellow-400 dark:hover:bg-yellow-600 rounded transition" title="Code">&lt;/&gt;</button>
+                                                </div>
                                                 <textarea
                                                     id="comment-input-{{ $invoice['invoiceId'] ?? '' }}"
-                                                    class="w-full bg-transparent border-0 focus:ring-0 text-sm text-gray-800 dark:text-gray-900 placeholder-gray-600 dark:placeholder-gray-700 resize-none"
+                                                    class="w-full bg-transparent border-0 focus:ring-0 text-sm text-gray-800 dark:text-gray-900 placeholder-gray-600 dark:placeholder-gray-700 resize-none font-mono"
                                                     placeholder="{{ __('dashboard.add_note') }}"
                                                     maxlength="1000"
-                                                    rows="4"
+                                                    rows="5"
                                                     onkeyup="updateCharCount({{ $invoice['invoiceId'] ?? 'null' }})"
                                                 ></textarea>
                                                 <div class="flex justify-between items-center mt-2 pt-2 border-t border-yellow-400 dark:border-yellow-700">
