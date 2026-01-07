@@ -12,37 +12,46 @@
             <!-- Top Toolbar: Filters + Employee Filter + Refresh -->
             <div class="mb-6 flex flex-wrap items-center gap-3">
                 <!-- Filter Buttons -->
-                <div class="flex gap-2">
+                <div class="flex p-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                     <a href="{{ route('dashboard', ['filter' => 'all']) }}"
-                       class="px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 {{ $currentFilter === 'all' ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-elevation-2 btn-lift' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md' }}">
+                       class="px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 {{ $currentFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         {{ __('dashboard.filter_all') }}
                     </a>
                     <a href="{{ route('dashboard', ['filter' => 'overdue']) }}"
-                       class="px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 {{ $currentFilter === 'overdue' ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-elevation-2 btn-lift' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md' }}">
+                       class="px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 {{ $currentFilter === 'overdue' ? 'bg-red-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         {{ __('dashboard.filter_overdue') }}
                     </a>
                     <a href="{{ route('dashboard', ['filter' => 'unpaid']) }}"
-                       class="px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 {{ $currentFilter === 'unpaid' ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white shadow-elevation-2 btn-lift' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md' }}">
+                       class="px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 {{ $currentFilter === 'unpaid' ? 'bg-amber-500 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-600 dark:hover:text-amber-400' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         {{ __('dashboard.filter_unpaid') }}
                     </a>
                 </div>
 
+                <div class="h-8 w-px bg-gray-300 dark:bg-gray-700 hidden sm:block"></div>
+
                 <!-- Grouping Selector -->
-                <div class="flex gap-2">
+                <div class="flex p-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                     <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'employee']) }}"
-                       class="px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600' }}">
+                       class="px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                         By Employee
                     </a>
                     <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'other_ref']) }}"
-                       class="px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 {{ ($currentGrouping ?? 'employee') === 'other_ref' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600' }}">
+                       class="px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 {{ ($currentGrouping ?? 'employee') === 'other_ref' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
                         By Other Ref
                     </a>
                 </div>
 
-                <!-- Employee Filter -->
-                <div class="flex-1 min-w-[200px]">
+                <div class="flex-grow"></div>
+
+                <!-- Employee Filter (Dropdown) -->
+                <div class="relative">
                     <select id="employeeFilter" onchange="filterByEmployee(this.value)"
-                            class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
+                            class="pl-4 pr-10 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer hover:border-blue-400 transition">
                         <option value="">{{ __('dashboard.all_employees') }}</option>
                         @foreach($invoicesByEmployee as $emp)
                             <option value="{{ $emp['employeeNumber'] }}">
@@ -53,45 +62,39 @@
                 </div>
 
                 <!-- Refresh Button -->
+                <a href="{{ route('dashboard', request()->all()) }}"
+                   class="p-2.5 bg-white dark:bg-gray-800 text-gray-500 hover:text-blue-600 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 group"
+                   title="{{ __('dashboard.refresh_data') }}">
+                    <svg class="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </a>
+            </div>
+            <div id="loading" class="htmx-indicator text-sm text-blue-600 dark:text-blue-400 font-medium">
+                {{ __('dashboard.loading_data') }}
+            </div>
+
+            <!-- NEW: Sync Now Button -->
+            @if($usingDatabase ?? false)
+            <div class="flex flex-col gap-2 min-w-[200px]">
                 <button
-                    hx-get="{{ route('dashboard.refresh', ['filter' => $currentFilter]) }}"
-                    hx-target="#invoice-list"
-                    hx-swap="innerHTML"
-                    hx-indicator="#loading"
-                    class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 shadow-elevation-2 btn-lift"
+                    id="syncButton"
+                    onclick="syncNow()"
+                    class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg id="syncIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
-                    {{ __('dashboard.refresh_data') }}
+                    <span id="syncButtonText">Sync Now</span>
                 </button>
-                <div id="loading" class="htmx-indicator text-sm text-blue-600 dark:text-blue-400 font-medium">
-                    {{ __('dashboard.loading_data') }}
-                </div>
 
-                <!-- NEW: Sync Now Button -->
-                @if($usingDatabase ?? false)
-                <div class="flex flex-col gap-2 min-w-[200px]">
-                    <button
-                        id="syncButton"
-                        onclick="syncNow()"
-                        class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <svg id="syncIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        <span id="syncButtonText">Sync Now</span>
-                    </button>
-
-                    <!-- Progress Bar (hidden by default) -->
-                    <div id="syncProgress" class="hidden w-full">
-                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
-                            <div id="progressBar" class="bg-purple-500 h-2.5 transition-all duration-300 rounded-full" style="width: 0%"></div>
-                        </div>
-                        <div id="progressText" class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium"></div>
+                <!-- Progress Bar (hidden by default) -->
+                <div id="syncProgress" class="hidden w-full">
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                        <div id="progressBar" class="bg-purple-500 h-2.5 transition-all duration-300 rounded-full" style="width: 0%"></div>
                     </div>
+                    <div id="progressText" class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium"></div>
                 </div>
-                @endif
+            </div>
+            @endif
             </div>
 
             <!-- Combined Info Banners (Side by Side) -->
@@ -159,22 +162,22 @@
             @endif
 
             <!-- Second Toolbar: Search, Sort, Export, Bulk Actions -->
-            <div class="mb-4 flex flex-wrap items-center gap-3 card-glass p-4">
-                <!-- Search -->
-                <div class="flex-1 min-w-[250px]">
-                    <div class="relative">
-                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <input type="text" id="searchInput" value="{{ $search ?? '' }}"
-                               placeholder="{{ __('dashboard.search_invoices') }} (Press Enter to search)"
-                               onkeypress="if(event.key === 'Enter') applySearch()"
-                               class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500">
+            <div class="mb-4 card-glass p-4">
+                <!-- Top Row: Search, Date Inputs, Sort, Bulk -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Search -->
+                    <div class="flex-1 min-w-[250px]">
+                        <div class="relative">
+                            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input type="text" id="searchInput" value="{{ $search ?? '' }}"
+                                   placeholder="{{ __('dashboard.search_invoices') }} (Press Enter to search)"
+                                   onkeypress="if(event.key === 'Enter') applySearch()"
+                                   class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500">
+                        </div>
                     </div>
-                </div>
 
-                <!-- Date Range Filter -->
-                <div class="flex flex-col gap-2">
                     <!-- Date Inputs -->
                     <div class="flex items-center gap-2">
                         <input type="date" id="dateFrom" value="{{ $dateFrom ?? '' }}"
@@ -185,7 +188,7 @@
                         <input type="date" id="dateTo" value="{{ $dateTo ?? '' }}"
                                placeholder="dd-mm-yyyy"
                                lang="en-GB"
-                               class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                               class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-500 text-sm">
                         <button onclick="filterByDateRange()"
                                 class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-sm font-medium">
                             📅 Filter
@@ -195,38 +198,39 @@
                             Clear
                         </button>
                     </div>
-                    <!-- Quick Date Presets -->
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="text-xs text-gray-500 dark:text-gray-400">Quick:</span>
-                        <button onclick="setDatePreset('today')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Today</button>
-                        <button onclick="setDatePreset('last_3_days')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last 3 Days</button>
-                        <button onclick="setDatePreset('last_week')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last Week</button>
-                        <button onclick="setDatePreset('this_month')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">This Month</button>
-                        <button onclick="setDatePreset('last_month')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last Month</button>
-                        <button onclick="setDatePreset('this_quarter')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">This Quarter</button>
-                    </div>
+
+                    <!-- Sort -->
+                    <select id="sortBy" onchange="sortInvoices(this.value)"
+                            class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500">
+                        <option value="">{{ __('dashboard.sort_by') }}</option>
+                        <option value="days_desc">{{ __('dashboard.sort_days_desc') }}</option>
+                        <option value="days_asc">{{ __('dashboard.sort_days_asc') }}</option>
+                        <option value="amount_desc">{{ __('dashboard.sort_amount_desc') }}</option>
+                        <option value="amount_asc">{{ __('dashboard.sort_amount_asc') }}</option>
+                        <option value="customer">{{ __('dashboard.sort_customer') }}</option>
+                        <option value="recent_comments">💬 {{ __('dashboard.sort_recent_comments') }}</option>
+                    </select>
+
+                    <!-- Bulk Actions -->
+                    <button onclick="toggleBulkMode()" id="bulkModeBtn"
+                            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        {{ __('dashboard.bulk_actions') }}
+                    </button>
                 </div>
 
-                <!-- Sort -->
-                <select id="sortBy" onchange="sortInvoices(this.value)"
-                        class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500">
-                    <option value="">{{ __('dashboard.sort_by') }}</option>
-                    <option value="days_desc">{{ __('dashboard.sort_days_desc') }}</option>
-                    <option value="days_asc">{{ __('dashboard.sort_days_asc') }}</option>
-                    <option value="amount_desc">{{ __('dashboard.sort_amount_desc') }}</option>
-                    <option value="amount_asc">{{ __('dashboard.sort_amount_asc') }}</option>
-                    <option value="customer">{{ __('dashboard.sort_customer') }}</option>
-                    <option value="recent_comments">💬 {{ __('dashboard.sort_recent_comments') }}</option>
-                </select>
-
-                <!-- Bulk Actions -->
-                <button onclick="toggleBulkMode()" id="bulkModeBtn"
-                        class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    {{ __('dashboard.bulk_actions') }}
-                </button>
+                <!-- Bottom Row: Quick Date Presets -->
+                <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600 flex items-center gap-2 flex-wrap">
+                    <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Quick:</span>
+                    <button onclick="setDatePreset('today')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Today</button>
+                    <button onclick="setDatePreset('last_3_days')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last 3 Days</button>
+                    <button onclick="setDatePreset('last_week')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last Week</button>
+                    <button onclick="setDatePreset('this_month')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">This Month</button>
+                    <button onclick="setDatePreset('last_month')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">Last Month</button>
+                    <button onclick="setDatePreset('this_quarter')" class="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition">This Quarter</button>
+                </div>
 
                 <!-- Bulk Actions Panel (Hidden by default) -->
                 <div id="bulkActionsPanel" class="hidden w-full mt-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
@@ -262,30 +266,6 @@
         }
         .htmx-request .htmx-indicator {
             display: block;
-        }
-
-        /* Sticky Note Styling */
-        .sticky-note {
-            position: relative;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-            transition: all 0.2s ease;
-        }
-
-        .sticky-note:hover {
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-        }
-
-        .sticky-note::before {
-            content: '';
-            position: absolute;
-            top: -4px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 2px;
         }
 
         /* Pulse Animation for Comment Badge */
