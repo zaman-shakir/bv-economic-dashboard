@@ -20,8 +20,8 @@ class DashboardController extends Controller
         // Get filter from request or use saved preference
         $filter = $request->get('filter', session('dashboard.filter', 'overdue')); // all, overdue, unpaid
 
-        // Get grouping preference (employee or person_code)
-        $grouping = $request->get('grouping', session('dashboard.grouping', 'employee')); // employee or person_code
+        // Get grouping preference (employee or other_ref)
+        $grouping = $request->get('grouping', session('dashboard.grouping', 'employee')); // employee or other_ref
 
         // Save preferences to session
         if ($request->has('filter')) {
@@ -41,8 +41,8 @@ class DashboardController extends Controller
 
         if ($invoiceCount > 0) {
             // Use database method (fast!)
-            if ($grouping === 'person_code') {
-                $invoicesByEmployee = $this->invoiceService->getInvoicesByPersonCodeFromDatabase(
+            if ($grouping === 'other_ref') {
+                $invoicesByEmployee = $this->invoiceService->getInvoicesByOtherRefFromDatabase(
                     $filter,
                     $dateFrom,
                     $dateTo,
@@ -58,8 +58,8 @@ class DashboardController extends Controller
             }
         } else {
             // Fallback to API method (for backward compatibility)
-            if ($grouping === 'person_code') {
-                $invoicesByEmployee = $this->invoiceService->getInvoicesByPersonCode($filter);
+            if ($grouping === 'other_ref') {
+                $invoicesByEmployee = $this->invoiceService->getInvoicesByOtherRef($filter);
             } else {
                 $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
             }

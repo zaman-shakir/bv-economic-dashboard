@@ -326,17 +326,20 @@ class EconomicInvoiceService
     }
 
     /**
-     * Get invoices grouped by person code from external_reference field
+     * Get invoices grouped by external reference (other ref) field
      *
-     * This groups invoices by the person code (e.g., LH, AKS, MB) found in the
-     * external_reference field (references.other in API). This is a separate
-     * grouping from employee-based grouping.
+     * This groups invoices by ALL values in external_reference field including:
+     * - Person codes (LH, AKS, MB, etc.)
+     * - WooCommerce orders (BV-WO-xxxxx, BF-WO-xxxxx)
+     * - Legacy orders, project numbers, etc.
+     *
+     * Also shows which employee (if any) is assigned to each group.
      *
      * @param string $filter 'all', 'overdue', or 'unpaid'
      */
-    public function getInvoicesByPersonCode(string $filter = 'overdue'): Collection
+    public function getInvoicesByOtherRef(string $filter = 'overdue'): Collection
     {
-        // Person code mapping
+        // Person code mapping for display names
         $personCodeMapping = [
             'LH' => 'Lone Holgersen',
             'AKS' => 'Anne Karin Skøtt',
@@ -355,23 +358,36 @@ class EconomicInvoiceService
             default => $this->getOverdueInvoices(),
         };
 
-        // Group invoices by person code in external_reference
-        return $invoices->groupBy(function ($invoice) use ($personCodeMapping) {
-            $extRef = strtoupper(trim($invoice['references']['other'] ?? ''));
+        // Group invoices by external_reference (ALL values, not just person codes)
+        return $invoices->groupBy(function ($invoice) {
+            $extRef = trim($invoice['references']['other'] ?? '');
+            return $extRef !== '' ? $extRef : 'unassigned';
+        })->map(function ($group, $otherRef) use ($personCodeMapping) {
+            // Get employee info from first invoice in group (if available)
+            $firstInvoice = $group->first();
+            $employeeNumber = $firstInvoice['references']['salesPerson']['employeeNumber'] ?? null;
+            $employeeName = $employeeNumber ? $this->getEmployeeName($employeeNumber) : null;
 
-            // Check if it matches a known person code
-            if (isset($personCodeMapping[$extRef])) {
-                return $extRef;
+            // Determine display name for this group
+            $upperRef = strtoupper($otherRef);
+            if ($otherRef === 'unassigned') {
+                $displayName = 'No External Reference';
+            } elseif (isset($personCodeMapping[$upperRef])) {
+                $displayName = $personCodeMapping[$upperRef] . " ({$otherRef})";
+            } else {
+                $displayName = $otherRef;
             }
 
-            // Otherwise, it's unassigned
-            return 'unassigned';
-        })->map(function ($group, $personCode) use ($personCodeMapping) {
+            // Add employee info to display name if available
+            if ($employeeName) {
+                $displayName .= " → 👤 {$employeeName}";
+            }
+
             return [
-                'employeeNumber' => $personCode,
-                'employeeName' => $personCode === 'unassigned'
-                    ? 'Unassigned / No Person Code'
-                    : $personCodeMapping[$personCode],
+                'employeeNumber' => $otherRef,
+                'employeeName' => $displayName,
+                'actualEmployeeNumber' => $employeeNumber,
+                'actualEmployeeName' => $employeeName,
                 'invoiceCount' => $group->count(),
                 'totalAmount' => $group->sum('grossAmount'),
                 'totalRemainder' => $group->sum('remainder'),
@@ -803,24 +819,28 @@ class EconomicInvoiceService
     }
 
     /**
-     * Get invoices grouped by person code from database
+     * Get invoices grouped by external reference (other ref) from database
      *
-     * This groups invoices by the person code (e.g., LH, AKS, MB) found in the
-     * external_reference field. This is a separate grouping from employee-based grouping.
+     * This groups invoices by ALL values in external_reference field including:
+     * - Person codes (LH, AKS, MB, etc.)
+     * - WooCommerce orders (BV-WO-xxxxx, BF-WO-xxxxx)
+     * - Legacy orders, project numbers, etc.
+     *
+     * Also shows which employee (if any) is assigned to each group.
      *
      * @param string $filter 'all', 'overdue', or 'unpaid'
      * @param string|null $dateFrom Start date filter (YYYY-MM-DD)
      * @param string|null $dateTo End date filter (YYYY-MM-DD)
      * @param string|null $search Search term for customer name/invoice number
      */
-    public function getInvoicesByPersonCodeFromDatabase(
+    public function getInvoicesByOtherRefFromDatabase(
         string $filter = 'overdue',
         ?string $dateFrom = null,
         ?string $dateTo = null,
         ?string $search = null
     ): Collection
     {
-        // Person code mapping
+        // Person code mapping for display names
         $personCodeMapping = [
             'LH' => 'Lone Holgersen',
             'AKS' => 'Anne Karin Skøtt',
@@ -854,28 +874,24 @@ class EconomicInvoiceService
         // Apply search filter
         $baseQuery->search($search);
 
-        // Get person code groupings with aggregations
-        // We use UPPER() to normalize the external_reference for grouping
-        $personCodeGroups = (clone $baseQuery)
+        // Get ALL external_reference groupings with aggregations and employee info
+        $otherRefGroups = (clone $baseQuery)
             ->select([
-                \DB::raw('UPPER(TRIM(COALESCE(external_reference, "unassigned"))) as person_code'),
+                \DB::raw('COALESCE(TRIM(external_reference), "unassigned") as other_ref'),
+                \DB::raw('MAX(employee_number) as employee_number'),
+                \DB::raw('MAX(employee_name) as employee_name'),
                 \DB::raw('COUNT(*) as invoice_count'),
                 \DB::raw('SUM(gross_amount) as total_amount'),
                 \DB::raw('SUM(remainder) as total_remainder'),
             ])
-            ->groupBy(\DB::raw('UPPER(TRIM(COALESCE(external_reference, "unassigned")))'))
+            ->groupBy(\DB::raw('COALESCE(TRIM(external_reference), "unassigned")'))
             ->get();
 
-        // Filter to only person codes we know about
-        $personCodeGroups = $personCodeGroups->filter(function ($group) use ($personCodeMapping) {
-            return $group->person_code === 'UNASSIGNED' || isset($personCodeMapping[$group->person_code]);
-        });
+        // Now fetch invoices for each external reference group
+        return $otherRefGroups->mapWithKeys(function ($group) use ($filter, $dateFrom, $dateTo, $search, $personCodeMapping) {
+            $otherRef = $group->other_ref;
 
-        // Now fetch invoices for each person code group
-        return $personCodeGroups->mapWithKeys(function ($group) use ($filter, $dateFrom, $dateTo, $search, $personCodeMapping) {
-            $personCode = $group->person_code;
-
-            // Build query for this person code's invoices
+            // Build query for this other ref's invoices
             $invoiceQuery = \App\Models\Invoice::query();
 
             // Apply same filter
@@ -894,21 +910,18 @@ class EconomicInvoiceService
             // Apply search filter
             $invoiceQuery->search($search);
 
-            // Filter by person code
-            if ($personCode === 'UNASSIGNED') {
-                // Match invoices that don't have a known person code
-                $invoiceQuery->where(function ($query) use ($personCodeMapping) {
-                    $query->whereNull('external_reference')
-                        ->orWhereNotIn(\DB::raw('UPPER(TRIM(external_reference))'), array_keys($personCodeMapping));
-                });
+            // Filter by external reference
+            if ($otherRef === 'unassigned') {
+                $invoiceQuery->whereNull('external_reference')
+                    ->orWhere('external_reference', '');
             } else {
-                $invoiceQuery->whereRaw('UPPER(TRIM(external_reference)) = ?', [$personCode]);
+                $invoiceQuery->whereRaw('TRIM(external_reference) = ?', [$otherRef]);
             }
 
-            // Fetch invoices for this person code (limited to prevent memory issues)
+            // Fetch invoices for this external reference (limited to prevent memory issues)
             $invoices = $invoiceQuery
                 ->orderBy('due_date', 'asc')
-                ->limit(100) // Dashboard limit: show top 100 per person
+                ->limit(100) // Dashboard limit: show top 100 per external ref
                 ->get()
                 ->map(function ($invoice) {
                     return [
@@ -933,12 +946,27 @@ class EconomicInvoiceService
                 ->sortByDesc('daysOverdue')
                 ->values();
 
+            // Determine display name
+            $upperRef = strtoupper($otherRef);
+            if ($otherRef === 'unassigned') {
+                $displayName = 'No External Reference';
+            } elseif (isset($personCodeMapping[$upperRef])) {
+                $displayName = $personCodeMapping[$upperRef] . " ({$otherRef})";
+            } else {
+                $displayName = $otherRef;
+            }
+
+            // Add employee info to display name if available
+            if ($group->employee_name) {
+                $displayName .= " → 👤 {$group->employee_name}";
+            }
+
             return [
-                $personCode => [
-                    'employeeNumber' => $personCode,
-                    'employeeName' => $personCode === 'UNASSIGNED'
-                        ? 'Unassigned / No Person Code'
-                        : $personCodeMapping[$personCode],
+                $otherRef => [
+                    'employeeNumber' => $otherRef,
+                    'employeeName' => $displayName,
+                    'actualEmployeeNumber' => $group->employee_number,
+                    'actualEmployeeName' => $group->employee_name,
                     'invoiceCount' => (int) $group->invoice_count,
                     'totalAmount' => (float) $group->total_amount,
                     'totalRemainder' => (float) $group->total_remainder,
