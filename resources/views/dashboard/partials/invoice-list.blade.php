@@ -245,7 +245,7 @@
                                             <button
                                                 id="add-btn-{{ $invoice['invoiceId'] ?? '' }}"
                                                 onclick="showAddForm({{ $invoice['invoiceId'] ?? 'null' }})"
-                                                class="inline-flex items-center gap-2 px-3 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-sm font-medium rounded shadow-md transition transform hover:scale-105">
+                                                class="inline-flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded shadow-md transition transform hover:scale-105">
                                                 <span class="text-base">📝</span>
                                                 {{ __('dashboard.add_comment') }}
                                             </button>

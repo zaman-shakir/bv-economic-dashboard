@@ -14,27 +14,44 @@
                 <!-- Group 1: Filter Buttons -->
                 <div class="flex gap-2">
                     <a href="{{ route('dashboard', ['filter' => 'all']) }}"
-                       class="px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap {{ $currentFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                       class="px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap flex items-center gap-2 {{ $currentFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
                         {{ __('dashboard.filter_all') }}
                     </a>
                     <a href="{{ route('dashboard', ['filter' => 'overdue']) }}"
-                       class="px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap {{ $currentFilter === 'overdue' ? 'bg-red-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                       class="px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap flex items-center gap-2 {{ $currentFilter === 'overdue' ? 'bg-red-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
                         {{ __('dashboard.filter_overdue') }}
                     </a>
                     <a href="{{ route('dashboard', ['filter' => 'unpaid']) }}"
-                       class="px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap {{ $currentFilter === 'unpaid' ? 'bg-yellow-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                       class="px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap flex items-center gap-2 {{ $currentFilter === 'unpaid' ? 'bg-yellow-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
                         {{ __('dashboard.filter_unpaid') }}
                     </a>
                 </div>
 
+                <div class="w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
+
                 <!-- Group 2: Grouping Buttons -->
                 <div class="flex gap-2">
                     <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'employee']) }}"
-                       class="px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                       class="px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap flex items-center gap-2 {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
                         By Employee
                     </a>
                     <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'other_ref']) }}"
-                       class="px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap {{ ($currentGrouping ?? 'employee') === 'other_ref' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                       class="px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap flex items-center gap-2 {{ ($currentGrouping ?? 'employee') === 'other_ref' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
                         By Other Ref
                     </a>
                 </div>
@@ -42,10 +59,10 @@
                 <div class="flex-grow"></div>
 
                 <!-- Group 3: Actions -->
-                <div class="flex gap-2">
+                <div class="flex gap-2 min-w-[400px]">
                     <select id="employeeFilter" onchange="filterByEmployee(this.value)"
-                            class="w-48 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                        <option value="">{{ __('dashboard.all_employees') }}</option>
+                            class="flex-1 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                        <option value="">👥 {{ __('dashboard.all_employees') }}</option>
                         @foreach($invoicesByEmployee as $emp)
                             <option value="{{ $emp['employeeNumber'] }}">
                                 {{ $emp['employeeName'] }} ({{ $emp['invoiceCount'] }})
@@ -54,8 +71,11 @@
                     </select>
 
                     <a href="{{ route('dashboard', request()->all()) }}"
-                       class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 text-center whitespace-nowrap"
+                       class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 text-center whitespace-nowrap flex items-center gap-2"
                        title="{{ __('dashboard.refresh_data') }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
                         {{ __('dashboard.refresh_data') }}
                     </a>
 
@@ -63,8 +83,11 @@
                     <button
                         id="syncButton"
                         onclick="syncNow()"
-                        class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                        class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center gap-2"
                     >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
                         <span id="syncButtonText">Sync now</span>
                     </button>
                     @endif
