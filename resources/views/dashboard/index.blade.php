@@ -25,7 +25,7 @@
 
                 <!-- Unpaid only -->
                 <a href="{{ route('dashboard', ['filter' => 'unpaid']) }}"
-                   class="flex-1 px-4 py-2 rounded-lg font-medium transition text-center {{ $currentFilter === 'unpaid' ? 'bg-amber-500 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                   class="flex-1 px-4 py-2 rounded-lg font-medium transition text-center {{ $currentFilter === 'unpaid' ? 'bg-amber-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     {{ __('dashboard.filter_unpaid') }}
                 </a>
 
