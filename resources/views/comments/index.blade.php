@@ -87,7 +87,7 @@
                             <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition whitespace-nowrap">
                                 {{ __('dashboard.search') }}
                             </button>
-                            <a href="{{ route('comments.page') }}" class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium rounded-lg transition whitespace-nowrap inline-block">
+                            <a href="{{ route('comments.page') }}" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium rounded-lg transition whitespace-nowrap inline-block">
                                 {{ __('dashboard.clear') }}
                             </a>
                         </div>
