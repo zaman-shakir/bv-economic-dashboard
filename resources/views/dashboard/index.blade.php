@@ -10,9 +10,11 @@
     <div class="pt-6 pb-12">
         <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
             <!-- Top Toolbar: All controls in one row -->
-            <div class="mb-6 flex items-center gap-6 w-full">
-                <!-- Group 1: Filter Buttons -->
-                <div class="flex gap-2">
+            <div class="mb-6 flex flex-wrap items-center gap-6 w-full">
+                <!-- Row 1: Groups 1 & 2 -->
+                <div class="flex items-center gap-6 flex-1 min-w-full xl:min-w-0">
+                    <!-- Group 1: Filter Buttons -->
+                    <div class="flex gap-2 flex-1">
                     <a href="{{ route('dashboard', ['filter' => 'all']) }}"
                        class="flex-1 px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap flex items-center justify-center gap-2 {{ $currentFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,12 +36,12 @@
                         </svg>
                         {{ __('dashboard.filter_unpaid') }}
                     </a>
-                </div>
+                    </div>
 
-                <div class="w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
+                    <div class="w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
 
-                <!-- Group 2: Grouping Buttons -->
-                <div class="flex gap-2">
+                    <!-- Group 2: Grouping Buttons -->
+                    <div class="flex gap-2 flex-1">
                     <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'employee']) }}"
                        class="flex-1 px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap flex items-center justify-center gap-2 {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-indigo-600 text-white' : 'bg-indigo-200 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 hover:bg-indigo-300 dark:hover:bg-indigo-900/70' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,12 +56,11 @@
                         </svg>
                         By Other Ref
                     </a>
+                    </div>
                 </div>
 
-                <div class="flex-grow"></div>
-
-                <!-- Group 3: Actions -->
-                <div class="flex gap-2">
+                <!-- Row 2: Group 3 Actions -->
+                <div class="flex gap-2 w-full xl:w-auto xl:flex-grow">
                     <select id="employeeFilter" onchange="filterByEmployee(this.value)"
                             class="min-w-[200px] max-w-[300px] px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                         <option value="">👥 {{ __('dashboard.all_employees') }}</option>
