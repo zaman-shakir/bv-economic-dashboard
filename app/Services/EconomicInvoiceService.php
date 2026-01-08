@@ -836,16 +836,18 @@ class EconomicInvoiceService
 
             // Fetch invoices for this employee (limited to prevent memory issues)
             // Only load top 100 most critical invoices per employee for dashboard display
+            // EAGER LOAD comment counts to prevent N+1 queries
             $invoices = $invoiceQuery
+                ->withCount('comments')
+                ->with(['comments' => function($query) {
+                    $query->orderBy('created_at', 'desc')->limit(1);
+                }])
                 ->orderBy('due_date', 'asc')
                 ->limit(100) // Dashboard limit: show top 100 per employee
                 ->get()
                 ->map(function ($invoice) {
-                    // Get comment count and latest comment timestamp for this invoice
-                    $commentCount = \App\Models\InvoiceComment::where('invoice_id', $invoice->id)->count();
-                    $latestComment = \App\Models\InvoiceComment::where('invoice_id', $invoice->id)
-                        ->orderBy('created_at', 'desc')
-                        ->first();
+                    // Get latest comment from eager loaded relationship
+                    $latestComment = $invoice->comments->first();
 
                     return [
                         'invoiceId' => $invoice->id,
@@ -866,7 +868,7 @@ class EconomicInvoiceService
                         'pdfUrl' => $invoice->pdf_url,
                         'employeeNumber' => $invoice->employee_number,
                         'employeeName' => $invoice->employee_name,
-                        'commentCount' => $commentCount,
+                        'commentCount' => $invoice->comments_count,
                         'latestCommentAt' => $latestComment ? $latestComment->created_at->format('Y-m-d H:i:s') : null,
                     ];
                 })
@@ -994,19 +996,55 @@ class EconomicInvoiceService
             ->limit(50) // Show top 50 groups by invoice count
             ->get();
 
-        // Load all invoices with their group classification
-        $allInvoices = $baseQuery
-            ->selectRaw("*, {$groupingLogic} as group_key")
-            ->orderBy('due_date', 'asc')
-            ->get();
-
-        // Group invoices by their pattern-based group key
-        $groupedInvoices = $allInvoices->groupBy('group_key');
-
-        // Build the result collection using pre-calculated data from $topRefs
-        return $topRefs->mapWithKeys(function ($refData) use ($groupedInvoices, $personCodeMapping) {
+        // Build the result collection by fetching invoices for each group separately
+        // This prevents loading all 22k invoices into memory at once
+        return $topRefs->mapWithKeys(function ($refData) use ($baseQuery, $groupingLogic, $personCodeMapping, $filter, $dateFrom, $dateTo, $search, $hasComments, $commentDateFilter) {
             $otherRef = $refData->other_ref;
-            $invoices = $groupedInvoices->get($otherRef, collect());
+
+            // Build a fresh query for this specific group's invoices
+            $groupQuery = \App\Models\Invoice::query();
+
+            // Apply same filters as base query
+            switch ($filter) {
+                case 'overdue':
+                    $groupQuery->overdue();
+                    break;
+                case 'unpaid':
+                    $groupQuery->unpaid();
+                    break;
+            }
+
+            $groupQuery->dateRange($dateFrom, $dateTo);
+            $groupQuery->search($search);
+
+            if ($hasComments === '1' || $hasComments === 'true') {
+                $groupQuery->has('comments');
+            }
+
+            if ($commentDateFilter) {
+                $commentDate = match($commentDateFilter) {
+                    'today' => now()->startOfDay(),
+                    '3days' => now()->subDays(3)->startOfDay(),
+                    'week' => now()->subWeek()->startOfDay(),
+                    default => null
+                };
+
+                if ($commentDate) {
+                    $groupQuery->whereHas('comments', function($query) use ($commentDate) {
+                        $query->where('created_at', '>=', $commentDate);
+                    });
+                }
+            }
+
+            // Filter to only this group using the same grouping logic
+            $groupQuery->whereRaw("({$groupingLogic}) = ?", [$otherRef]);
+
+            // Fetch top 100 invoices for this group with comment counts
+            $invoices = $groupQuery
+                ->withCount('comments')
+                ->orderBy('due_date', 'asc')
+                ->limit(100)
+                ->get();
 
             // Get employee info from aggregated data
             $employeeNumber = $refData->employee_number;
@@ -1049,11 +1087,8 @@ class EconomicInvoiceService
                 $displayName .= " [Employee: {$employeeName}]";
             }
 
-            // Limit to 100 invoices per group for display
-            $limitedInvoices = $invoices->take(100)->map(function ($invoice) {
-                // Get comment count for this invoice
-                $commentCount = \App\Models\InvoiceComment::where('invoice_id', $invoice->id)->count();
-
+            // Map invoices to array format (already limited to 100 in query)
+            $limitedInvoices = $invoices->map(function ($invoice) {
                 return [
                     'invoiceId' => $invoice->id,
                     'invoiceNumber' => $invoice->invoice_number,
@@ -1073,7 +1108,7 @@ class EconomicInvoiceService
                     'pdfUrl' => $invoice->pdf_url,
                     'employeeNumber' => $invoice->employee_number,
                     'employeeName' => $invoice->employee_name,
-                    'commentCount' => $commentCount,
+                    'commentCount' => $invoice->comments_count ?? 0,
                 ];
             })->sortByDesc('daysOverdue')->values();
 
