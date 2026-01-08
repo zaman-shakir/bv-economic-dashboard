@@ -10,40 +10,40 @@
     <div class="pt-6 pb-12">
         <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
             <!-- Top Toolbar: All controls in one row -->
-            <div class="mb-6 flex items-center gap-2">
+            <div class="mb-6 flex items-center gap-2 w-full">
                 <!-- All invoices -->
                 <a href="{{ route('dashboard', ['filter' => 'all']) }}"
-                   class="flex-1 px-4 py-2 rounded-lg font-medium transition text-center {{ $currentFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                   class="flex-1 flex-shrink-0 px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap {{ $currentFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     {{ __('dashboard.filter_all') }}
                 </a>
 
                 <!-- Overdue only -->
                 <a href="{{ route('dashboard', ['filter' => 'overdue']) }}"
-                   class="flex-1 px-4 py-2 rounded-lg font-medium transition text-center {{ $currentFilter === 'overdue' ? 'bg-red-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                   class="flex-1 flex-shrink-0 px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap {{ $currentFilter === 'overdue' ? 'bg-red-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     {{ __('dashboard.filter_overdue') }}
                 </a>
 
                 <!-- Unpaid only -->
                 <a href="{{ route('dashboard', ['filter' => 'unpaid']) }}"
-                   class="flex-1 px-4 py-2 rounded-lg font-medium transition text-center {{ $currentFilter === 'unpaid' ? 'bg-amber-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                   class="flex-1 flex-shrink-0 px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap {{ $currentFilter === 'unpaid' ? 'bg-amber-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     {{ __('dashboard.filter_unpaid') }}
                 </a>
 
                 <!-- By Employee -->
                 <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'employee']) }}"
-                   class="flex-1 px-4 py-2 rounded-lg font-medium transition text-center {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                   class="flex-1 flex-shrink-0 px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     By Employee
                 </a>
 
                 <!-- By Other Ref -->
                 <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'other_ref']) }}"
-                   class="flex-1 px-4 py-2 rounded-lg font-medium transition text-center {{ ($currentGrouping ?? 'employee') === 'other_ref' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                   class="flex-1 flex-shrink-0 px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap {{ ($currentGrouping ?? 'employee') === 'other_ref' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                     By Other Ref
                 </a>
 
                 <!-- All employees -->
                 <select id="employeeFilter" onchange="filterByEmployee(this.value)"
-                        class="flex-1 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                        class="flex-1 flex-shrink-0 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                     <option value="">{{ __('dashboard.all_employees') }}</option>
                     @foreach($invoicesByEmployee as $emp)
                         <option value="{{ $emp['employeeNumber'] }}">
@@ -54,7 +54,7 @@
 
                 <!-- Refresh data -->
                 <a href="{{ route('dashboard', request()->all()) }}"
-                   class="flex-1 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 text-center"
+                   class="flex-1 flex-shrink-0 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 text-center whitespace-nowrap"
                    title="{{ __('dashboard.refresh_data') }}">
                     {{ __('dashboard.refresh_data') }}
                 </a>
@@ -64,7 +64,7 @@
                 <button
                     id="syncButton"
                     onclick="syncNow()"
-                    class="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="flex-1 flex-shrink-0 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 >
                     <span id="syncButtonText">Sync now</span>
                 </button>
