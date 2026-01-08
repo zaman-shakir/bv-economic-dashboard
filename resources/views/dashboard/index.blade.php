@@ -10,9 +10,9 @@
     <div class="pt-6 pb-12">
         <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
             <!-- Top Toolbar: All controls in one row -->
-            <div class="mb-6 flex items-center gap-6 w-full">
+            <div class="mb-6 flex flex-wrap items-center gap-4 lg:gap-6 w-full">
                 <!-- Group 1: Filter Buttons -->
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                     <a href="{{ route('dashboard', ['filter' => 'all']) }}"
                        class="px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap flex items-center gap-2 {{ $currentFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,10 +36,10 @@
                     </a>
                 </div>
 
-                <div class="w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
+                <div class="hidden lg:block w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
 
                 <!-- Group 2: Grouping Buttons -->
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                     <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'employee']) }}"
                        class="px-4 py-2 rounded-lg font-medium transition text-center whitespace-nowrap flex items-center gap-2 {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-indigo-600 text-white' : 'bg-indigo-200 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 hover:bg-indigo-300 dark:hover:bg-indigo-900/70' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,12 +56,12 @@
                     </a>
                 </div>
 
-                <div class="flex-grow"></div>
+                <div class="hidden lg:flex flex-grow"></div>
 
                 <!-- Group 3: Actions -->
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2 w-full lg:w-auto">
                     <select id="employeeFilter" onchange="filterByEmployee(this.value)"
-                            class="w-64 min-w-[200px] max-w-[300px] px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                            class="flex-1 lg:w-64 min-w-[200px] lg:max-w-[300px] px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                         <option value="">👥 {{ __('dashboard.all_employees') }}</option>
                         @foreach($invoicesByEmployee as $emp)
                             <option value="{{ $emp['employeeNumber'] }}">
