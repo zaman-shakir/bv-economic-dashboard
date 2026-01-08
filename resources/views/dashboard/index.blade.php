@@ -61,7 +61,7 @@
                 <!-- Group 3: Actions -->
                 <div class="flex gap-2">
                     <select id="employeeFilter" onchange="filterByEmployee(this.value)"
-                            class="w-56 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                            class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" style="width: 57%">
                         <option value="">👥 {{ __('dashboard.all_employees') }}</option>
                         @foreach($invoicesByEmployee as $emp)
                             <option value="{{ $emp['employeeNumber'] }}">
