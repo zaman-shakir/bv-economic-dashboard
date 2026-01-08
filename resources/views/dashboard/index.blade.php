@@ -104,7 +104,7 @@
                 @if($usingDatabase ?? false)
                 <div id="syncProgress" class="hidden min-w-[200px]">
                     <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
-                        <div id="progressBar" class="bg-purple-500 h-2.5 transition-all duration-300 rounded-full" style="width: 0%"></div>
+                        <div id="progressBar" class="bg-red-500 h-2.5 transition-all duration-300 rounded-full" style="width: 0%"></div>
                     </div>
                     <div id="progressText" class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium"></div>
                 </div>
@@ -115,15 +115,15 @@
             @if($usingDatabase ?? false)
             <div class="mb-3 grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <!-- Sync Status (Left) -->
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700 border border-green-200 dark:border-green-800 rounded-lg p-3 shadow-sm">
+                <div class="bg-gradient-to-r from-red-50 to-rose-50 dark:from-gray-800 dark:to-gray-700 border border-red-200 dark:border-red-800 rounded-lg p-3 shadow-sm">
                     <div class="flex items-center gap-2 flex-wrap text-sm text-gray-600 dark:text-gray-400">
                         @if($lastSyncedAt && $lastSyncedAt->diffInMinutes(now()) < 30)
                             <div class="flex items-center gap-2">
                                 <span class="flex h-3 w-3">
-                                    <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                    <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-red-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                                 </span>
-                                <span class="font-medium text-green-700 dark:text-green-400">{{ __('dashboard.data_up_to_date') }}</span>
+                                <span class="font-medium text-red-700 dark:text-red-400">{{ __('dashboard.data_up_to_date') }}</span>
                             </div>
                         @else
                             <div class="flex items-center gap-2">
