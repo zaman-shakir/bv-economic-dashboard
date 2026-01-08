@@ -12,7 +12,7 @@
             <!-- Top Toolbar: All controls in one row -->
             <div class="mb-6 flex flex-wrap items-center gap-6 w-full">
                 <!-- Row 1: Groups 1 & 2 -->
-                <div class="flex items-center gap-6 flex-1 min-w-full xl:min-w-0">
+                <div class="flex items-center gap-6 w-full xl:w-auto xl:flex-1">
                     <!-- Group 1: Filter Buttons -->
                     <div class="flex gap-2 flex-1">
                     <a href="{{ route('dashboard', ['filter' => 'all']) }}"
@@ -60,7 +60,7 @@
                 </div>
 
                 <!-- Row 2: Group 3 Actions -->
-                <div class="flex gap-2 w-full xl:w-auto xl:flex-grow">
+                <div class="flex gap-2 w-full xl:w-auto">
                     <select id="employeeFilter" onchange="filterByEmployee(this.value)"
                             class="min-w-[200px] max-w-[300px] px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                         <option value="">👥 {{ __('dashboard.all_employees') }}</option>
