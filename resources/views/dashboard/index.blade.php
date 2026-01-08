@@ -9,92 +9,83 @@
 
     <div class="pt-6 pb-12">
         <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
-            <!-- Top Toolbar: Filters + Employee Filter + Refresh -->
-            <div class="mb-6 flex flex-wrap items-center gap-3">
-                <!-- Filter Buttons -->
-                <div class="flex p-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                    <a href="{{ route('dashboard', ['filter' => 'all']) }}"
-                       class="px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ $currentFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        {{ __('dashboard.filter_all') }}
-                    </a>
-                    <a href="{{ route('dashboard', ['filter' => 'overdue']) }}"
-                       class="px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ $currentFilter === 'overdue' ? 'bg-red-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        {{ __('dashboard.filter_overdue') }}
-                    </a>
-                    <a href="{{ route('dashboard', ['filter' => 'unpaid']) }}"
-                       class="px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ $currentFilter === 'unpaid' ? 'bg-amber-500 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-600 dark:hover:text-amber-400' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        {{ __('dashboard.filter_unpaid') }}
-                    </a>
-                </div>
-
-                <div class="h-8 w-px bg-gray-300 dark:bg-gray-700 hidden sm:block"></div>
-
-                <!-- Grouping Selector -->
-                <div class="flex p-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                    <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'employee']) }}"
-                       class="px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        By Employee
-                    </a>
-                    <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'other_ref']) }}"
-                       class="px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ ($currentGrouping ?? 'employee') === 'other_ref' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                        By Other Ref
-                    </a>
-                </div>
-
-                <div class="flex-grow"></div>
-
-                <!-- Employee Filter (Dropdown) -->
-                <div class="relative">
-                    <select id="employeeFilter" onchange="filterByEmployee(this.value)"
-                            class="pl-4 pr-10 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 cursor-pointer hover:border-blue-400 transition">
-                        <option value="">{{ __('dashboard.all_employees') }}</option>
-                        @foreach($invoicesByEmployee as $emp)
-                            <option value="{{ $emp['employeeNumber'] }}">
-                                {{ $emp['employeeName'] }} ({{ $emp['invoiceCount'] }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Refresh Button -->
-                <a href="{{ route('dashboard', request()->all()) }}"
-                   class="p-2.5 bg-white dark:bg-gray-800 text-gray-500 hover:text-blue-600 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-                   title="{{ __('dashboard.refresh_data') }}">
-                    <svg class="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <!-- Top Toolbar: All controls in one row -->
+            <div class="mb-6 flex flex-wrap items-center gap-2">
+                <!-- All Invoices -->
+                <a href="{{ route('dashboard', ['filter' => 'all']) }}"
+                   class="px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ $currentFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-gray-200 dark:border-gray-700' }}">
+                    {{ __('dashboard.filter_all') }}
                 </a>
-            </div>
-            <div id="loading" class="htmx-indicator text-sm text-blue-600 dark:text-blue-400 font-medium">
-                {{ __('dashboard.loading_data') }}
-            </div>
 
-            <!-- NEW: Sync Now Button -->
-            @if($usingDatabase ?? false)
-            <div class="flex flex-col gap-2">
+                <!-- Overdue only -->
+                <a href="{{ route('dashboard', ['filter' => 'overdue']) }}"
+                   class="px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ $currentFilter === 'overdue' ? 'bg-red-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-gray-200 dark:border-gray-700' }}">
+                    {{ __('dashboard.filter_overdue') }}
+                </a>
+
+                <!-- Unpaid only -->
+                <a href="{{ route('dashboard', ['filter' => 'unpaid']) }}"
+                   class="px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ $currentFilter === 'unpaid' ? 'bg-amber-500 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 border border-gray-200 dark:border-gray-700' }}">
+                    {{ __('dashboard.filter_unpaid') }}
+                </a>
+
+                <!-- By Employee -->
+                <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'employee']) }}"
+                   class="px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-gray-200 dark:border-gray-700' }}">
+                    By Employee
+                </a>
+
+                <!-- By Other Ref -->
+                <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'other_ref']) }}"
+                   class="px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ ($currentGrouping ?? 'employee') === 'other_ref' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-gray-200 dark:border-gray-700' }}">
+                    By Other Ref
+                </a>
+
+                <!-- All employees dropdown -->
+                <select id="employeeFilter" onchange="filterByEmployee(this.value)"
+                        class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 cursor-pointer hover:border-blue-400 transition max-w-[200px]">
+                    <option value="">{{ __('dashboard.all_employees') }}</option>
+                    @foreach($invoicesByEmployee as $emp)
+                        <option value="{{ $emp['employeeNumber'] }}">
+                            {{ $emp['employeeName'] }} ({{ $emp['invoiceCount'] }})
+                        </option>
+                    @endforeach
+                </select>
+
+                <!-- Refresh data -->
+                <a href="{{ route('dashboard', request()->all()) }}"
+                   class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                   title="{{ __('dashboard.refresh_data') }}">
+                    {{ __('dashboard.refresh_data') }}
+                </a>
+
+                <!-- Sync now -->
+                @if($usingDatabase ?? false)
                 <button
                     id="syncButton"
                     onclick="syncNow()"
-                    class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                    class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                 >
-                    <svg id="syncIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
                     <span id="syncButtonText">Sync now</span>
                 </button>
+                @endif
+            </div>
+
+            <!-- Loading Indicator & Sync Progress -->
+            <div class="flex items-center gap-4">
+                <div id="loading" class="htmx-indicator text-sm text-blue-600 dark:text-blue-400 font-medium">
+                    {{ __('dashboard.loading_data') }}
+                </div>
 
                 <!-- Progress Bar (hidden by default) -->
-                <div id="syncProgress" class="hidden min-w-[180px]">
+                @if($usingDatabase ?? false)
+                <div id="syncProgress" class="hidden min-w-[200px]">
                     <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
                         <div id="progressBar" class="bg-purple-500 h-2.5 transition-all duration-300 rounded-full" style="width: 0%"></div>
                     </div>
                     <div id="progressText" class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium"></div>
                 </div>
-            </div>
-            @endif
+                @endif
             </div>
 
             <!-- Combined Info Banners (Side by Side) -->
