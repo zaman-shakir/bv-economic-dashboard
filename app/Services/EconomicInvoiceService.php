@@ -985,8 +985,8 @@ class EconomicInvoiceService
         $topRefs = (clone $baseQuery)
             ->select([
                 \DB::raw("{$groupingLogic} as other_ref"),
-                \DB::raw('MAX(employee_number) as employee_number'),
-                \DB::raw('MAX(employee_name) as employee_name'),
+                \DB::raw('ANY_VALUE(employee_number) as employee_number'),
+                \DB::raw('ANY_VALUE(employee_name) as employee_name'),
                 \DB::raw('COUNT(*) as invoice_count'),
                 \DB::raw('SUM(gross_amount) as total_amount'),
                 \DB::raw('SUM(remainder) as total_remainder'),
