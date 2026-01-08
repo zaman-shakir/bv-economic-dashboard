@@ -151,25 +151,30 @@
 
                                         $wooOrderId = null;
                                         $wooSite = null;
+                                        $wooOrderUrl = null;
 
                                         if ($isBVOrder) {
                                             $wooOrderId = $bvMatches[1];
                                             $wooSite = 'https://billigventilation.dk';
+                                            // BilligVentilation uses HPOS (new WooCommerce order storage)
+                                            $wooOrderUrl = "{$wooSite}/wp-admin/admin.php?page=wc-orders&action=edit&id={$wooOrderId}";
                                         } elseif ($isBFOrder) {
                                             $wooOrderId = $bfMatches[1];
                                             $wooSite = 'https://billigfilter.dk';
+                                            // BilligFilter uses classic post-based order storage
+                                            $wooOrderUrl = "{$wooSite}/wp-admin/post.php?post={$wooOrderId}&action=edit";
                                         }
                                     @endphp
 
-                                    @if($wooOrderId && $wooSite)
+                                    @if($wooOrderId && $wooSite && $wooOrderUrl)
                                         <div class="flex items-center gap-2 whitespace-nowrap">
-                                            <a href="{{ $wooSite }}/wp-admin/admin.php?page=wc-orders&action=edit&id={{ $wooOrderId }}"
+                                            <a href="{{ $wooOrderUrl }}"
                                                target="_blank"
                                                class="font-mono text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline transition"
                                                title="{{ __('dashboard.view_woo_order') }}">
                                                 {{ $invoice['eksterntId'] }}
                                             </a>
-                                            <a href="{{ $wooSite }}/wp-admin/admin.php?page=wc-orders&action=edit&id={{ $wooOrderId }}"
+                                            <a href="{{ $wooOrderUrl }}"
                                                target="_blank"
                                                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition flex-shrink-0"
                                                title="{{ __('dashboard.view_woo_order') }}">
