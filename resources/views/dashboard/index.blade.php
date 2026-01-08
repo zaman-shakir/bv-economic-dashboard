@@ -319,29 +319,74 @@
 
     <script>
         /**
-         * Open e-conomic invoice in a popup window
+         * Open e-conomic invoice in a modal overlay
          */
         function openInvoicePopup(invoiceNumber) {
             const url = `https://secure.e-conomic.com/secure/include/visfaktura.asp?ops=29217799&bogf=1&faknr=${invoiceNumber}`;
 
-            // Calculate popup dimensions (80% of screen)
-            const width = Math.floor(window.screen.width * 0.8);
-            const height = Math.floor(window.screen.height * 0.8);
+            // Create modal HTML
+            const modal = document.createElement('div');
+            modal.id = 'invoice-modal';
+            modal.className = 'fixed inset-0 z-50 overflow-y-auto';
+            modal.innerHTML = `
+                <!-- Backdrop -->
+                <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeInvoiceModal()"></div>
 
-            // Center the popup
-            const left = Math.floor((window.screen.width - width) / 2);
-            const top = Math.floor((window.screen.height - height) / 2);
+                <!-- Modal Content -->
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-7xl h-[90vh] flex flex-col">
+                        <!-- Modal Header -->
+                        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                Invoice #${invoiceNumber}
+                            </h3>
+                            <button onclick="closeInvoiceModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
 
-            // Open popup with specific features
-            const popup = window.open(
-                url,
-                `invoice_${invoiceNumber}`,
-                `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes,toolbar=no,menubar=no,location=no`
-            );
+                        <!-- Modal Body (iframe) -->
+                        <div class="flex-1 overflow-hidden">
+                            <iframe src="${url}" class="w-full h-full border-0" title="Invoice ${invoiceNumber}"></iframe>
+                        </div>
+                    </div>
+                </div>
+            `;
 
-            // Focus the popup if it was successfully opened
-            if (popup) {
-                popup.focus();
+            // Add to body
+            document.body.appendChild(modal);
+
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+
+            // Close on Escape key
+            document.addEventListener('keydown', handleEscapeKey);
+        }
+
+        /**
+         * Close invoice modal
+         */
+        function closeInvoiceModal() {
+            const modal = document.getElementById('invoice-modal');
+            if (modal) {
+                modal.remove();
+            }
+
+            // Restore body scroll
+            document.body.style.overflow = '';
+
+            // Remove escape key listener
+            document.removeEventListener('keydown', handleEscapeKey);
+        }
+
+        /**
+         * Handle Escape key to close modal
+         */
+        function handleEscapeKey(e) {
+            if (e.key === 'Escape') {
+                closeInvoiceModal();
             }
         }
 
