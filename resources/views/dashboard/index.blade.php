@@ -318,6 +318,33 @@
     </style>
 
     <script>
+        /**
+         * Open e-conomic invoice in a popup window
+         */
+        function openInvoicePopup(invoiceNumber) {
+            const url = `https://secure.e-conomic.com/secure/include/visfaktura.asp?ops=29217799&bogf=1&faknr=${invoiceNumber}`;
+
+            // Calculate popup dimensions (80% of screen)
+            const width = Math.floor(window.screen.width * 0.8);
+            const height = Math.floor(window.screen.height * 0.8);
+
+            // Center the popup
+            const left = Math.floor((window.screen.width - width) / 2);
+            const top = Math.floor((window.screen.height - height) / 2);
+
+            // Open popup with specific features
+            const popup = window.open(
+                url,
+                `invoice_${invoiceNumber}`,
+                `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes,toolbar=no,menubar=no,location=no`
+            );
+
+            // Focus the popup if it was successfully opened
+            if (popup) {
+                popup.focus();
+            }
+        }
+
         // Employee Filter Function
         function filterByEmployee(employeeNumber) {
             const sections = document.querySelectorAll('[data-employee-section]');
@@ -394,33 +421,6 @@
                 alert('{{ __("dashboard.reminder_send_failed") }}: ' + error.message);
                 button.innerHTML = originalText;
                 button.disabled = false;
-            }
-        }
-
-        /**
-         * Open e-conomic invoice in a popup window
-         */
-        function openInvoicePopup(invoiceNumber) {
-            const url = `https://secure.e-conomic.com/secure/include/visfaktura.asp?ops=29217799&bogf=1&faknr=${invoiceNumber}`;
-
-            // Calculate popup dimensions (80% of screen)
-            const width = Math.floor(window.screen.width * 0.8);
-            const height = Math.floor(window.screen.height * 0.8);
-
-            // Center the popup
-            const left = Math.floor((window.screen.width - width) / 2);
-            const top = Math.floor((window.screen.height - height) / 2);
-
-            // Open popup with specific features
-            const popup = window.open(
-                url,
-                `invoice_${invoiceNumber}`,
-                `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes,toolbar=no,menubar=no,location=no`
-            );
-
-            // Focus the popup if it was successfully opened
-            if (popup) {
-                popup.focus();
             }
         }
 
