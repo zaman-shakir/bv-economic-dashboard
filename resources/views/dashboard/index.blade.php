@@ -43,7 +43,7 @@
 
                 <!-- All employees -->
                 <select id="employeeFilter" onchange="filterByEmployee(this.value)"
-                        class="flex-1 flex-shrink-0 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                        class="w-48 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                     <option value="">{{ __('dashboard.all_employees') }}</option>
                     @foreach($invoicesByEmployee as $emp)
                         <option value="{{ $emp['employeeNumber'] }}">
