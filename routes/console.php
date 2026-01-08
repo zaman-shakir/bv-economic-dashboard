@@ -9,5 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // Auto-sync invoices from E-conomic API
-// Runs every 6 hours to keep invoice data up-to-date
-Schedule::command('invoices:sync')->everySixHours()->withoutOverlapping();
+// Runs every hour to keep invoice data up-to-date
+Schedule::command('invoices:sync')->hourly()->withoutOverlapping();

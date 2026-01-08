@@ -89,8 +89,20 @@
                             </td>
                             <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-gray-400">📄</span>
-                                    <span class="font-medium">{{ $invoice['invoiceNumber'] }}</span>
+                                    <a href="https://secure.e-conomic.com/secure/include/visfaktura.asp?ops=29217799&bogf=1&faknr={{ $invoice['invoiceNumber'] }}"
+                                       target="_blank"
+                                       class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline transition"
+                                       title="Open invoice in e-conomic">
+                                        {{ $invoice['invoiceNumber'] }}
+                                    </a>
+                                    <a href="https://secure.e-conomic.com/secure/include/visfaktura.asp?ops=29217799&bogf=1&faknr={{ $invoice['invoiceNumber'] }}"
+                                       target="_blank"
+                                       class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition"
+                                       title="Open invoice in e-conomic">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                        </svg>
+                                    </a>
                                 </div>
                             </td>
                             <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
@@ -113,17 +125,17 @@
                             </td>
                             <td class="px-6 py-4 text-center">
                                 @if($invoice['status'] === 'paid')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400">
                                         {{ __('dashboard.status_paid') }}
                                     </span>
                                 @elseif($invoice['status'] === 'overdue')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium
                                         {{ $invoice['daysOverdue'] > 30 ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400' :
                                            ($invoice['daysOverdue'] > 14 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400' : 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-400') }}">
                                         {{ $invoice['daysOverdue'] }} {{ $invoice['daysOverdue'] === 1 ? __('dashboard.day_overdue') : __('dashboard.days_overdue') }}
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400">
                                         {{ $invoice['daysTillDue'] }} {{ $invoice['daysTillDue'] === 1 ? __('dashboard.day_remaining') : __('dashboard.days_remaining') }}
                                     </span>
                                 @endif
@@ -150,15 +162,22 @@
                                     @endphp
 
                                     @if($wooOrderId && $wooSite)
-                                        <a href="{{ $wooSite }}/wp-admin/admin.php?page=wc-orders&action=edit&id={{ $wooOrderId }}"
-                                           target="_blank"
-                                           class="inline-flex items-center gap-1 px-2 py-1 font-mono text-xs font-medium rounded text-white {{ $isBVOrder ? 'bg-blue-600 hover:bg-blue-700' : 'bg-purple-600 hover:bg-purple-700' }} transition-all duration-200"
-                                           title="{{ __('dashboard.view_woo_order') }}">
-                                            {{ $invoice['eksterntId'] }}
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                            </svg>
-                                        </a>
+                                        <div class="flex items-center gap-2 whitespace-nowrap">
+                                            <a href="{{ $wooSite }}/wp-admin/admin.php?page=wc-orders&action=edit&id={{ $wooOrderId }}"
+                                               target="_blank"
+                                               class="font-mono text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline transition"
+                                               title="{{ __('dashboard.view_woo_order') }}">
+                                                {{ $invoice['eksterntId'] }}
+                                            </a>
+                                            <a href="{{ $wooSite }}/wp-admin/admin.php?page=wc-orders&action=edit&id={{ $wooOrderId }}"
+                                               target="_blank"
+                                               class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition flex-shrink-0"
+                                               title="{{ __('dashboard.view_woo_order') }}">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                                </svg>
+                                            </a>
+                                        </div>
                                     @else
                                         <span class="font-mono text-xs">{{ $invoice['eksterntId'] }}</span>
                                     @endif
@@ -181,9 +200,9 @@
                                         class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 transition-all duration-200 relative group focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 dark:focus:ring-offset-gray-800"
                                         title="{{ __('dashboard.view_add_comments') }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                                        <span>{{ __('dashboard.comments') }}</span>
+                                        <span>Kommentar</span>
                                         @if(($invoice['commentCount'] ?? 0) > 0)
-                                            <span class="ml-0.5 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $invoice['commentCount'] }}</span>
+                                            <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-semibold bg-blue-600 text-white rounded-full">{{ $invoice['commentCount'] }}</span>
                                         @endif
                                     </button>
 
