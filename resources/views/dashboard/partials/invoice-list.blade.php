@@ -90,15 +90,15 @@
                             <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
                                 <div class="flex items-center gap-2">
                                     <a href="https://secure.e-conomic.com/secure/include/visfaktura.asp?ops=29217799&bogf=1&faknr={{ $invoice['invoiceNumber'] }}"
-                                       target="_blank"
-                                       class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline transition"
-                                       title="Open invoice in e-conomic">
+                                       onclick="event.preventDefault(); openInvoicePopup('{{ $invoice['invoiceNumber'] }}'); return false;"
+                                       class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline transition cursor-pointer"
+                                       title="Open invoice in popup">
                                         {{ $invoice['invoiceNumber'] }}
                                     </a>
                                     <a href="https://secure.e-conomic.com/secure/include/visfaktura.asp?ops=29217799&bogf=1&faknr={{ $invoice['invoiceNumber'] }}"
-                                       target="_blank"
-                                       class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition"
-                                       title="Open invoice in e-conomic">
+                                       onclick="event.preventDefault(); openInvoicePopup('{{ $invoice['invoiceNumber'] }}'); return false;"
+                                       class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition cursor-pointer"
+                                       title="Open invoice in popup">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                                         </svg>
