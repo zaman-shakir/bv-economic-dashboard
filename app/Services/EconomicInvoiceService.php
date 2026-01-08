@@ -478,7 +478,7 @@ class EconomicInvoiceService
      */
     public function getInvoiceTotals(): array
     {
-        return Cache::remember('invoice_totals', 300, function () {
+        return Cache::tags(['dashboard'])->remember('invoice_totals', now()->addHours(24), function () {
             $response = Http::withHeaders($this->headers)
                 ->get("{$this->baseUrl}/invoices/totals");
 
@@ -653,6 +653,10 @@ class EconomicInvoiceService
 
         // NEW: Mark sync as completed
         $this->updateSyncProgress(100, $stats['total_fetched'], 'Sync completed!', 'completed');
+
+        // Clear all dashboard caches after sync
+        \Cache::tags(['dashboard'])->flush();
+        \Log::info("Dashboard cache cleared after sync");
 
         \Log::info("Invoice sync completed", $stats);
 

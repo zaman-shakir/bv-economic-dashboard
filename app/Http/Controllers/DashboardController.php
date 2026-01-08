@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\EconomicInvoiceService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -23,11 +24,11 @@ class DashboardController extends Controller
         // Get grouping preference (employee or other_ref)
         $grouping = $request->get('grouping', session('dashboard.grouping', 'employee')); // employee or other_ref
 
-        // Save preferences to session
-        if ($request->has('filter')) {
+        // Save preferences to session only if changed
+        if ($request->has('filter') && session('dashboard.filter') !== $filter) {
             session(['dashboard.filter' => $filter]);
         }
-        if ($request->has('grouping')) {
+        if ($request->has('grouping') && session('dashboard.grouping') !== $grouping) {
             session(['dashboard.grouping' => $grouping]);
         }
 
@@ -46,43 +47,73 @@ class DashboardController extends Controller
             $dateTo = now()->format('Y-m-d');
         }
 
-        // NEW: Check if we have database data, otherwise fall back to API
-        $invoiceCount = \App\Models\Invoice::count();
+        // Create cache key based on all parameters
+        $cacheKey = 'dashboard_' . md5(implode('_', [
+            $filter,
+            $grouping,
+            $dateFrom,
+            $dateTo,
+            $search ?? '',
+            $hasComments ?? '',
+            $commentDateFilter ?? '',
+        ]));
 
-        if ($invoiceCount > 0) {
-            // Use database method (fast!)
-            if ($grouping === 'other_ref') {
-                $invoicesByEmployee = $this->invoiceService->getInvoicesByOtherRefFromDatabase(
-                    $filter,
-                    $dateFrom,
-                    $dateTo,
-                    $search,
-                    $hasComments,
-                    $commentDateFilter
-                );
+        // Cache dashboard data until next sync
+        // Cache is tagged with 'dashboard' for easy invalidation
+        $data = Cache::tags(['dashboard'])->remember($cacheKey, now()->addHours(24), function () use (
+            $filter,
+            $grouping,
+            $dateFrom,
+            $dateTo,
+            $search,
+            $hasComments,
+            $commentDateFilter
+        ) {
+            // Check if we have database data, otherwise fall back to API
+            $invoiceCount = \App\Models\Invoice::count();
+
+            if ($invoiceCount > 0) {
+                // Use database method (fast!)
+                if ($grouping === 'other_ref') {
+                    $invoicesByEmployee = $this->invoiceService->getInvoicesByOtherRefFromDatabase(
+                        $filter,
+                        $dateFrom,
+                        $dateTo,
+                        $search,
+                        $hasComments,
+                        $commentDateFilter
+                    );
+                } else {
+                    $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployeeFromDatabase(
+                        $filter,
+                        $dateFrom,
+                        $dateTo,
+                        $search,
+                        $hasComments,
+                        $commentDateFilter
+                    );
+                }
             } else {
-                $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployeeFromDatabase(
-                    $filter,
-                    $dateFrom,
-                    $dateTo,
-                    $search,
-                    $hasComments,
-                    $commentDateFilter
-                );
+                // Fallback to API method (for backward compatibility)
+                if ($grouping === 'other_ref') {
+                    $invoicesByEmployee = $this->invoiceService->getInvoicesByOtherRef($filter);
+                } else {
+                    $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
+                }
             }
-        } else {
-            // Fallback to API method (for backward compatibility)
-            if ($grouping === 'other_ref') {
-                $invoicesByEmployee = $this->invoiceService->getInvoicesByOtherRef($filter);
-            } else {
-                $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
-            }
-        }
 
-        $totals = $this->invoiceService->getInvoiceTotals();
-        $dataQuality = $this->invoiceService->getDataQualityStats($invoicesByEmployee);
+            $totals = $this->invoiceService->getInvoiceTotals();
+            $dataQuality = $this->invoiceService->getDataQualityStats($invoicesByEmployee);
 
-        // NEW: Add sync information
+            return [
+                'invoicesByEmployee' => $invoicesByEmployee,
+                'totals' => $totals,
+                'dataQuality' => $dataQuality,
+                'usingDatabase' => $invoiceCount > 0,
+            ];
+        });
+
+        // Get sync information (not cached - needs to be real-time)
         $syncStats = $this->invoiceService->getSyncStats();
         $lastSyncedAt = $syncStats['last_synced_at'];
 
@@ -92,21 +123,17 @@ class DashboardController extends Controller
             $nextSyncAt = $lastSyncedAt->copy()->addHours(1);
         }
 
-        return view('dashboard.index', [
-            'invoicesByEmployee' => $invoicesByEmployee,
-            'totals' => $totals,
-            'dataQuality' => $dataQuality,
+        return view('dashboard.index', array_merge($data, [
             'lastUpdated' => now()->format('d-m-Y H:i'),
             'currentFilter' => $filter,
-            'currentGrouping' => $grouping,        // NEW
-            'lastSyncedAt' => $lastSyncedAt,       // NEW
-            'nextSyncAt' => $nextSyncAt,           // NEW
-            'syncStats' => $syncStats,             // NEW
-            'usingDatabase' => $invoiceCount > 0,  // NEW
-            'dateFrom' => $dateFrom,               // NEW
-            'dateTo' => $dateTo,                   // NEW
-            'search' => $search,                   // NEW
-        ]);
+            'currentGrouping' => $grouping,
+            'lastSyncedAt' => $lastSyncedAt,
+            'nextSyncAt' => $nextSyncAt,
+            'syncStats' => $syncStats,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'search' => $search,
+        ]));
     }
 
     /**
@@ -212,37 +239,56 @@ class DashboardController extends Controller
             $dateTo = now()->format('Y-m-d');
         }
 
-        // Check if we have database data, otherwise fall back to API
-        $invoiceCount = \App\Models\Invoice::count();
+        // Create cache key for stats page
+        $cacheKey = 'stats_' . md5(implode('_', [
+            $filter,
+            $dateFrom,
+            $dateTo,
+            $search ?? '',
+        ]));
 
-        if ($invoiceCount > 0) {
-            // Use database method (fast and includes ALL invoices!)
-            $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployeeFromDatabase(
-                $filter,
-                $dateFrom,
-                $dateTo,
-                $search
-            );
-        } else {
-            // Fallback to API method (for backward compatibility)
-            $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
-        }
+        // Cache stats data until next sync
+        $data = Cache::tags(['dashboard'])->remember($cacheKey, now()->addHours(24), function () use (
+            $filter,
+            $dateFrom,
+            $dateTo,
+            $search
+        ) {
+            // Check if we have database data, otherwise fall back to API
+            $invoiceCount = \App\Models\Invoice::count();
 
-        $totals = $this->invoiceService->getInvoiceTotals();
+            if ($invoiceCount > 0) {
+                // Use database method (fast and includes ALL invoices!)
+                $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployeeFromDatabase(
+                    $filter,
+                    $dateFrom,
+                    $dateTo,
+                    $search
+                );
+            } else {
+                // Fallback to API method (for backward compatibility)
+                $invoicesByEmployee = $this->invoiceService->getInvoicesByEmployee($filter);
+            }
 
-        // Add sync information
+            $totals = $this->invoiceService->getInvoiceTotals();
+
+            return [
+                'invoicesByEmployee' => $invoicesByEmployee,
+                'totals' => $totals,
+                'usingDatabase' => $invoiceCount > 0,
+            ];
+        });
+
+        // Get sync information (not cached - needs to be real-time)
         $syncStats = $this->invoiceService->getSyncStats();
 
-        return view('dashboard.stats', [
-            'invoicesByEmployee' => $invoicesByEmployee,
-            'totals' => $totals,
+        return view('dashboard.stats', array_merge($data, [
             'lastUpdated' => now()->format('d-m-Y H:i'),
             'currentFilter' => $filter,
-            'usingDatabase' => $invoiceCount > 0,
             'syncStats' => $syncStats,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'search' => $search,
-        ]);
+        ]));
     }
 }
