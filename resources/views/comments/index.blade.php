@@ -11,62 +11,34 @@
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <!-- Total Comments -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-xl p-5 border border-gray-100 dark:border-gray-700">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('dashboard.total_comments') }}</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ $comments->total() }}</p>
-                        </div>
-                        <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
-                        </div>
-                    </div>
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('dashboard.total_comments') }}</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $comments->total() }}</p>
                 </div>
 
                 <!-- Invoices with Comments (Clickable) -->
-                <a href="{{ route('dashboard', ['has_comments' => '1', 'filter' => 'all']) }}"
-                   class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition group">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:underline">{{ __('dashboard.invoices_with_comments') }}</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ \App\Models\InvoiceComment::distinct('invoice_id')->count('invoice_id') }}</p>
-                        </div>
-                        <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-500 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 transition">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        </div>
-                    </div>
+                <a href="{{ route('dashboard', ['has_comments' => '1', 'filter' => 'overdue']) }}"
+                   class="bg-blue-50 dark:bg-blue-900/20 overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition">
+                    <p class="text-sm text-blue-600 dark:text-blue-400">{{ __('dashboard.invoices_with_comments') }}</p>
+                    <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ \App\Models\InvoiceComment::distinct('invoice_id')->count('invoice_id') }}</p>
                 </a>
 
                 <!-- Comments Today (Clickable) -->
-                <a href="{{ route('dashboard', ['comment_date_filter' => 'today', 'filter' => 'all', 'has_comments' => '1']) }}"
-                   class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-green-200 dark:hover:border-green-800 transition group">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-green-600 dark:text-green-400 group-hover:underline">{{ __('dashboard.comments_today') }}</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
-                                {{ \App\Models\InvoiceComment::where('created_at', '>=', now()->startOfDay())->distinct('invoice_id')->count('invoice_id') }}
-                            </p>
-                        </div>
-                        <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-500 group-hover:bg-green-100 dark:group-hover:bg-green-900/40 transition">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        </div>
-                    </div>
+                <a href="{{ route('dashboard', ['comment_date_filter' => 'today', 'filter' => 'overdue', 'has_comments' => '1']) }}"
+                   class="bg-green-50 dark:bg-green-900/20 overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition">
+                    <p class="text-sm text-green-600 dark:text-green-400">{{ __('dashboard.comments_today') }}</p>
+                    <p class="text-3xl font-bold text-green-600 dark:text-green-400">
+                        {{ \App\Models\InvoiceComment::where('created_at', '>=', now()->startOfDay())->distinct('invoice_id')->count('invoice_id') }}
+                    </p>
                 </a>
 
                 <!-- Comments This Week (Clickable) -->
-                <a href="{{ route('dashboard', ['comment_date_filter' => 'week', 'filter' => 'all', 'has_comments' => '1']) }}"
-                   class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-purple-200 dark:hover:border-purple-800 transition group">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-purple-600 dark:text-purple-400 group-hover:underline">{{ __('dashboard.comments_this_week') }}</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
-                                {{ \App\Models\InvoiceComment::where('created_at', '>=', now()->subWeek())->distinct('invoice_id')->count('invoice_id') }}
-                            </p>
-                        </div>
-                        <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-purple-500 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/40 transition">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                        </div>
-                    </div>
+                <a href="{{ route('dashboard', ['comment_date_filter' => 'week', 'filter' => 'overdue', 'has_comments' => '1']) }}"
+                   class="bg-purple-50 dark:bg-purple-900/20 overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition">
+                    <p class="text-sm text-purple-600 dark:text-purple-400">{{ __('dashboard.comments_this_week') }}</p>
+                    <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                        {{ \App\Models\InvoiceComment::where('created_at', '>=', now()->subWeek())->distinct('invoice_id')->count('invoice_id') }}
+                    </p>
                 </a>
             </div>
 
