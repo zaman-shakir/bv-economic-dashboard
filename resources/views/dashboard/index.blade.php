@@ -9,66 +9,66 @@
 
     <div class="pt-6 pb-12">
         <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
-            <!-- Top Toolbar: All controls in one row -->
-            <div class="mb-6 flex items-center gap-2">
-                <!-- All Invoices -->
-                <a href="{{ route('dashboard', ['filter' => 'all']) }}"
-                   class="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ $currentFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-gray-200 dark:border-gray-700' }}">
-                    {{ __('dashboard.filter_all') }}
-                </a>
+            <!-- Top Toolbar: All controls in one row with 3 groups -->
+            <div class="mb-6 flex items-center gap-3">
+                <!-- Group 1: Filter Buttons -->
+                <div class="flex gap-2 p-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <a href="{{ route('dashboard', ['filter' => 'all']) }}"
+                       class="px-4 py-2 rounded-lg font-medium transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ $currentFilter === 'all' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20' }}">
+                        {{ __('dashboard.filter_all') }}
+                    </a>
+                    <a href="{{ route('dashboard', ['filter' => 'overdue']) }}"
+                       class="px-4 py-2 rounded-lg font-medium transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ $currentFilter === 'overdue' ? 'bg-red-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20' }}">
+                        {{ __('dashboard.filter_overdue') }}
+                    </a>
+                    <a href="{{ route('dashboard', ['filter' => 'unpaid']) }}"
+                       class="px-4 py-2 rounded-lg font-medium transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ $currentFilter === 'unpaid' ? 'bg-amber-500 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-amber-50 dark:hover:bg-amber-900/20' }}">
+                        {{ __('dashboard.filter_unpaid') }}
+                    </a>
+                </div>
 
-                <!-- Overdue only -->
-                <a href="{{ route('dashboard', ['filter' => 'overdue']) }}"
-                   class="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ $currentFilter === 'overdue' ? 'bg-red-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-gray-200 dark:border-gray-700' }}">
-                    {{ __('dashboard.filter_overdue') }}
-                </a>
+                <!-- Group 2: Grouping Buttons -->
+                <div class="flex gap-2 p-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'employee']) }}"
+                       class="px-4 py-2 rounded-lg font-medium transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20' }}">
+                        By Employee
+                    </a>
+                    <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'other_ref']) }}"
+                       class="px-4 py-2 rounded-lg font-medium transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ ($currentGrouping ?? 'employee') === 'other_ref' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20' }}">
+                        By Other Ref
+                    </a>
+                </div>
 
-                <!-- Unpaid only -->
-                <a href="{{ route('dashboard', ['filter' => 'unpaid']) }}"
-                   class="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ $currentFilter === 'unpaid' ? 'bg-amber-500 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 border border-gray-200 dark:border-gray-700' }}">
-                    {{ __('dashboard.filter_unpaid') }}
-                </a>
+                <div class="flex-grow"></div>
 
-                <!-- By Employee -->
-                <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'employee']) }}"
-                   class="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ ($currentGrouping ?? 'employee') === 'employee' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-gray-200 dark:border-gray-700' }}">
-                    By Employee
-                </a>
+                <!-- Group 3: Actions -->
+                <div class="flex gap-2">
+                    <select id="employeeFilter" onchange="filterByEmployee(this.value)"
+                            class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 cursor-pointer hover:border-blue-400 transition">
+                        <option value="">{{ __('dashboard.all_employees') }}</option>
+                        @foreach($invoicesByEmployee as $emp)
+                            <option value="{{ $emp['employeeNumber'] }}">
+                                {{ $emp['employeeName'] }} ({{ $emp['invoiceCount'] }})
+                            </option>
+                        @endforeach
+                    </select>
 
-                <!-- By Other Ref -->
-                <a href="{{ route('dashboard', ['filter' => $currentFilter, 'grouping' => 'other_ref']) }}"
-                   class="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 {{ ($currentGrouping ?? 'employee') === 'other_ref' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-gray-200 dark:border-gray-700' }}">
-                    By Other Ref
-                </a>
+                    <a href="{{ route('dashboard', request()->all()) }}"
+                       class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 font-medium text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                       title="{{ __('dashboard.refresh_data') }}">
+                        {{ __('dashboard.refresh_data') }}
+                    </a>
 
-                <!-- All employees dropdown -->
-                <select id="employeeFilter" onchange="filterByEmployee(this.value)"
-                        class="flex-1 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 cursor-pointer hover:border-blue-400 transition">
-                    <option value="">{{ __('dashboard.all_employees') }}</option>
-                    @foreach($invoicesByEmployee as $emp)
-                        <option value="{{ $emp['employeeNumber'] }}">
-                            {{ $emp['employeeName'] }} ({{ $emp['invoiceCount'] }})
-                        </option>
-                    @endforeach
-                </select>
-
-                <!-- Refresh data -->
-                <a href="{{ route('dashboard', request()->all()) }}"
-                   class="flex-1 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 font-medium text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-                   title="{{ __('dashboard.refresh_data') }}">
-                    {{ __('dashboard.refresh_data') }}
-                </a>
-
-                <!-- Sync now -->
-                @if($usingDatabase ?? false)
-                <button
-                    id="syncButton"
-                    onclick="syncNow()"
-                    class="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-                >
-                    <span id="syncButtonText">Sync now</span>
-                </button>
-                @endif
+                    @if($usingDatabase ?? false)
+                    <button
+                        id="syncButton"
+                        onclick="syncNow()"
+                        class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                    >
+                        <span id="syncButtonText">Sync now</span>
+                    </button>
+                    @endif
+                </div>
             </div>
 
             <!-- Loading Indicator & Sync Progress -->
