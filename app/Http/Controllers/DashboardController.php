@@ -59,8 +59,8 @@ class DashboardController extends Controller
         ]));
 
         // Cache dashboard data until next sync
-        // Cache is tagged with 'dashboard' for easy invalidation
-        $data = Cache::tags(['dashboard'])->remember($cacheKey, now()->addHours(24), function () use (
+        // Note: Using simple cache (file driver doesn't support tags)
+        $data = Cache::remember($cacheKey, now()->addHours(24), function () use (
             $filter,
             $grouping,
             $dateFrom,
@@ -248,7 +248,8 @@ class DashboardController extends Controller
         ]));
 
         // Cache stats data until next sync
-        $data = Cache::tags(['dashboard'])->remember($cacheKey, now()->addHours(24), function () use (
+        // Note: Using simple cache (file driver doesn't support tags)
+        $data = Cache::remember($cacheKey, now()->addHours(24), function () use (
             $filter,
             $dateFrom,
             $dateTo,
