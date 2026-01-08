@@ -988,11 +988,15 @@ class EconomicInvoiceService
         END";
 
         // Get grouped references by pattern (this creates logical groups)
+        // Note: Using MAX() instead of ANY_VALUE() for MySQL 5.6 compatibility
+        // Temporarily disable ONLY_FULL_GROUP_BY for this query
+        \DB::statement("SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
+
         $topRefs = (clone $baseQuery)
             ->select([
                 \DB::raw("{$groupingLogic} as other_ref"),
-                \DB::raw('ANY_VALUE(employee_number) as employee_number'),
-                \DB::raw('ANY_VALUE(employee_name) as employee_name'),
+                \DB::raw('MAX(employee_number) as employee_number'),
+                \DB::raw('MAX(employee_name) as employee_name'),
                 \DB::raw('COUNT(*) as invoice_count'),
                 \DB::raw('SUM(gross_amount) as total_amount'),
                 \DB::raw('SUM(remainder) as total_remainder'),
@@ -1001,6 +1005,9 @@ class EconomicInvoiceService
             ->orderByRaw('COUNT(*) DESC')
             ->limit(50) // Show top 50 groups by invoice count
             ->get();
+
+        // Re-enable ONLY_FULL_GROUP_BY after query
+        \DB::statement("SET SESSION sql_mode=(SELECT CONCAT(@@sql_mode,',ONLY_FULL_GROUP_BY'))");
 
         // Build the result collection by fetching invoices for each group separately
         // This prevents loading all 22k invoices into memory at once
