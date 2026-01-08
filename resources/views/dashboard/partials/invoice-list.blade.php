@@ -68,7 +68,6 @@
                         <th class="px-4 py-3 text-right font-medium">{{ __('dashboard.outstanding') }}</th>
                         <th class="px-4 py-3 text-center font-medium">{{ __('dashboard.status') }}</th>
                         <th class="px-4 py-3 text-left font-medium">{{ __('dashboard.external_id') }}</th>
-                        <th class="px-4 py-3 text-left font-medium">External ID</th>
                         <th class="px-4 py-3 text-center font-medium">{{ __('dashboard.actions') }}</th>
                     </tr>
                 </thead>
@@ -204,7 +203,7 @@
                         </tr>
 
                         <tr id="comments-row-{{ $invoice['invoiceId'] ?? '' }}" class="comments-row hidden">
-                            <td colspan="12" class="px-0 py-0 bg-gray-50/50 dark:bg-gray-800/50">
+                            <td colspan="11" class="px-0 py-0 bg-gray-50/50 dark:bg-gray-800/50">
                                 <div class="comments-panel">
                                     <!-- Sticky Notes Header -->
                                     <div class="flex justify-between items-center px-6 pt-3 pb-2">
