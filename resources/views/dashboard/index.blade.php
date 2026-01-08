@@ -61,7 +61,7 @@
                 <!-- Group 3: Actions -->
                 <div class="flex gap-2">
                     <select id="employeeFilter" onchange="filterByEmployee(this.value)"
-                            class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" style="width: 57%">
+                            class="w-64 min-w-[200px] max-w-[300px] px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                         <option value="">👥 {{ __('dashboard.all_employees') }}</option>
                         @foreach($invoicesByEmployee as $emp)
                             <option value="{{ $emp['employeeNumber'] }}">
@@ -85,7 +85,7 @@
                         onclick="syncNow()"
                         class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center gap-2"
                     >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg id="syncIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
                         <span id="syncButtonText">Sync now</span>
