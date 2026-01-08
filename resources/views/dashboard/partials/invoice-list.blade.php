@@ -160,7 +160,7 @@
                                             $wooOrderUrl = "{$wooSite}/wp-admin/admin.php?page=wc-orders&action=edit&id={$wooOrderId}";
                                         } elseif ($isBFOrder) {
                                             $wooOrderId = $bfMatches[1];
-                                            $wooSite = 'https://billigfilter.dk';
+                                            $wooSite = 'https://www.billigfilter.dk';
                                             // BilligFilter uses classic post-based order storage
                                             $wooOrderUrl = "{$wooSite}/wp-admin/post.php?post={$wooOrderId}&action=edit";
                                         }
