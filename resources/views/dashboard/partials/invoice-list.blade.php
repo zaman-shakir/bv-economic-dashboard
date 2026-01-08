@@ -281,7 +281,7 @@
                                                         </button>
                                                         <button
                                                             onclick="saveComment({{ $invoice['invoiceId'] ?? 'null' }})"
-                                                            class="px-3 py-1 bg-gray-800 hover:bg-gray-900 text-white text-xs font-medium rounded transition">
+                                                            class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition">
                                                             {{ __('dashboard.save_note') }}
                                                         </button>
                                                     </div>

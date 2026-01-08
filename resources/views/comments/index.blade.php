@@ -9,23 +9,24 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-4 gap-4">
                 <!-- Total Comments -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <a href="{{ route('comments.page') }}"
+                   class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition block">
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('dashboard.total_comments') }}</p>
                     <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $comments->total() }}</p>
-                </div>
+                </a>
 
                 <!-- Invoices with Comments (Clickable) -->
                 <a href="{{ route('dashboard', ['has_comments' => '1', 'filter' => 'overdue']) }}"
-                   class="bg-blue-50 dark:bg-blue-900/20 overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition">
+                   class="bg-blue-50 dark:bg-blue-900/20 overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition block">
                     <p class="text-sm text-blue-600 dark:text-blue-400">{{ __('dashboard.invoices_with_comments') }}</p>
                     <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ \App\Models\InvoiceComment::distinct('invoice_id')->count('invoice_id') }}</p>
                 </a>
 
                 <!-- Comments Today (Clickable) -->
                 <a href="{{ route('dashboard', ['comment_date_filter' => 'today', 'filter' => 'overdue', 'has_comments' => '1']) }}"
-                   class="bg-green-50 dark:bg-green-900/20 overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition">
+                   class="bg-green-50 dark:bg-green-900/20 overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition block">
                     <p class="text-sm text-green-600 dark:text-green-400">{{ __('dashboard.comments_today') }}</p>
                     <p class="text-3xl font-bold text-green-600 dark:text-green-400">
                         {{ \App\Models\InvoiceComment::where('created_at', '>=', now()->startOfDay())->distinct('invoice_id')->count('invoice_id') }}
@@ -34,7 +35,7 @@
 
                 <!-- Comments This Week (Clickable) -->
                 <a href="{{ route('dashboard', ['comment_date_filter' => 'week', 'filter' => 'overdue', 'has_comments' => '1']) }}"
-                   class="bg-purple-50 dark:bg-purple-900/20 overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition">
+                   class="bg-purple-50 dark:bg-purple-900/20 overflow-hidden shadow-sm sm:rounded-lg p-6 hover:shadow-md transition block">
                     <p class="text-sm text-purple-600 dark:text-purple-400">{{ __('dashboard.comments_this_week') }}</p>
                     <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">
                         {{ \App\Models\InvoiceComment::where('created_at', '>=', now()->subWeek())->distinct('invoice_id')->count('invoice_id') }}
@@ -79,10 +80,10 @@
 
                     <!-- Buttons -->
                     <div class="flex items-end gap-2">
-                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition">
+                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition whitespace-nowrap">
                             {{ __('dashboard.search') }}
                         </button>
-                        <a href="{{ route('comments.page') }}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition">
+                        <a href="{{ route('comments.page') }}" class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium rounded-lg transition whitespace-nowrap inline-block">
                             {{ __('dashboard.clear') }}
                         </a>
                     </div>
