@@ -513,7 +513,11 @@ class EconomicInvoiceService
             'unassigned_count' => $unassignedCount,
             'total_count' => $totalCount,
             'percentage' => $percentage,
-            'message' => "{$unassignedCount} out of {$totalCount} invoices ({$percentage}%) have no salesperson assigned.",
+            'message' => __('dashboard.no_salesperson_assigned', [
+                'count' => $unassignedCount,
+                'total' => $totalCount,
+                'percentage' => $percentage,
+            ]),
             'suggestion' => 'Assign salespeople to invoices in your e-conomic dashboard for better tracking.',
         ];
     }
@@ -589,7 +593,9 @@ class EconomicInvoiceService
 
                         try {
                             \DB::transaction(function () use ($invoiceData, &$stats) {
-                                $invoice = \App\Models\Invoice::createOrUpdateFromApi($invoiceData);
+                                // Bypass user access scope during sync (system operation)
+                                $invoice = \App\Models\Invoice::withoutGlobalScope('user_access')
+                                    ->createOrUpdateFromApi($invoiceData);
 
                                 if ($invoice->wasRecentlyCreated) {
                                     $stats['total_created']++;

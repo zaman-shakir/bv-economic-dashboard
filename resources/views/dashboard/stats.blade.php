@@ -48,13 +48,13 @@
 
                         <span>•</span>
                         <span>Filter: <strong class="text-blue-700 dark:text-blue-400">
-                            @if($currentFilter === 'all')All Invoices
-                            @elseif($currentFilter === 'overdue')Overdue Only
-                            @elseif($currentFilter === 'unpaid')Unpaid Only
+                            @if($currentFilter === 'all'){{ __('dashboard.filter_all') }}
+                            @elseif($currentFilter === 'overdue'){{ __('dashboard.filter_overdue') }}
+                            @elseif($currentFilter === 'unpaid'){{ __('dashboard.filter_unpaid') }}
                             @endif
                         </strong></span>
                         <span>•</span>
-                        <span>Showing: <strong class="text-blue-700 dark:text-blue-400">{{ $invoicesByEmployee->sum('invoiceCount') }}</strong></span>
+                        <span>{{ __('dashboard.showing') }}: <strong class="text-blue-700 dark:text-blue-400">{{ $invoicesByEmployee->sum('invoiceCount') }}</strong></span>
                     </div>
                 </div>
             </div>

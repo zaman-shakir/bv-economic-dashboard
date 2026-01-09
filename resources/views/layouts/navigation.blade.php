@@ -85,6 +85,11 @@
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm leading-4 font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-md focus:outline-none transition-all duration-200">
                             <div>{{ Auth::user()->name }}</div>
+                            @if(!Auth::user()->canViewAllInvoices())
+                                <span class="ml-2 text-xs px-2 py-0.5 rounded bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300">
+                                    {{ ucfirst(Auth::user()->role) }}
+                                </span>
+                            @endif
 
                             <div class="ms-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">

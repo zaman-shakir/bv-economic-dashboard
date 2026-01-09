@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Create New User') }}
+            {{ __('Edit User') }}: {{ $user->name }}
         </h2>
     </x-slot>
 
@@ -9,8 +9,9 @@
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
-                    <form method="POST" action="{{ route('users.store') }}">
+                    <form method="POST" action="{{ route('users.update', $user) }}">
                         @csrf
+                        @method('PUT')
 
                         <!-- Name -->
                         <div class="mb-4">
@@ -21,7 +22,7 @@
                                 type="text"
                                 id="name"
                                 name="name"
-                                value="{{ old('name') }}"
+                                value="{{ old('name', $user->name) }}"
                                 required
                                 autofocus
                                 class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-blue-500 dark:focus:border-blue-600 focus:ring-blue-500 dark:focus:ring-blue-600"
@@ -40,7 +41,7 @@
                                 type="email"
                                 id="email"
                                 name="email"
-                                value="{{ old('email') }}"
+                                value="{{ old('email', $user->email) }}"
                                 required
                                 class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-blue-500 dark:focus:border-blue-600 focus:ring-blue-500 dark:focus:ring-blue-600"
                             >
@@ -52,13 +53,12 @@
                         <!-- Password -->
                         <div class="mb-4">
                             <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Password
+                                Password (leave blank to keep current)
                             </label>
                             <input
                                 type="password"
                                 id="password"
                                 name="password"
-                                required
                                 class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-blue-500 dark:focus:border-blue-600 focus:ring-blue-500 dark:focus:ring-blue-600"
                             >
                             @error('password')
@@ -75,7 +75,6 @@
                                 type="password"
                                 id="password_confirmation"
                                 name="password_confirmation"
-                                required
                                 class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-blue-500 dark:focus:border-blue-600 focus:ring-blue-500 dark:focus:ring-blue-600"
                             >
                         </div>
@@ -91,11 +90,11 @@
                                 required
                                 class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-blue-500 dark:focus:border-blue-600 focus:ring-blue-500 dark:focus:ring-blue-600"
                             >
-                                <option value="viewer" {{ old('role') === 'viewer' ? 'selected' : '' }}>Viewer (Read-only)</option>
-                                <option value="employee" {{ old('role') === 'employee' ? 'selected' : '' }}>Employee (Limited Access)</option>
-                                <option value="external_ref" {{ old('role') === 'external_ref' ? 'selected' : '' }}>External Ref User</option>
-                                <option value="manager" {{ old('role') === 'manager' ? 'selected' : '' }}>Manager (Full Access)</option>
-                                <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin (Full Control)</option>
+                                <option value="viewer" {{ old('role', $user->role) === 'viewer' ? 'selected' : '' }}>Viewer (Read-only)</option>
+                                <option value="employee" {{ old('role', $user->role) === 'employee' ? 'selected' : '' }}>Employee (Limited Access)</option>
+                                <option value="external_ref" {{ old('role', $user->role) === 'external_ref' ? 'selected' : '' }}>External Ref User</option>
+                                <option value="manager" {{ old('role', $user->role) === 'manager' ? 'selected' : '' }}>Manager (Full Access)</option>
+                                <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Admin (Full Control)</option>
                             </select>
                             @error('role')
                                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
@@ -130,7 +129,7 @@
                                                     type="checkbox"
                                                     name="allowed_employees[]"
                                                     value="{{ $employee['number'] }}"
-                                                    {{ in_array($employee['number'], old('allowed_employees', [])) ? 'checked' : '' }}
+                                                    {{ in_array($employee['number'], old('allowed_employees', $user->allowed_employees ?? [])) ? 'checked' : '' }}
                                                     class="employee-checkbox rounded border-gray-300 dark:border-gray-700 text-blue-600 shadow-sm focus:ring-blue-500"
                                                 >
                                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
@@ -181,7 +180,7 @@
                                                             type="checkbox"
                                                             name="allowed_refs[]"
                                                             value="{{ $ref }}"
-                                                            {{ in_array($ref, old('allowed_refs', [])) ? 'checked' : '' }}
+                                                            {{ in_array($ref, old('allowed_refs', $user->allowed_external_refs ?? [])) ? 'checked' : '' }}
                                                             class="ref-checkbox rounded border-gray-300 dark:border-gray-700 text-blue-600 shadow-sm focus:ring-blue-500"
                                                         >
                                                         <span class="ml-2 text-sm text-gray-700 dark:text-gray-300 font-mono">
@@ -216,7 +215,7 @@
                                     type="checkbox"
                                     name="can_add_comments"
                                     value="1"
-                                    {{ old('can_add_comments', true) ? 'checked' : '' }}
+                                    {{ old('can_add_comments', $user->can_add_comments) ? 'checked' : '' }}
                                     class="rounded border-gray-300 dark:border-gray-700 text-blue-600 shadow-sm focus:ring-blue-500"
                                 >
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Can add comments</span>
@@ -227,7 +226,7 @@
                                     type="checkbox"
                                     name="can_send_reminders"
                                     value="1"
-                                    {{ old('can_send_reminders') ? 'checked' : '' }}
+                                    {{ old('can_send_reminders', $user->can_send_reminders) ? 'checked' : '' }}
                                     class="rounded border-gray-300 dark:border-gray-700 text-blue-600 shadow-sm focus:ring-blue-500"
                                 >
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Can send reminders</span>
@@ -238,7 +237,7 @@
                                     type="checkbox"
                                     name="can_sync"
                                     value="1"
-                                    {{ old('can_sync') ? 'checked' : '' }}
+                                    {{ old('can_sync', $user->can_sync) ? 'checked' : '' }}
                                     class="rounded border-gray-300 dark:border-gray-700 text-blue-600 shadow-sm focus:ring-blue-500"
                                 >
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Can sync invoices</span>
@@ -252,7 +251,7 @@
                                     type="checkbox"
                                     name="is_admin"
                                     value="1"
-                                    {{ old('is_admin') ? 'checked' : '' }}
+                                    {{ old('is_admin', $user->is_admin) ? 'checked' : '' }}
                                     class="rounded border-gray-300 dark:border-gray-700 text-blue-600 shadow-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:focus:ring-offset-gray-800"
                                 >
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
@@ -270,7 +269,7 @@
                                 Cancel
                             </a>
                             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition">
-                                Create User
+                                Update User
                             </button>
                         </div>
                     </form>

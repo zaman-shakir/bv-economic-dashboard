@@ -166,6 +166,14 @@ class DashboardController extends Controller
      */
     public function syncInvoices(Request $request): \Illuminate\Http\JsonResponse
     {
+        // Check permission
+        if (!\Auth::user()->canSync()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. You do not have permission to sync invoices.',
+            ], 403);
+        }
+
         // Increase execution time for this endpoint
         set_time_limit(300); // 5 minutes
 

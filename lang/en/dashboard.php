@@ -191,4 +191,26 @@ return [
     'go_to_invoice' => 'Go to invoice',
     'no_comments_found' => 'No comments found',
     'no_comments_found_message' => 'Try adjusting your search filters.',
+
+    // Missing translations (added for consistency)
+    'by_employee' => 'By Employee',
+    'by_other_ref' => 'By Other Ref',
+    'sync_recommended' => 'Sync recommended',
+    'last' => 'Last',
+    'next' => 'Next',
+    'all' => 'All',
+    'overdue' => 'Overdue',
+    'showing' => 'Showing',
+    'no_salesperson_assigned' => ':count out of :total invoices (:percentage%) have no salesperson assigned.',
+    'press_enter_to_search' => 'Press enter to search',
+    'quick' => 'Quick',
+
+    // Date range filters (today already defined at line 142)
+    'last_3_days' => 'Last 3 Days',
+    'last_week' => 'Last Week',
+    'this_month' => 'This Month',
+    'last_3_months' => 'Last 3 Months',
+    'last_6_months' => 'Last 6 Months',
+    'last_year' => 'Last 12 Months',
+    'this_year' => 'This Year',
 ];

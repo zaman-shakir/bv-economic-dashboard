@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Carbon\Carbon;
 
@@ -207,5 +208,57 @@ class Invoice extends Model
                 'last_synced_at' => now(),
             ]
         );
+    }
+
+    /**
+     * Boot method to add global scope for row-level security
+     */
+    protected static function booted()
+    {
+        static::addGlobalScope('user_access', function (Builder $query) {
+            $user = \Auth::user();
+
+            // No filtering for guests (shouldn't happen with auth middleware)
+            if (!$user) {
+                return $query->whereRaw('1 = 0');
+            }
+
+            // Admin and Manager see everything
+            if ($user->canViewAllInvoices()) {
+                return $query;
+            }
+
+            // Apply row-level filtering for other roles
+            $query->where(function($q) use ($user) {
+                $hasFilters = false;
+
+                // Filter by allowed employee numbers
+                if ($user->allowed_employees && count($user->allowed_employees) > 0) {
+                    $q->orWhereIn('employee_number', $user->allowed_employees);
+                    $hasFilters = true;
+                }
+
+                // Filter by allowed external references (with wildcard support)
+                if ($user->allowed_external_refs && count($user->allowed_external_refs) > 0) {
+                    foreach ($user->allowed_external_refs as $ref) {
+                        if (str_contains($ref, '*')) {
+                            // Wildcard support: "BV-WO-*" becomes "BV-WO-%"
+                            $pattern = str_replace('*', '%', $ref);
+                            $q->orWhere('external_reference', 'LIKE', $pattern);
+                        } else {
+                            $q->orWhere('external_reference', $ref);
+                        }
+                    }
+                    $hasFilters = true;
+                }
+
+                // If no filters defined, show nothing (prevent accidental full access)
+                if (!$hasFilters) {
+                    $q->whereRaw('1 = 0');
+                }
+            });
+
+            return $query;
+        });
     }
 }

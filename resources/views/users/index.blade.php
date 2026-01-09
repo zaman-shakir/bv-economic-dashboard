@@ -33,7 +33,8 @@
                             <tr>
                                 <th class="px-6 py-3 text-left font-medium">{{ __('dashboard.name') }}</th>
                                 <th class="px-6 py-3 text-left font-medium">{{ __('dashboard.email') }}</th>
-                                <th class="px-6 py-3 text-center font-medium">{{ __('dashboard.admin') }}</th>
+                                <th class="px-6 py-3 text-center font-medium">Role</th>
+                                <th class="px-6 py-3 text-center font-medium">Status</th>
                                 <th class="px-6 py-3 text-left font-medium">{{ __('dashboard.created') }}</th>
                                 <th class="px-6 py-3 text-center font-medium">{{ __('dashboard.actions') }}</th>
                             </tr>
@@ -51,13 +52,28 @@
                                         {{ $user->email }}
                                     </td>
                                     <td class="px-6 py-4 text-center">
-                                        @if($user->is_admin)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400">
-                                                {{ __('dashboard.admin') }}
+                                        @php
+                                            $roleColors = [
+                                                'admin' => 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400',
+                                                'manager' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400',
+                                                'employee' => 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400',
+                                                'external_ref' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-400',
+                                                'viewer' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+                                            ];
+                                            $colorClass = $roleColors[$user->role] ?? $roleColors['viewer'];
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
+                                            {{ ucfirst(str_replace('_', ' ', $user->role)) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        @if($user->is_active)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400">
+                                                Active
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                                                {{ __('dashboard.user') }}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400">
+                                                Blocked
                                             </span>
                                         @endif
                                     </td>
@@ -65,17 +81,44 @@
                                         {{ $user->created_at->format('d M Y') }}
                                     </td>
                                     <td class="px-6 py-4 text-center">
-                                        @if($user->id !== auth()->id())
-                                            <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('dashboard.confirm_delete_user') }}');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium text-sm">
-                                                    {{ __('dashboard.delete') }}
-                                                </button>
-                                            </form>
-                                        @else
-                                            <span class="text-gray-400 dark:text-gray-600 text-sm">-</span>
-                                        @endif
+                                        <div class="flex items-center justify-center space-x-3">
+                                            <!-- View Button -->
+                                            <a href="{{ route('users.show', $user) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm">
+                                                View
+                                            </a>
+
+                                            @if($user->id !== auth()->id())
+                                                <!-- Edit Button -->
+                                                <a href="{{ route('users.edit', $user) }}" class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 font-medium text-sm">
+                                                    Edit
+                                                </a>
+
+                                                <!-- Block/Unblock Button -->
+                                                <form action="{{ route('users.toggleStatus', $user) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @if($user->is_active)
+                                                        <button type="submit" class="text-yellow-600 hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-300 font-medium text-sm" onclick="return confirm('Block this user?');">
+                                                            Block
+                                                        </button>
+                                                    @else
+                                                        <button type="submit" class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 font-medium text-sm">
+                                                            Unblock
+                                                        </button>
+                                                    @endif
+                                                </form>
+
+                                                <!-- Delete Button -->
+                                                <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('dashboard.confirm_delete_user') }}');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium text-sm">
+                                                        {{ __('dashboard.delete') }}
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <span class="text-gray-400 dark:text-gray-600 text-sm">-</span>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

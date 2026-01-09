@@ -191,4 +191,26 @@ return [
     'go_to_invoice' => 'Gå til faktura',
     'no_comments_found' => 'Ingen kommentarer fundet',
     'no_comments_found_message' => 'Prøv at justere dine søgefiltre.',
+
+    // Missing translations from Jesper
+    'by_employee' => 'Efter medarbejder',
+    'by_other_ref' => 'Efter øvrige ref',
+    'sync_recommended' => 'Sync anbefalet',
+    'last' => 'Sidste',
+    'next' => 'Næste',
+    'all' => 'Alle',
+    'overdue' => 'Forfaldne',
+    'showing' => 'Visning',
+    'no_salesperson_assigned' => ':count ud af :total invoices (:percentage%) har ingen salgsperson tilknyttet.',
+    'press_enter_to_search' => 'Tryk enter for at søge',
+    'quick' => 'Hurtige',
+
+    // Date range filters (today already defined at line 142)
+    'last_3_days' => 'Sidste 3 dage',
+    'last_week' => 'Sidste uge',
+    'this_month' => 'Denne måned',
+    'last_3_months' => 'Sidste 3 måneder',
+    'last_6_months' => 'Sidste 6 måneder',
+    'last_year' => 'Sidste 12 måneder',
+    'this_year' => 'Dette år',
 ];

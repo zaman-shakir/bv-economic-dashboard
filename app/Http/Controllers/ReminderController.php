@@ -46,6 +46,14 @@ class ReminderController extends Controller
      */
     public function sendReminder(Request $request): JsonResponse
     {
+        // Check permission
+        if (!\Auth::user()->canSendReminders()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. You do not have permission to send reminders.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'invoice_number' => 'required|integer',
             'customer_number' => 'required|integer',
@@ -182,6 +190,14 @@ class ReminderController extends Controller
      */
     public function sendEmployeeReminder(Request $request): JsonResponse
     {
+        // Check permission
+        if (!\Auth::user()->canSendReminders()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. You do not have permission to send reminders.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'employee_number' => 'required|integer',
         ]);
